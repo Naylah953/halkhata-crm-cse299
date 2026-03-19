@@ -101,4 +101,16 @@ This project follows a layered backend architecture using Java Spring Boot:
 * **Controller Layer** → Handles API requests  
 * **Service Layer** → Business logic  
 * **Repository Layer** → Database interaction  
-* **Model Layer** → Entity definitions  
+* **Model Layer** → Entity definitions
+
+## 🛠️ Tech Stack
+
+Build Tool: yes build tool maven, and container docker
+
+Frontend (optional):  HTML / CSS  
+* **Backend:** Java Spring Boot  
+* **Database:** PostgreSQL  
+* **ORM:** JPA / Hibernate  
+* **Build Tool:** Maven
+* **Frontend:** Not implemented (API-based backend, HTML/CSS)  
+* **Containerization:** Docker  
