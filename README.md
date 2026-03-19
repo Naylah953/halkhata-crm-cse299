@@ -16,10 +16,10 @@
 ---
 
 ## 📋 Table of Contents
-- [Project Details](-#project-details)
-- [Features](-#features)
-- [Architecture](-#architecture)
-- [Tech Stack](-#tech-stack)
+- [Project Details](#-project-details)
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Tech Stack](#-tech-stack)
 
 ---
 
