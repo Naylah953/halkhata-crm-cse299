@@ -18,8 +18,8 @@
 ## 📋 Table of Contents
 - [Project Details](#-project-details)
 - [Features](#-features)
-- [Architecture](-architecture)
-- [Tech Stack](-tech-stack)
+- [Architecture](#-architecture)
+- [Tech Stack](#-tech-stack)
 
 ---
 
@@ -30,18 +30,18 @@
 *   **Semester:** Spring 2026 (North South University)
 *   **Faculty:** Shahnewaz Siddique (SNS1)
 
-   🎯 Problem: Many businesses in Bangladesh sell through Facebook Messenger and Instagram, making it difficult to track:
-*	customer conversations
-*	orders
-*	delivery status
+ 🎯 Problem:   Many businesses in Bangladesh sell through Facebook Messenger and Instagram, making it difficult to track:
+  *	customer conversations
+  *	orders
+  *	delivery status
 
-  💡 Solution: This CRM provides:
-*	Unified inbox for messages
-*	Contact & lead management
-*	Conversation → order conversion
-*	Customer timeline
-*	Sales analytics dashboard
-*	AI-powered automation
+💡 Solution:   This CRM provides:
+  *	Unified inbox for messages
+  *	Contact & lead management
+  *	Conversation → order conversion
+  *	Customer timeline
+  *	Sales analytics dashboard
+  *	AI-powered automation
 
 ---
 
