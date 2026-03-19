@@ -16,8 +16,8 @@
 ---
 
 ## 📋 Table of Contents
-- [Project Details](#-project-details)
-- [Features](#-features)
+- [Project Details](#project-details)
+- [Features](#features)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 
@@ -51,8 +51,8 @@ This CRM provides:
 
 | Name | NSU ID | Email |
 | :--- | :--- | :--- |
-| **Fariza Tasnia Ahmed** | 2232072042 | <fariza.ahmed05@northsouth.edu>
-| **Syed Izaz** | 2232366042 | <syed.lzaz@northsouth.edu>
+| **Fariza Tasnia Ahmed** | 2232072042 | <fariza.ahmed05@northsouth.edu> |
+| **Syed Izaz** | 2232366042 | <syed.lzaz@northsouth.edu> |
 | **Naylah Hassan Chowdhury** | 2311531042 | <naylah.chowdhury@northsouth.edu> |
 
 ---
