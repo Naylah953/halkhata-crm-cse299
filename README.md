@@ -18,8 +18,8 @@
 ## 📋 Table of Contents
 - [Project Details](#-project-details)
 - [Features](#-features)
-- [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
 
 ---
 
