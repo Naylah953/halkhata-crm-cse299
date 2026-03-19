@@ -19,6 +19,7 @@
 - [Project Details](#-project-details)
 - [Features](#-features)
 - [Architecture](#-architecture)
+- [Tech Stack](#-tech-stack)
 
 ---
 
@@ -105,9 +106,6 @@ This project follows a layered backend architecture using Java Spring Boot:
 
 ## 🛠️ Tech Stack
 
-Build Tool: yes build tool maven, and container docker
-
-Frontend (optional):  HTML / CSS  
 * **Backend:** Java Spring Boot  
 * **Database:** PostgreSQL  
 * **ORM:** JPA / Hibernate  
