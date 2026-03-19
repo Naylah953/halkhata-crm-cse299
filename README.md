@@ -102,4 +102,3 @@ This project follows a layered backend architecture using Java Spring Boot:
 * **Service Layer** → Business logic  
 * **Repository Layer** → Database interaction  
 * **Model Layer** → Entity definitions  
-the "tables of contents" links dont seem to work
