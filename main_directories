@@ -1,0 +1,4 @@
+mkdir -p halKhata-crm/src/main/java/com/halkhata/crm/{controller,service,repository,model,dto,config}
+mkdir -p halKhata-crm/src/main/resources/{static,static/assets/{css,js,img},templates}
+mkdir -p halKhata-crm/src/test/java/com/halkhata/crm
+mkdir -p halKhata-crm/assets/img
