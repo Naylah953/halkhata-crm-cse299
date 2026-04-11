@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social CRM Platform</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        .hidden-screen { display: none !important; }
+        .loader { 
+            border: 3px solid #f3f3f3; 
+            border-top: 3px solid #3b82f6; 
+            border-radius: 50%; 
+            width: 20px; 
+            height: 20px; 
+            animation: spin 1s linear infinite; 
+            display: inline-block; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans text-gray-800 h-screen w-screen overflow-hidden flex">
+
+    <div id="screen-landing" class="flex flex-col items-center justify-center w-full h-full bg-white">
+        <h1 class="text-4xl font-bold mb-2">SocialCRM</h1>
+        <p class="text-gray-500 mb-8">Bangladesh Edition</p>
+        
+        <div class="flex space-x-4">
+            <button onclick="navigateTo('screen-register')" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition">Shop Owner Registration</button>
+            <button onclick="navigateTo('screen-login')" class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition">Staff Sign In</button>
+        </div>
+    </div>
+
+    <div id="screen-login" class="hidden-screen flex flex-col items-center justify-center w-full h-full bg-gray-50">
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-6 text-center">Welcome Back</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="text" id="login-phone" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PIN</label>
+                    <input type="password" id="login-pin" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Sign In</button>
+                <p id="login-error" class="text-red-500 text-sm mt-3 text-center hidden">Invalid credentials.</p>
+            </form>
+            <button onclick="navigateTo('screen-landing')" class="w-full mt-4 text-sm text-gray-500 hover:text-gray-800 text-center">Back</button>
+        </div>
+    </div>
+
+    <div id="screen-register" class="hidden-screen flex flex-col items-center justify-center w-full h-full bg-gray-50 overflow-y-auto py-10">
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md my-auto">
+            <h2 class="text-2xl font-bold mb-6 text-center">Register New Shop</h2>
+            <form onsubmit="handleRegister(event)">
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Shop Name</label><input type="text" id="reg-shop-name" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Business Category</label>
+                    <select id="reg-category" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required>
+                        <option value="RETAIL">Retail</option><option value="FOOD_BEVERAGE">Food & Beverage</option><option value="SERVICE">Service</option><option value="OTHER">Other</option>
+                    </select>
+                </div>
+                <hr class="mb-6 border-gray-100">
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Admin Full Name</label><input type="text" id="reg-admin-name" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label><input type="text" id="reg-phone" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
+                <div class="mb-6"><label class="block text-sm font-medium text-gray-700 mb-1">Create 4-Digit PIN</label><input type="password" id="reg-pin" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Create Tenant & Admin</button>
+            </form>
+            <button onclick="navigateTo('screen-landing')" class="w-full mt-4 text-sm text-gray-500 text-center">Back</button>
+        </div>
+    </div>
+
+
+    <div id="screen-dashboard" class="hidden-screen flex w-full h-full bg-white">
+        
+        <div class="w-64 border-r border-gray-200 flex flex-col justify-between">
+            <div>
+                <div class="p-6">
+                    <h2 class="text-xl font-bold">SocialCRM</h2>
+                    <p class="text-xs text-gray-500">Bangladesh Edition</p>
+                </div>
+                <nav class="mt-2" id="main-nav">
+                    <a onclick="navigateTo('view-inbox')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item" id="nav-inbox">Inbox</a>
+                    <a onclick="navigateTo('view-customers')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item" id="nav-customers">Customers</a>
+                    <a onclick="navigateTo('view-analytics')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item" id="nav-analytics">Analytics</a>
+                    <a onclick="navigateTo('view-settings')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item" id="nav-settings">Settings</a>
+                </nav>
+            </div>
+            
+            <div class="relative mt-auto">
+                <div id="profile-menu" class="hidden absolute bottom-full left-4 right-4 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                    <button onclick="openEditProfileModal(event)" class="w-full text-left block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">Edit Profile</button>
+                    <button onclick="logout()" class="w-full text-left block px-4 py-3 text-sm text-red-600 hover:bg-red-50 font-medium">Logout</button>
+                </div>
+
+                <div class="p-4 border-t border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition" onclick="toggleProfileMenu(event)">
+                    <div class="flex items-center">
+                        <div id="user-avatar" class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold"></div>
+                        <div class="ml-3">
+                            <p id="user-name" class="text-sm font-bold text-gray-900">Loading...</p>
+                            <p id="user-role" class="text-xs text-gray-500"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 bg-gray-50 overflow-y-auto">
+            
+            <div id="view-inbox" class="dashboard-view hidden-screen h-full flex items-center justify-center">
+                <div class="text-center text-gray-400"><h2 class="text-xl mt-4">Inbox</h2><p class="text-sm">Message integration coming soon.</p></div>
+            </div>
+
+            <div id="view-customers" class="dashboard-view hidden-screen h-full flex items-center justify-center">
+                <div class="text-center text-gray-400"><h2 class="text-xl mt-4">Customers</h2><p class="text-sm">Customer database coming soon.</p></div>
+            </div>
+
+            <div id="view-analytics" class="dashboard-view hidden-screen h-full flex items-center justify-center">
+                <div class="text-center text-gray-400"><h2 class="text-xl mt-4">Analytics</h2><p class="text-sm">Charts and reports coming soon.</p></div>
+            </div>
+
+            <div id="view-settings" class="dashboard-view hidden-screen p-8 max-w-4xl mx-auto">
+                <div class="mb-8 border-b border-gray-200 pb-4">
+                    <h1 class="text-3xl font-bold text-gray-900">Settings</h1>
+                    <p class="text-gray-500 mt-1 text-sm">Configure your CRM platform</p>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
+                    <h3 class="text-lg font-bold mb-4">Business Information</h3>
+                    <div id="business-info-container"></div>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold mb-4">Team Members</h3>
+                    <div id="team-members-container"></div>
+                    <button id="add-member-btn" onclick="openStaffModal()" class="w-full mt-4 py-3 border border-gray-200 rounded-lg text-sm font-bold text-gray-800 hover:bg-gray-50 hidden">
+                        Add Team Member
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="staff-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-xl shadow-lg w-96">
+            <h3 class="text-lg font-bold mb-4">Add New Staff Member</h3>
+            <form onsubmit="handleAddStaff(event)">
+                <div class="mb-4"><label class="block text-sm font-medium mb-1">Full Name</label><input type="text" id="staff-name" class="w-full px-3 py-2 border rounded" required></div>
+                <div class="mb-4"><label class="block text-sm font-medium mb-1">Phone Number</label><input type="text" id="staff-phone" class="w-full px-3 py-2 border rounded" required></div>
+                <div class="mb-6"><label class="block text-sm font-medium mb-1">Assign PIN</label><input type="password" id="staff-pin" class="w-full px-3 py-2 border rounded" required></div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeStaffModal()" class="px-4 py-2 text-gray-500 border rounded hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Add Staff</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // ----------------------------------------------------
+        // 4A: ROUTING ENGINE (Handles SPA Navigation)
+        // ----------------------------------------------------
+        function navigateTo(targetId, pushToHistory = true) {
+            const token = localStorage.getItem('crm_token');
+            if (!token && !['screen-landing', 'screen-login', 'screen-register'].includes(targetId)) targetId = 'screen-landing';
+            
+            document.querySelectorAll('#screen-landing, #screen-login, #screen-register, #screen-dashboard').forEach(el => el.classList.add('hidden-screen'));
+
+            if (targetId.startsWith('view-')) {
+                document.getElementById('screen-dashboard').classList.remove('hidden-screen');
+                document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('hidden-screen'));
+                document.getElementById(targetId).classList.remove('hidden-screen');
+                
+                document.querySelectorAll('.nav-item').forEach(el => {
+                    el.classList.remove('text-blue-600', 'bg-blue-50', 'font-medium', 'border-r-4', 'border-blue-600');
+                });
+                document.getElementById('nav-' + targetId.split('-')[1]).classList.add('text-blue-600', 'bg-blue-50', 'font-medium', 'border-r-4', 'border-blue-600');
+
+                if(targetId === 'view-settings') fetchSettingsData();
+            } else { document.getElementById(targetId).classList.remove('hidden-screen'); }
+
+            if (pushToHistory) window.history.pushState({ screen: targetId }, "", "?view=" + targetId);
+        }
+
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.screen) navigateTo(event.state.screen, false); 
+            else navigateTo('screen-landing', false);
+        });
+
+        window.onload = () => {
+            const view = new URLSearchParams(window.location.search).get('view');
+            const token = localStorage.getItem('crm_token');
+            if (token && (!view || view === 'screen-login')) navigateTo('view-inbox', false);
+            else if (view) navigateTo(view, false);
+            else navigateTo('screen-landing', false);
+        };
+
+
+        // ----------------------------------------------------
+        // 4B: UI HELPERS & AUTHENTICATION API CALLS
+        // ----------------------------------------------------
+        
+        // Toggle the profile menu popup
+        function toggleProfileMenu(e) {
+            e.stopPropagation(); // Stops the click from immediately triggering the window listener below
+            document.getElementById('profile-menu').classList.toggle('hidden');
+        }
+
+        // If the user clicks anywhere else on the screen, close the menu
+        window.addEventListener('click', function() {
+            const menu = document.getElementById('profile-menu');
+            if (menu && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Placeholder for the Edit Profile button
+        function openEditProfileModal(e) {
+            e.stopPropagation(); 
+            document.getElementById('profile-menu').classList.add('hidden');
+            alert("The Edit Profile feature is coming next!");
+        }
+
+        // UPDATED: Fetch real name from backend
+        async function setSidebarUser(token) {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            document.getElementById('user-role').innerText = payload.role.replace('ROLE_', '');
+            
+            // Put the phone number there temporarily so the UI doesn't look empty
+            document.getElementById('user-name').innerText = payload.sub; 
+            document.getElementById('user-avatar').innerText = payload.sub.charAt(0);
+
+            // Fetch the actual Full Name from our new backend endpoint!
+            try {
+                const res = await fetch('http://localhost:8080/api/users/me', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    const user = await res.json();
+                    document.getElementById('user-name').innerText = user.fullName;
+                    document.getElementById('user-avatar').innerText = user.fullName.charAt(0).toUpperCase();
+                }
+            } catch (e) { console.log("Could not load user name."); }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const shopName = document.getElementById('reg-shop-name').value;
+            const category = document.getElementById('reg-category').value;
+            const adminName = document.getElementById('reg-admin-name').value;
+            const phone = document.getElementById('reg-phone').value;
+            const pin = document.getElementById('reg-pin').value;
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ shopName, businessCategory: category, adminFullName: adminName, phoneNumber: phone, pin })
+                });
+                if (response.ok) {
+                    alert("Shop created! Please sign in.");
+                    e.target.reset();
+                    navigateTo('screen-login');
+                } else { alert("Registration Error."); }
+            } catch (error) { alert("Cannot connect to server."); }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const phone = document.getElementById('login-phone').value;
+            const pin = document.getElementById('login-pin').value;
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber: phone, pin })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('crm_token', data.token);
+                    setSidebarUser(data.token);
+                    e.target.reset();
+                    navigateTo('view-inbox'); 
+                } else { 
+                    document.getElementById('login-error').classList.remove('hidden'); 
+                    document.getElementById('login-pin').value = ''; // NEW: Wipes just the PIN on a failed login
+                }
+            } catch (error) { document.getElementById('login-error').classList.remove('hidden'); }
+        }
+
+        function logout() {
+            localStorage.removeItem('crm_token');
+            navigateTo('screen-landing');
+        }
+
+
+        // ----------------------------------------------------
+        // 4C: DATA FETCHING (CRUD OPERATIONS)
+        // ----------------------------------------------------
+        async function fetchSettingsData() {
+            const token = localStorage.getItem('crm_token');
+            if(!token) return;
+            setSidebarUser(token); 
+
+            // RBAC Check: Is the logged-in user an Admin?
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const isAdmin = payload.role === 'ADMIN' || payload.role === 'ROLE_ADMIN';
+            
+            // Toggle the "Add Team Member" button
+            document.getElementById('add-member-btn').style.display = isAdmin ? 'block' : 'none';
+
+            const headers = { 'Authorization': 'Bearer ' + token };
+
+            // 1. Fetch & Render Business Info
+            try {
+                const res = await fetch('http://localhost:8080/api/tenant/me', { headers });
+                if(res.ok) {
+                    const tenant = await res.json();
+                    
+                    // Fallback to empty string if database returns null (for brand new accounts)
+                    const sName = tenant.shopName || '';
+                    const sCat = tenant.businessCategory || '';
+                    const sAdd = tenant.businessAddress || '';
+                    const sPhone = tenant.contactPhone || '';
+                    const sEmail = tenant.contactEmail || '';
+
+                    const container = document.getElementById('business-info-container');
+
+                    if (isAdmin) {
+                        // ADMIN VIEW: Render an interactive form
+                        container.innerHTML = `
+                            <form onsubmit="handleUpdateTenant(event)">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
+                                        <input type="text" id="edit-shop-name" value="${sName}" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Business Category</label>
+                                        <select id="edit-category" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="RETAIL" ${sCat === 'RETAIL' ? 'selected' : ''}>Retail</option>
+                                            <option value="FOOD_BEVERAGE" ${sCat === 'FOOD_BEVERAGE' ? 'selected' : ''}>Food & Beverage</option>
+                                            <option value="SERVICE" ${sCat === 'SERVICE' ? 'selected' : ''}>Service</option>
+                                            <option value="OTHER" ${sCat === 'OTHER' ? 'selected' : ''}>Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Business Address</label>
+                                        <input type="text" id="edit-address" value="${sAdd}" placeholder="e.g. 123 Main St, Dhaka" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Contact Phone</label>
+                                        <input type="text" id="edit-phone" value="${sPhone}" placeholder="e.g. 017..." class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Contact Email</label>
+                                        <input type="email" id="edit-email" value="${sEmail}" placeholder="e.g. admin@shop.com" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex justify-end">
+                                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition">Save Changes</button>
+                                </div>
+                            </form>
+                        `;
+                    } else {
+                        // MODERATOR VIEW: Render read-only text elements
+                        container.innerHTML = `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><p class="text-sm font-bold text-gray-800">Shop Name</p><p class="text-gray-600 bg-gray-50 border border-gray-200 rounded px-3 py-2 mt-1">${sName}</p></div>
+                                <div><p class="text-sm font-bold text-gray-800">Category</p><p class="text-gray-600 bg-gray-50 border border-gray-200 rounded px-3 py-2 mt-1">${sCat}</p></div>
+                                <div><p class="text-sm font-bold text-gray-800">Business Address</p><p class="text-gray-600 bg-gray-50 border border-gray-200 rounded px-3 py-2 mt-1">${sAdd || '<span class="text-gray-400 italic">Not set</span>'}</p></div>
+                                <div><p class="text-sm font-bold text-gray-800">Contact Phone</p><p class="text-gray-600 bg-gray-50 border border-gray-200 rounded px-3 py-2 mt-1">${sPhone || '<span class="text-gray-400 italic">Not set</span>'}</p></div>
+                                <div class="md:col-span-2"><p class="text-sm font-bold text-gray-800">Contact Email</p><p class="text-gray-600 bg-gray-50 border border-gray-200 rounded px-3 py-2 mt-1">${sEmail || '<span class="text-gray-400 italic">Not set</span>'}</p></div>
+                            </div>
+                        `;
+                    }
+
+                } else { document.getElementById('business-info-container').innerHTML = `<p class="text-sm text-yellow-600">Could not load business information.</p>`; }
+            } catch(e) { console.log("Tenant endpoint error."); }
+
+            // 2. Fetch & Render Team Members
+            try {
+                const res = await fetch('http://localhost:8080/api/users/staff', { headers });
+                if(res.ok) {
+                    const staffList = await res.json();
+                    let html = '';
+                    staffList.forEach(staff => {
+
+                        let deleteBtn = isAdmin ? `<button onclick="deleteStaff(${staff.id})" class="text-red-500 hover:text-red-700 text-sm font-medium px-3 py-1 rounded hover:bg-red-50 transition">Remove</button>` : '';
+
+                        html += `
+                        <div class="flex items-center justify-between py-3 border-b border-gray-100 group">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">${staff.fullName.charAt(0)}</div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-bold text-gray-900">${staff.fullName}</p>
+                                    <p class="text-xs text-gray-500">${staff.role}</p>
+                                </div>
+                            </div>
+                            ${deleteBtn}
+                        </div>`;
+                    });
+                    document.getElementById('team-members-container').innerHTML = html;
+                } else { document.getElementById('team-members-container').innerHTML = `<p class="text-sm text-yellow-600">Could not load team members.</p>`; }
+            } catch(e) { console.log("Staff endpoint error."); }
+        }
+
+
+        // ----------------------------------------------------
+        // 4D: POST & PUT LOGIC
+        // ----------------------------------------------------
+        
+        // NEW PUT REQUEST: Update Business Information (Admins Only)
+        async function handleUpdateTenant(e) {
+            e.preventDefault();
+            const token = localStorage.getItem('crm_token');
+            
+            // Gather the data from the newly injected form
+            const shopName = document.getElementById('edit-shop-name').value;
+            const address = document.getElementById('edit-address').value;
+            const category = document.getElementById('edit-category').value;
+            const phone = document.getElementById('edit-phone').value;
+            const email = document.getElementById('edit-email').value;
+
+            try {
+                const res = await fetch('http://localhost:8080/api/tenant/me', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    // Payload matches TenantUpdateRequest exactly
+                    body: JSON.stringify({ 
+                        shopName: shopName, 
+                        businessCategory: category,
+                        businessAddress: address, 
+                        contactPhone: phone, 
+                        contactEmail: email 
+                    })
+                });
+                
+
+                if(res.ok) {
+                    alert("Business information updated successfully!");
+                    fetchSettingsData(); // Refresh the UI to prove it saved!
+                } else {
+                    alert("Failed to update. Make sure you are an Admin!");
+                }
+            } catch(e) { alert("Server error."); }
+        }
+
+        // NEW DELETE REQUEST: Remove Staff (Admins Only)
+        async function deleteStaff(staffId) {
+            // A built-in browser popup to confirm they didn't misclick
+            if (!confirm("Are you sure you want to remove this team member?")) return;
+            
+            const token = localStorage.getItem('crm_token');
+            
+            try {
+                const res = await fetch(`http://localhost:8080/api/users/staff/${staffId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if(res.ok) {
+                    fetchSettingsData(); // Refresh the list instantly to prove they are gone
+                } else {
+                    alert("Could not remove staff member. Make sure you are an Admin.");
+                }
+            } catch(e) { alert("Server error."); }
+        }
+
+        // POST REQUEST: Add new staff member
+        function openStaffModal() { document.getElementById('staff-modal').classList.remove('hidden'); }
+        function closeStaffModal() { document.getElementById('staff-modal').classList.add('hidden'); }
+
+        async function handleAddStaff(e) {
+            e.preventDefault();
+            const token = localStorage.getItem('crm_token');
+            const name = document.getElementById('staff-name').value;
+            const phone = document.getElementById('staff-phone').value;
+            const pin = document.getElementById('staff-pin').value;
+
+            try {
+                const res = await fetch('http://localhost:8080/api/users/staff', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ fullName: name, phoneNumber: phone, pin: pin })
+                });
+
+                if(res.ok) {
+                    alert("Staff member successfully hired!");
+                    e.target.reset();
+                    closeStaffModal();
+                    fetchSettingsData(); 
+                } else { alert("Could not add staff. Make sure the phone number is unique."); }
+            } catch(e) { alert("Server error."); }
+        }
+    </script>
+</body>
+</html>
