@@ -33,6 +33,9 @@ public class SecurityConfiguration {
                                 // Let the invisible browser Preflight (OPTIONS) requests pass without a JWT!
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                                // --- THE ONLY NEW ADDITION: Allow the browser to load the frontend files ---
+                                .requestMatchers("/", "/crm.html", "/assets/**", "/css/**", "/js/**").permitAll()
+
                                 // Anyone can login and register
                                 .requestMatchers("/api/auth/**", "/error").permitAll()
 
