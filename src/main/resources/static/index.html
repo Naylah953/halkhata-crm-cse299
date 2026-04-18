@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pico Page | Social CRM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #bcc0c4; border-radius: 10px; }
+  </style>
+</head>
+<body class="bg-[#F0F2F5] h-screen overflow-hidden flex font-sans">
+
+<aside class="w-1/5 bg-white border-r border-gray-300 flex flex-col">
+  <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-[#0084FF]">Chats</h1>
+  </div>
+  <div class="flex-1 overflow-y-auto" id="conversation-list">
+  </div>
+</aside>
+
+<main class="flex-1 flex flex-col bg-white">
+  <header class="p-3 border-b border-gray-200 shadow-sm flex items-center gap-3">
+    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold" id="header-avatar">?</div>
+    <div>
+      <p class="font-bold text-gray-800" id="active-user-name">Select a contact</p>
+      <p class="text-[10px] text-gray-500 uppercase tracking-wider">Connected via Facebook</p>
+    </div>
+  </header>
+
+  <div class="flex-1 overflow-y-auto p-4 flex flex-col space-y-2" id="chat-bubbles">
+    <div class="text-center text-gray-400 text-xs my-10">Select a conversation to start messaging</div>
+  </div>
+
+  <div class="p-4 bg-white border-t border-gray-100">
+    <div class="flex items-center gap-2 bg-gray-100 p-2 rounded-full px-4">
+      <input type="text" id="chat-input" placeholder="Aa" class="flex-1 bg-transparent border-none focus:outline-none text-sm">
+      <button class="text-[#0084FF] font-bold text-sm hover:underline" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</main>
+
+<aside class="w-1/4 bg-[#F0F2F5] border-l border-gray-300 flex flex-col">
+  <div class="p-4 border-b border-gray-200 bg-white">
+    <h2 class="font-bold text-gray-700 flex items-center gap-2">
+      <span class="text-[#0084FF]">●</span> AI Admin Assistant
+    </h2>
+  </div>
+  <div class="flex-1 overflow-y-auto p-4 space-y-4" id="ai-log"></div>
+  <div class="p-4 bg-white border-t border-gray-200">
+        <textarea id="ai-input" placeholder="e.g. 'Update user name...'"
+                  class="w-full p-3 rounded-xl border border-gray-300 text-sm bg-gray-50 h-24 resize-none"></textarea>
+    <button onclick="sendAiCommand()" class="w-full mt-2 bg-[#0084FF] text-white py-2 rounded-xl font-bold text-sm">
+      Run AI Tool
+    </button>
+  </div>
+</aside>
+
+<script src="app.js"></script>
+</body>
+</html>
