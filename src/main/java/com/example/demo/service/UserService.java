@@ -23,58 +23,46 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final AppUserRepository userRepository;
-    private final TenantRepository tenantRepository; // Added to save Tenant updates
+    private final TenantRepository tenantRepository;
     private final PasswordEncoder passwordEncoder;
 
     // ==========================================
     // 1. STAFF CREATION LOGIC
     // ==========================================
     public void createStaffMember(StaffCreationRequest request) {
-        // 1. Grab the currently logged-in Admin directly from the VIP Lounge (Security Context)
         AppUser currentAdmin = (AppUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // 2. Safety Check: Make sure this phone number isn't already used by another shop
         if (userRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
             throw new RuntimeException("Phone number is already registered!");
         }
 
-        // 3. Create Bob the Cashier
         AppUser newStaff = new AppUser();
         newStaff.setFullName(request.getFullName());
         newStaff.setPhoneNumber(request.getPhoneNumber());
-
-        // 4. Cryptography: Scramble Bob's PIN before saving
         newStaff.setPinHash(passwordEncoder.encode(request.getPin()));
-
-        // 5. The Golden Rule: Assign the MODERATOR role, and lock them into the Admin's exact shop!
         newStaff.setRole(Role.MODERATOR);
         newStaff.setTenant(currentAdmin.getTenant());
 
-        // 6. Save to the database
         userRepository.save(newStaff);
     }
 
     // ==========================================
-    // 2. GET TEAM MEMBERS (For the Settings UI)
+    // 2. GET TEAM MEMBERS
     // ==========================================
     public List<StaffResponse> getTeamMembers(String currentUsername) {
         AppUser currentUser = userRepository.findByPhoneNumber(currentUsername)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Find everyone who works at their exact same shop
         List<AppUser> team = userRepository.findByTenantId(currentUser.getTenant().getId());
 
-        // Convert the database entities into safe DTOs for the frontend
         return team.stream()
-                // THE NEW LINE: Filter out the user who is currently logged in!
                 .filter(user -> !user.getId().equals(currentUser.getId()))
-                // -----------------------------------------------------------
                 .map(user -> new StaffResponse(user.getId(), user.getFullName(), user.getRole().name()))
                 .collect(Collectors.toList());
     }
 
     // ==========================================
-    // 3. GET BUSINESS INFO (For the Settings UI)
+    // 3. GET BUSINESS INFO
     // ==========================================
     public TenantResponse getCurrentTenantDetails(String currentUsername) {
         AppUser currentUser = userRepository.findByPhoneNumber(currentUsername)
@@ -82,18 +70,20 @@ public class UserService {
 
         Tenant t = currentUser.getTenant();
 
-        // Map the database entity to the safe frontend DTO
+        // UPDATED: Now returns the Facebook fields to the frontend UI
         return new TenantResponse(
                 t.getName(),
                 t.getBusinessCategory(),
                 t.getBusinessAddress(),
                 t.getContactPhone(),
-                t.getContactEmail()
+                t.getContactEmail(),
+                t.getFacebookPageId(),
+                t.getPageAccessToken()
         );
     }
 
     // ==========================================
-    // 4. UPDATE BUSINESS INFO (Admin Only)
+    // 4. UPDATE BUSINESS INFO
     // ==========================================
     @Transactional
     public TenantResponse updateTenantDetails(String currentUsername, TenantUpdateRequest request) {
@@ -102,29 +92,32 @@ public class UserService {
 
         Tenant tenant = currentUser.getTenant();
 
-        // Update the fields using the incoming JSON payload
         tenant.setName(request.getShopName());
-        // No need for .valueOf() anymore!
         tenant.setBusinessCategory(request.getBusinessCategory());
         tenant.setBusinessAddress(request.getBusinessAddress());
         tenant.setContactPhone(request.getContactPhone());
         tenant.setContactEmail(request.getContactEmail());
 
-        // Save the updated Tenant to PostgreSQL
+        // Save the Meta credentials to the entity
+        tenant.setFacebookPageId(request.getFacebookPageId());
+        tenant.setPageAccessToken(request.getPageAccessToken());
+
         tenantRepository.save(tenant);
 
-        // Return the fresh data back to the frontend to confirm success
+        // UPDATED: Return the complete updated details including Meta data
         return new TenantResponse(
                 tenant.getName(),
                 tenant.getBusinessCategory(),
                 tenant.getBusinessAddress(),
                 tenant.getContactPhone(),
-                tenant.getContactEmail()
+                tenant.getContactEmail(),
+                tenant.getFacebookPageId(),
+                tenant.getPageAccessToken()
         );
     }
 
     // ==========================================
-    // 5. DELETE STAFF MEMBER (Admins Only)
+    // 5. DELETE STAFF MEMBER
     // ==========================================
     public void deleteStaffMember(String currentUsername, Long staffId) {
         AppUser currentAdmin = userRepository.findByPhoneNumber(currentUsername)
@@ -133,12 +126,10 @@ public class UserService {
         AppUser staffToDelete = userRepository.findById(staffId)
                 .orElseThrow(() -> new RuntimeException("Staff not found"));
 
-        // SECURITY CHECK 1: Ensure the staff belongs to the admin's exact shop!
         if (!staffToDelete.getTenant().getId().equals(currentAdmin.getTenant().getId())) {
             throw new RuntimeException("Unauthorized: Cannot delete staff from another shop!");
         }
 
-        // SECURITY CHECK 2: Prevent the admin from accidentally deleting themselves!
         if (staffToDelete.getId().equals(currentAdmin.getId())) {
             throw new RuntimeException("You cannot delete your own admin account!");
         }

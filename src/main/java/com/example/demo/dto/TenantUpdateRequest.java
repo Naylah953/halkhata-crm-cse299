@@ -12,4 +12,7 @@ public class TenantUpdateRequest {
     private String contactPhone;
     private String contactEmail;
     private String businessCategory;
+
+    private String facebookPageId;
+    private String pageAccessToken;
 }

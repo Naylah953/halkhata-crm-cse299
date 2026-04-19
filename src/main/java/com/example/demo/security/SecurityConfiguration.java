@@ -39,6 +39,9 @@ public class SecurityConfiguration {
                                 // Anyone can login and register
                                 .requestMatchers("/api/auth/**", "/error").permitAll()
 
+                                .requestMatchers(HttpMethod.GET, "/api/inbound/webhook").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/inbound/webhook").permitAll()
+
                                 // ONLY Admins can hire new staff (POST)
                                 .requestMatchers(HttpMethod.POST, "/api/users/staff").hasRole("ADMIN")
 

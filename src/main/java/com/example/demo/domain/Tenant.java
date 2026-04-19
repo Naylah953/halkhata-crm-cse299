@@ -48,4 +48,10 @@ public class Tenant {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    @Column(name = "facebook_page_id", unique = true)
+    private String facebookPageId;
+
+    @Column(name = "page_access_token")
+    private String pageAccessToken;
 }

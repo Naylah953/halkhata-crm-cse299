@@ -4,338 +4,1473 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Social CRM Platform</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <style>
         .hidden-screen { display: none !important; }
-        .loader { 
-            border: 3px solid #f3f3f3; 
-            border-top: 3px solid #3b82f6; 
-            border-radius: 50%; 
-            width: 20px; 
-            height: 20px; 
-            animation: spin 1s linear infinite; 
-            display: inline-block; 
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Resizable columns */
+        .resize-handle {
+            width: 4px;
+            cursor: col-resize;
+            background: transparent;
+            transition: background 0.2s;
+        }
+        .resize-handle:hover,
+        .resize-handle.active {
+            background: #3b82f6;
+        }
+
+        /* Create Order Modal - Compact Styling */
+        #create-order-modal .max-w-lg {
+            max-width: 450px !important;
+        }
+        #create-order-modal .p-6 {
+            padding: 1rem !important;
+        }
+        #create-order-modal .space-y-4 > * + * {
+            margin-top: 0.5rem !important;
+        }
+        #create-order-modal .px-6 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        #create-order-modal .py-4 {
+            padding-top: 0.75rem !important;
+            padding-bottom: 0.75rem !important;
+        }
+        #create-order-modal label {
+            font-size: 0.75rem !important;
+            margin-bottom: 0.25rem !important;
+        }
+        #create-order-modal input,
+        #create-order-modal select,
+        #create-order-modal textarea {
+            font-size: 0.875rem !important;
+            padding: 0.4rem 0.75rem !important;
+        }
+
+        /* Interactive Tags */
+        .tag-badge {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tag-badge:hover {
+            opacity: 0.8;
+        }
+        .tag-badge.bg-white {
+            background-color: white !important;
+            color: #374151 !important;
+            border: 1px solid #e5e7eb !important;
+        }
     </style>
 </head>
 
 <body class="bg-gray-50 font-sans text-gray-800 h-screen w-screen overflow-hidden flex">
 
-    <div id="screen-landing" class="flex flex-col items-center justify-center w-full h-full bg-white">
-        <h1 class="text-4xl font-bold mb-2">Halkhata</h1>
-        <p class="text-gray-500 mb-8">Bangladesh Edition</p>
-        
-        <div class="flex space-x-4">
-            <button onclick="navigateTo('screen-register')" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition">Shop Owner Registration</button>
-            <button onclick="navigateTo('screen-login')" class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition">Staff Sign In</button>
-        </div>
+<div id="screen-landing" class="flex flex-col items-center justify-center w-full h-full bg-white">
+    <h1 class="text-4xl font-bold mb-2">Halkhata</h1>
+    <p class="text-gray-500 mb-8">Bangladesh Edition</p>
+
+    <div class="flex space-x-4">
+        <button onclick="navigateTo('screen-register')" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition">Shop Owner Registration</button>
+        <button onclick="navigateTo('screen-login')" class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition">Staff Sign In</button>
     </div>
+</div>
 
-    <div id="screen-login" class="hidden-screen flex flex-col items-center justify-center w-full h-full bg-gray-50">
-        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md">
-            <h2 class="text-2xl font-bold mb-6 text-center">Welcome Back</h2>
-            <form onsubmit="handleLogin(event)">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                    <input type="text" id="login-phone" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">PIN</label>
-                    <input type="password" id="login-pin" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Sign In</button>
-                <p id="login-error" class="text-red-500 text-sm mt-3 text-center hidden">Invalid credentials.</p>
-            </form>
-            <button onclick="navigateTo('screen-landing')" class="w-full mt-4 text-sm text-gray-500 hover:text-gray-800 text-center">Back</button>
-        </div>
-    </div>
-
-    <div id="screen-register" class="hidden-screen flex flex-col items-center justify-center w-full h-full bg-gray-50 overflow-y-auto py-10">
-        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md my-auto">
-            <h2 class="text-2xl font-bold mb-6 text-center">Register New Shop</h2>
-            <form onsubmit="handleRegister(event)">
-                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Shop Name</label><input type="text" id="reg-shop-name" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Business Category</label>
-                    <select id="reg-category" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required>
-                        <option value="RETAIL">Retail</option><option value="FOOD_BEVERAGE">Food & Beverage</option><option value="SERVICE">Service</option><option value="OTHER">Other</option>
-                    </select>
-                </div>
-                <hr class="mb-6 border-gray-100">
-                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Admin Full Name</label><input type="text" id="reg-admin-name" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
-                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label><input type="text" id="reg-phone" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
-                <div class="mb-6"><label class="block text-sm font-medium text-gray-700 mb-1">Create 4-Digit PIN</label><input type="password" id="reg-pin" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Create Tenant & Admin</button>
-            </form>
-            <button onclick="navigateTo('screen-landing')" class="w-full mt-4 text-sm text-gray-500 text-center">Back</button>
-        </div>
-    </div>
-
-
-    <div id="screen-dashboard" class="hidden-screen flex w-full h-full bg-white">
-        
-        <div class="w-64 border-r border-gray-200 flex flex-col justify-between">
-            <div>
-                <div class="p-6">
-                    <h2 class="text-xl font-bold">Halkhata</h2>
-                    <p class="text-xs text-gray-500">Bangladesh Edition</p>
-                </div>
-                <nav class="mt-2" id="main-nav">
-                    <a onclick="navigateTo('view-inbox')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item" id="nav-inbox">Inbox</a>
-                    <a onclick="navigateTo('view-customers')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item" id="nav-customers">Customers</a>
-                    <a onclick="navigateTo('view-analytics')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item" id="nav-analytics">Analytics</a>
-                    <a onclick="navigateTo('view-settings')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item" id="nav-settings">Settings</a>
-                </nav>
+<div id="screen-login" class="hidden-screen flex flex-col items-center justify-center w-full h-full bg-gray-50">
+    <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center">Welcome Back</h2>
+        <form onsubmit="handleLogin(event)">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input type="text" id="login-phone" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
-            
-            <div class="relative mt-auto">
-                <div id="profile-menu" class="hidden absolute bottom-full left-4 right-4 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
-                    <button onclick="openEditProfileModal(event)" class="w-full text-left block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">Edit Profile</button>
-                    <button onclick="logout()" class="w-full text-left block px-4 py-3 text-sm text-red-600 hover:bg-red-50 font-medium">Logout</button>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">PIN</label>
+                <input type="password" id="login-pin" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Sign In</button>
+            <p id="login-error" class="text-red-500 text-sm mt-3 text-center hidden">Invalid credentials.</p>
+        </form>
+        <button onclick="navigateTo('screen-landing')" class="w-full mt-4 text-sm text-gray-500 hover:text-gray-800 text-center">Back</button>
+    </div>
+</div>
+
+<div id="screen-register" class="hidden-screen flex flex-col items-center justify-center w-full h-full bg-gray-50 overflow-y-auto py-10">
+    <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md my-auto">
+        <h2 class="text-2xl font-bold mb-6 text-center">Register New Shop</h2>
+        <form onsubmit="handleRegister(event)">
+            <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Shop Name</label><input type="text" id="reg-shop-name" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Business Category</label>
+                <select id="reg-category" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required>
+                    <option value="RETAIL">Retail</option><option value="FOOD_BEVERAGE">Food & Beverage</option><option value="SERVICE">Service</option><option value="OTHER">Other</option>
+                </select>
+            </div>
+            <hr class="mb-6 border-gray-100">
+            <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Admin Full Name</label><input type="text" id="reg-admin-name" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
+            <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label><input type="text" id="reg-phone" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
+            <div class="mb-6"><label class="block text-sm font-medium text-gray-700 mb-1">Create 4-Digit PIN</label><input type="password" id="reg-pin" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" required></div>
+            <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700">Create Tenant & Admin</button>
+        </form>
+        <button onclick="navigateTo('screen-landing')" class="w-full mt-4 text-sm text-gray-500 text-center">Back</button>
+    </div>
+</div>
+
+
+<div id="screen-dashboard" class="hidden-screen flex w-full h-full bg-white">
+
+    <div class="w-64 border-r border-gray-200 flex flex-col justify-between">
+        <div>
+            <div class="p-6">
+                <h2 class="text-xl font-bold">Halkhata</h2>
+                <p class="text-xs text-gray-500">Bangladesh Edition</p>
+            </div>
+
+            <!-- Left Sidebar -->
+            <nav class="mt-2" id="main-nav">
+                <a onclick="navigateTo('view-inbox')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item gap-3" id="nav-inbox">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Inbox
+                </a>
+                <a onclick="navigateTo('view-customers')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item gap-3" id="nav-customers">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    Customers
+                </a>
+                <a onclick="navigateTo('view-analytics')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item gap-3" id="nav-analytics">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    Analytics
+                </a>
+                <a onclick="navigateTo('view-settings')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 nav-item gap-3" id="nav-settings">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Settings
+                </a>
+            </nav>
+        </div>
+
+        <div class="relative mt-auto">
+            <div id="profile-menu" class="hidden absolute bottom-full left-4 right-4 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                <button onclick="openEditProfileModal(event)" class="w-full text-left block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">Edit Profile</button>
+                <button onclick="logout()" class="w-full text-left block px-4 py-3 text-sm text-red-600 hover:bg-red-50 font-medium">Logout</button>
+            </div>
+
+            <div class="p-4 border-t border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition" onclick="toggleProfileMenu(event)">
+                <div class="flex items-center">
+                    <div id="user-avatar" class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold"></div>
+                    <div class="ml-3">
+                        <p id="user-name" class="text-sm font-bold text-gray-900">Loading...</p>
+                        <p id="user-role" class="text-xs text-gray-500"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-1 bg-gray-50 overflow-y-auto">
+        <!----------Inbox_Frontend_Naylah------------------->
+        <div id="view-inbox" class="dashboard-view hidden-screen h-full flex flex-col bg-gray-50">
+
+            <div class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                <!-- Inbox Header -->
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Unified Inbox</h1>
+                    <p class="text-sm text-gray-500">Manage all customer conversations</p>
                 </div>
 
-                <div class="p-4 border-t border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition" onclick="toggleProfileMenu(event)">
-                    <div class="flex items-center">
-                        <div id="user-avatar" class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold"></div>
-                        <div class="ml-3">
-                            <p id="user-name" class="text-sm font-bold text-gray-900">Loading...</p>
-                            <p id="user-role" class="text-xs text-gray-500"></p>
+                <!-- Channel Tabs -->
+                <div class="flex bg-gray-100 p-1 rounded-2xl" role="tablist">
+                    <!-- Facebook Tab -->
+                    <button type="button" role="tab" id="tab-facebook" onclick="switchInboxTab('facebook')"
+                            class="flex items-center space-x-2 px-4 py-1.5 text-sm font-medium rounded-xl transition-all duration-200 bg-white shadow-sm text-gray-900"
+                            data-state="active">
+                        <i class="fab fa-facebook text-blue-600"></i>
+                        <span>Facebook</span>
+                    </button>
+                    <!-- Instagram Tab -->
+                    <button type="button" role="tab" id="tab-instagram" onclick="switchInboxTab('instagram')"
+                            class="flex items-center space-x-2 px-4 py-1.5 text-sm font-medium rounded-xl transition-all duration-200 text-gray-500 hover:text-gray-700"
+                            data-state="inactive">
+                        <i class="fab fa-instagram text-pink-600"></i>
+                        <span>Instagram</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Inbox Area - 3 Columns -->
+            <div class="flex-1 flex overflow-hidden">
+
+                <!-- Column 1: Conversation List -->
+                <div id="column-1" class="w-80 border-r border-gray-200 bg-white flex flex-col" style="min-width: 280px; max-width: 500px;">
+                    <!-- Search -->
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="relative">
+                            <input type="text" placeholder="Search conversations..."
+                                   class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Conversation Items -->
+                    <!-- Facebook Conversations -->
+                    <div id="facebook-conversations" class="flex-1 overflow-y-auto">
+                        <!-- Fatima Rahman -->
+                        <div class="p-4 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition bg-blue-50 border-l-4 border-l-blue-600">
+                            <div class="flex items-start justify-between mb-1">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-sm">FR</div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-bold text-gray-900">Fatima Rahman</p>
+                                        <div class="flex items-center space-x-1 mt-0.5">
+                                            <span class="text-xs text-gray-500">Facebook</span>
+                                            <span class="text-xs text-gray-400">•</span>
+                                            <span class="text-xs text-gray-500">Messenger</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-400">10:25 AM</span>
+                            </div>
+                            <p class="text-sm text-gray-600 ml-13 truncate">Size 40 ase? Dhaka te delivery kot...</p>
+                            <div class="flex items-center space-x-2 mt-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Lead</span>
+                                <span class="text-xs text-gray-400">Assigned: Tasnim</span>
+                            </div>
+                        </div>
+
+                        <!-- Nishat Tasnim -->
+                        <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition">
+                            <div class="flex items-start justify-between mb-1">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm">NT</div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-bold text-gray-900">Nishat Tasnim</p>
+                                        <div class="flex items-center space-x-1 mt-0.5">
+                                            <span class="text-xs text-gray-500">Facebook</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-400">9:45 AM</span>
+                            </div>
+                            <p class="text-sm text-gray-600 ml-13 truncate">Haa, order korte chai. Cash on del...</p>
+                            <div class="flex items-center space-x-2 mt-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Lead</span>
+                                <span class="text-xs text-gray-400">Assigned: Rahim</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instagram Conversations (Hidden by default) -->
+                    <div id="instagram-conversations" class="flex-1 overflow-y-auto hidden">
+                        <!-- Arif Hossain - Instagram (Selected) -->
+                        <div class="p-4 border-b border-gray-100 bg-blue-50 border-l-4 border-l-blue-600 cursor-pointer">
+                            <div class="flex items-start justify-between mb-1">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 text-white flex items-center justify-center font-bold text-sm">
+                                        AH
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-bold text-gray-900">Arif Hossain</p>
+                                        <p class="text-xs text-gray-500">Instagram</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-400">9:10 AM</span>
+                            </div>
+                            <p class="text-sm text-gray-800 ml-13">Bhai amar order ta ekhono ashe nai. Order
+                                number #1234</p>
+                            <div class="flex items-center space-x-2 mt-2 ml-13">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Support</span>
+                                <span class="text-xs text-gray-400">Assigned: Karim</span>
+                            </div>
+                        </div>
+
+                        <!-- Shakib Ahmed - Instagram -->
+                        <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition">
+                            <div class="flex items-start justify-between mb-1">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 text-white flex items-center justify-center font-bold text-sm">
+                                        SA
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-bold text-gray-900">Shakib Ahmed</p>
+                                        <p class="text-xs text-gray-500">Instagram</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-400">Yesterday</span>
+                            </div>
+                            <p class="text-sm text-gray-600 ml-13 truncate">Payment verified! Your order ...</p>
+                            <div class="flex items-center space-x-2 mt-2 ml-13">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Support</span>
+                                <span class="text-xs text-gray-400">Assigned: Tasnim</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resize Handle between Col 1 and Col 2 -->
+                <div class="resize-handle" id="resize-1"></div>
+
+                <!-- Column 2: Message Thread -->
+                <div class="flex-1 flex flex-col bg-gray-50">
+                    <!-- Facebook Thread -->
+                    <div id="facebook-thread" class="flex-1 flex flex-col">
+                        <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div id="chat-header-avatar" class="w-10 h-10 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold">FR</div>
+                                <div class="ml-3">
+                                    <p id="chat-header-name" class="font-bold text-gray-900">Fatima Rahman</p>
+                                    <div class="flex items-center space-x-2 text-xs text-gray-500">
+                                        <span>Facebook</span>
+                                        <span>•</span>
+                                        <span>Messenger</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="openOrderModal('Fatima Rahman', '01712345678', 'Dhanmondi 15, Dhaka')"
+                                        class="px-3 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-100 border border-gray-300 shadow-sm flex items-center gap-2">
+                                    🛒 Create Order
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4" style="min-height: 350px; max-height: calc(100vh - 280px);">
+                        </div>
+
+                        <div class="bg-white border-t border-gray-200 p-1">
+                            <div class="flex items-end space-x-2">
+
+                                <div class="flex flex-col">
+                                    <button class="p-2 text-gray-400 hover:text-blue-600" title="Voice message">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                                        </svg>
+                                    </button>
+
+                                    <button class="p-2 text-gray-400 hover:text-gray-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="flex-1">
+                                    <textarea id="chat-message-input" rows="2" placeholder="Type your message... (Supports Bangla/Banglish)" class="w-full px-4 py-2 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"></textarea>
+                                </div>
+
+                                <div class="flex flex-col space-y-2 items-center">
+                                    <button onclick="generateAiDraft()" class="p-2 text-gray-400 hover:text-purple-600" title="AI Suggested Reply">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                        </svg>
+                                    </button>
+
+                                    <button onclick="sendMessage()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Facebook Thread -->
+
+                    <!-- Instagram Thread (Hidden by default) -->
+                    <div id="instagram-thread" class="flex-1 flex flex-col hidden">
+                        <!-- Conversation Header for Arif -->
+                        <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 text-white flex items-center justify-center font-bold">AH</div>
+                                <div class="ml-3">
+                                    <p class="font-bold text-gray-900">Arif Hossain</p>
+                                    <p class="text-xs text-gray-500">Instagram</p>
+                                </div>
+                            </div>
+                            <button onclick="openOrderModal('Arif Hossain', '01823456789', 'Mirpur 10, Dhaka')"
+                                    class="px-3 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-100 border border-gray-300 shadow-sm flex items-center gap-2">
+                                🛒 Create Order
+                            </button>
+                        </div>
+
+                        <!-- Messages for Arif -->
+                        <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                            <!-- Customer Message -->
+                            <div class="flex items-start">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">AH</div>
+                                <div class="ml-3 max-w-md">
+                                    <div class="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
+                                        <p class="text-sm text-gray-800">Bhai amar order ta ekhono ashe nai. Order number #1234</p>
+                                    </div>
+                                    <span class="text-xs text-gray-400 mt-1 block">9:10 AM</span>
+                                </div>
+                            </div>
+
+                            <!-- Agent Response 1 -->
+                            <div class="flex items-start justify-end">
+                                <div class="mr-3 max-w-md">
+                                    <div class="bg-blue-600 rounded-lg p-3 shadow-sm">
+                                        <p class="text-sm text-white">Let me check the tracking status for you. One moment please.</p>
+                                    </div>
+                                    <span class="text-xs text-gray-400 mt-1 block text-right">9:12 AM</span>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">ME</div>
+                            </div>
+
+                            <!-- Agent Response 2 -->
+                            <div class="flex items-start justify-end">
+                                <div class="mr-3 max-w-md">
+                                    <div class="bg-blue-600 rounded-lg p-3 shadow-sm">
+                                        <p class="text-sm text-white">Your order is currently with Pathao and will be delivered today by 6 PM.</p>
+                                    </div>
+                                    <span class="text-xs text-gray-400 mt-1 block text-right">9:15 AM</span>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">ME</div>
+                            </div>
+                        </div>
+
+                        <!-- Message Composer -->
+                        <div class="bg-white border-t border-gray-200 p-1">
+                            <div class="flex items-end space-x-2">
+
+                                <!-- Voice message -->
+                                <div class="flex flex-col">
+                                    <button class="p-2 text-gray-400 hover:text-blue-600" title="Voice message">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Attachment Button -->
+                                    <button class="p-2 text-gray-400 hover:text-gray-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <!-- Text Area -->
+                                <div class="flex-1">
+                                    <textarea rows="2" placeholder="Type your message... (Supports Bangla/Banglish)" class="w-full px-4 py-2 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"></textarea>
+                                </div>
+
+                                <!-- AI Suggested Reply -->
+                                <div class="flex flex-col space-y-2 items-center">
+                                    <button onclick="generateAiDraft()" class="p-2 text-gray-400 hover:text-purple-600" title="AI Suggested Reply">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Send Button -->
+                                    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Instagram Thread -->
+                </div>
+
+                <!-- Resize Handle between Col 2 and Col 3 -->
+                <div class="resize-handle" id="resize-2"></div>
+
+                <!-- Column 3: Customer 360 Sidebar -->
+                <div id="column-3" class="w-80 border-l border-gray-200 bg-white overflow-y-auto p-4" style="min-width: 280px; max-width: 450px;">
+                    <!-- Customer Info -->
+                    <!-- Facebook Sidebar -->
+                    <div id="facebook-sidebar">
+                        <!-- Customer Profile - Facebook -->
+                        <div class="border-b border-gray-100 pb-4">
+                            <h3 class="text-sm font-bold text-gray-900 mb-3">Customer Profile</h3>
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-lg">FR</div>
+                                <div class="ml-3">
+                                    <p class="font-bold text-gray-900">Fatima Rahman</p>
+                                    <p class="text-xs text-gray-500">Facebook</p>
+                                </div>
+                            </div>
+                            <!-- Add icons like Figma -->
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2 text-sm">
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                    </svg>
+                                    <span class="text-gray-700">01712345678</span>
+                                </div>
+                                <div class="flex items-start gap-2 text-sm">
+                                    <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <span class="text-gray-700">Dhanmondi 15, Dhaka</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm">
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                    </svg>
+                                    <span class="text-gray-700">Total Spent: <span class="font-semibold">2,050 BDT</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Assigned To -->
+                        <div class="border-b border-gray-100 py-4">
+                            <h3 class="text-sm font-bold text-gray-900 mb-3">Assigned To</h3>
+                            <select class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>Unassigned</option>
+                                <option selected>Tasnim</option>
+                                <option>Rahim</option>
+                                <option>Karim</option>
+                            </select>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="border-b border-gray-100 py-4">
+                            <div class="flex items-center gap-2 mb-3">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l5 5a2 2 0 01.586 1.414V19a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"></path>
+                                </svg>
+                                <h3 class="text-sm font-bold text-gray-900">Tags</h3>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span onclick="toggleTag(this)" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800 border border-pink-200 tag-badge">Bkash Pending</span>
+                                <span onclick="toggleTag(this)" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 tag-badge">Outside Dhaka</span>
+                                <span onclick="toggleTag(this)" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200 tag-badge">Urgent</span>
+                                <span onclick="toggleTag(this)" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-300 tag-badge">VIP</span>
+                            </div>
+                        </div>
+
+                        <!-- Order History -->
+                        <div class="border-b border-gray-100 py-4">
+                            <h3 class="text-sm font-bold text-gray-900 mb-3">Order History</h3>
+                            <div class="space-y-3">
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-xs font-bold text-gray-900">#01</span>
+                                        <span class="text-xs text-green-600 font-medium">Delivered</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700">T-Shirt (Black, L)</p>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <span class="text-xs text-gray-500">Mar 15, 2026</span>
+                                        <span class="text-sm font-bold text-gray-900">850 BDT</span>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-xs font-bold text-gray-900">#02</span>
+                                        <span class="text-xs text-green-600 font-medium">Delivered</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700">Jeans (Blue, 32)</p>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <span class="text-xs text-gray-500">Feb 20, 2026</span>
+                                        <span class="text-sm font-bold text-gray-900">1,200 BDT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Internal Notes -->
+                        <div class="py-4">
+                            <h3 class="text-sm font-bold text-gray-900 mb-3">Internal Notes</h3>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                                <p class="text-sm text-gray-700">Customer previously bought from us. Check if we can offer free delivery.</p>
+                                <p class="text-xs text-gray-500 mt-2">Rahim · Mar 18, 10:26 AM</p>
+                            </div>
+                            <textarea placeholder="Add a private note (team only)..."
+                                      class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" rows="2"></textarea>
+                            <button class="mt-2 w-full px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">Add Note</button>
+                        </div>
+                    </div>
+
+                    <!-- Instagram Sidebar (Hidden by default) -->
+                    <div id="instagram-sidebar" class="hidden">
+                        <!-- Customer Info for Arif -->
+                        <div class="border-b border-gray-100 pb-4">
+                            <h3 class="text-sm font-bold text-gray-900 mb-3">Customer Profile</h3>
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 text-white flex items-center justify-center font-bold text-lg">AH</div>
+                                <div class="ml-3">
+                                    <p class="font-bold text-gray-900">Arif Hossain</p>
+                                    <p class="text-xs text-gray-500">Instagram</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2 text-sm">
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                    </svg>
+                                    <span class="text-gray-700">01823456789</span>
+                                </div>
+                                <div class="flex items-start gap-2 text-sm">
+                                    <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <span class="text-gray-700">Mirpur 10, Dhaka</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm">
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                    </svg>
+                                    <span class="text-gray-700">Total Spent: <span class="font-semibold">2,500 BDT</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Assigned To -->
+                        <div class="border-b border-gray-100 py-4">
+                            <h3 class="text-sm font-bold text-gray-900 mb-3">Assigned To</h3>
+                            <select class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                                <option>Unassigned</option>
+                                <option>Rahim</option>
+                                <option selected>Karim</option>
+                                <option>Tasnim</option>
+                            </select>
+                        </div>
+
+                        <!-- Custom Tags -->
+                        <div class="border-b border-gray-100 py-4">
+                            <div class="flex items-center gap-2 mb-3">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l5 5a2 2 0 01.586 1.414V19a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"></path>
+                                </svg>
+                                <h3 class="text-sm font-bold text-gray-900">Custom Tags</h3>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span onclick="toggleTag(this)" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800 border border-pink-200 tag-badge">Bkash Pending</span>
+                                <span onclick="toggleTag(this)" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 tag-badge">Dhaka Inside</span>
+                                <span onclick="toggleTag(this)" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200 tag-badge">Urgent</span>
+                                <span onclick="toggleTag(this)" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-300 tag-badge">VIP</span>
+                            </div>
+                        </div>
+
+                        <!-- Order History -->
+                        <div class="border-b border-gray-100 py-4">
+                            <div class="flex items-center gap-2 mb-3">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                </svg>
+                                <h3 class="text-sm font-bold text-gray-900">Order History</h3>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs font-bold text-gray-900">#03</span>
+                                    <span class="text-xs text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded-full">Delivered</span>
+                                </div>
+                                <p class="text-sm font-medium text-gray-900">Sneakers (White, 42)</p>
+                                <p class="text-xs text-gray-500 mt-1">Mar 10, 2026</p>
+                                <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-200">
+                                    <span class="text-xs text-gray-500">Total</span>
+                                    <span class="text-sm font-bold text-gray-900">2,500 BDT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Internal Notes -->
+                        <div class="py-4">
+                            <div class="flex items-center gap-2 mb-3">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                <h3 class="text-sm font-bold text-gray-900">Internal Notes</h3>
+                            </div>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                                <p class="text-sm text-gray-700">Customer waiting for order #1234. Checked with Pathao - delivery today.</p>
+                                <p class="text-xs text-gray-500 mt-2">Karim · Today, 9:12 AM</p>
+                            </div>
+                            <textarea placeholder="Add a private note..." class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none" rows="2"></textarea>
+                            <button class="mt-2 w-full px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">Add Note</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <!----------Inbox_Frontend_Naylah------------------->
 
-        <div class="flex-1 bg-gray-50 overflow-y-auto">
-            
-            <div id="view-inbox" class="dashboard-view hidden-screen h-full flex items-center justify-center">
-                <div class="text-center text-gray-400"><h2 class="text-xl mt-4">Inbox</h2><p class="text-sm">Message integration coming soon.</p></div>
+        <!----------Customer_Frontend_Naylah---------------->
+        <div id="view-customers" class="dashboard-view hidden-screen h-full flex flex-col bg-gray-50">
+            <!-- Header -->
+            <div class="bg-white border-b border-gray-200 px-6 py-4">
+                <h1 class="text-2xl font-bold text-gray-900">Customers</h1>
+                <p class="text-sm text-gray-500">Manage your customer database</p>
             </div>
 
-            <div id="view-customers" class="dashboard-view hidden-screen h-full flex items-center justify-center">
-                <div class="text-center text-gray-400"><h2 class="text-xl mt-4">Customers</h2><p class="text-sm">Customer database coming soon.</p></div>
-            </div>
-
-            <div id="view-analytics" class="dashboard-view hidden-screen h-full flex items-center justify-center">
-                <div class="text-center text-gray-400"><h2 class="text-xl mt-4">Analytics</h2><p class="text-sm">Charts and reports coming soon.</p></div>
-            </div>
-
-            <div id="view-settings" class="dashboard-view hidden-screen p-8 max-w-4xl mx-auto">
-                <div class="mb-8 border-b border-gray-200 pb-4">
-                    <h1 class="text-3xl font-bold text-gray-900">Settings</h1>
-                    <p class="text-gray-500 mt-1 text-sm">Configure your CRM platform</p>
-                </div>
-
-                <div class="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
-                    <h3 class="text-lg font-bold mb-4">Business Information</h3>
-                    <div id="business-info-container"></div>
-                </div>
-
-                <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                    <h3 class="text-lg font-bold mb-4">Team Members</h3>
-                    <div id="team-members-container"></div>
-                    <button id="add-member-btn" onclick="openStaffModal()" class="w-full mt-4 py-3 border border-gray-200 rounded-lg text-sm font-bold text-gray-800 hover:bg-gray-50 hidden">
-                        Add Team Member
+            <!-- Search and Actions -->
+            <div class="bg-white border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="relative flex-1 max-w-md">
+                        <input type="text" placeholder="Search by name or phone number..."
+                               class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-200">
+                        + Add Customer
                     </button>
                 </div>
             </div>
+
+            <!-- Customers Table -->
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Customer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Platform</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Contact</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Location</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Orders</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Total Spent</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Last Contact</th>
+                        <th class="px-2 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                    <!-- Fatima Rahman -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-xs">FR</div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">Fatima Rahman</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center text-sm font-medium text-gray-700">
+                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9.19795 21.5H13.198V13.4901H16.8021L17.1979 9.50977H13.198V7.5C13.198 6.94772 13.6457 6.5 14.198 6.5H17.1979V2.5H14.198C11.4365 2.5 9.19795 4.73858 9.19795 7.5V9.50977H7.19795L6.80206 13.4901H9.19795V21.5Z"/>
+                                    </svg>
+                                    Facebook
+                                </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01712345678</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Dhanmondi 15, Dhaka</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">2</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">2,050 BDT</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 18, 2026</td>
+                        <td class="w-px pl-0 pr-6 py-4 whitespace-nowrap text-sm">
+                            <button class="bg-white border border-gray-300 text-gray-900 px-1.5 py-1.5 rounded-md hover:bg-gray-100 font-medium">View Profile</button>
+                        </td>
+                    </tr>
+                    <!-- Arif Hossain -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-xs">AH</div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">Arif Hossain</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center text-sm font-medium text-gray-700">
+                                    <svg class="w-5 h-5 mr-2 text-pink-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                                    </svg>
+                                    Instagram
+                                </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01823456789</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mirpur 10, Dhaka</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">2,500 BDT</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 18, 2026</td>
+                        <td class="w-px pl-0 pr-6 py-4 whitespace-nowrap text-sm">
+                            <button class="bg-white border border-gray-300 text-gray-900 px-1.5 py-1.5 rounded-md hover:bg-gray-100 font-medium">View Profile</button>
+                        </td>
+                    </tr>
+                    <!-- Nishat Tasnim -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-xs">NT</div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">Nishat Tasnim</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center text-sm font-medium text-gray-700">
+                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9.19795 21.5H13.198V13.4901H16.8021L17.1979 9.50977H13.198V7.5C13.198 6.94772 13.6457 6.5 14.198 6.5H17.1979V2.5H14.198C11.4365 2.5 9.19795 4.73858 9.19795 7.5V9.50977H7.19795L6.80206 13.4901H9.19795V21.5Z"/>
+                                    </svg>
+                                    Facebook
+                                </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01934567890</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Uttara Sector 7, Dhaka</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">0</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">0 BDT</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 18, 2026</td>
+                        <td class="w-px pl-0 pr-6 py-4 whitespace-nowrap text-sm">
+                            <button class="bg-white border border-gray-300 text-gray-900 px-1.5 py-1.5 rounded-md hover:bg-gray-100 font-medium">View Profile</button>
+                        </td>
+                    </tr>
+                    <!-- Shakib Ahmed -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-xs">SA</div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">Shakib Ahmed</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center text-sm font-medium text-gray-700">
+                                    <svg class="w-5 h-5 mr-2 text-pink-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                                    </svg>
+                                    Instagram
+                                </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01645678901</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Chittagong, GEC Circle</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">2</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">4,450 BDT</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 17, 2026</td>
+                        <td class="w-px pl-0 pr-6 py-4 whitespace-nowrap text-sm">
+                            <button class="bg-white border border-gray-300 text-gray-900 px-1.5 py-1.5 rounded-md hover:bg-gray-100 font-medium">View Profile</button>
+                        </td>
+                    </tr>
+                    <!-- Ayesha Siddiqua -->
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs">AS</div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">Ayesha Siddiqua</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center text-sm font-medium text-gray-700">
+                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9.19795 21.5H13.198V13.4901H16.8021L17.1979 9.50977H13.198V7.5C13.198 6.94772 13.6457 6.5 14.198 6.5H17.1979V2.5H14.198C11.4365 2.5 9.19795 4.73858 9.19795 7.5V9.50977H7.19795L6.80206 13.4901H9.19795V21.5Z"/>
+                                    </svg>
+                                    Facebook
+                                </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01756789012</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Gulshan 2, Dhaka</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">1,800 BDT</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 18, 2026</td>
+                        <td class="w-px pl-0 pr-6 py-4 whitespace-nowrap text-sm">
+                            <button class="bg-white border border-gray-300 text-gray-900 px-1.5 py-1.5 rounded-md hover:bg-gray-100 font-medium">View Profile</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+        <!----------Customer_Frontend_Naylah---------------->
 
+        <!----------Analytics_Frontend_Naylah---------------->
+        <div id="view-analytics" class="dashboard-view hidden-screen h-full flex flex-col bg-gray-50 overflow-y-auto">
+            <!-- Header -->
+            <div class="bg-white border-b border-gray-200 px-6 py-4">
+                <h1 class="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+                <p class="text-sm text-gray-500">Track performance and insights</p>
+            </div>
 
-    <div id="staff-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div class="bg-white p-6 rounded-xl shadow-lg w-96">
-            <h3 class="text-lg font-bold mb-4">Add New Staff Member</h3>
-            <form onsubmit="handleAddStaff(event)">
-                <div class="mb-4"><label class="block text-sm font-medium mb-1">Full Name</label><input type="text" id="staff-name" class="w-full px-3 py-2 border rounded" required></div>
-                <div class="mb-4"><label class="block text-sm font-medium mb-1">Phone Number</label><input type="text" id="staff-phone" class="w-full px-3 py-2 border rounded" required></div>
-                <div class="mb-6"><label class="block text-sm font-medium mb-1">Assign PIN</label><input type="password" id="staff-pin" class="w-full px-3 py-2 border rounded" required></div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeStaffModal()" class="px-4 py-2 text-gray-500 border rounded hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Add Staff</button>
+            <div class="p-2">
+                <!-- Date Range Selector -->
+                <div class="flex justify-end mb-2">
+                    <select class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white">
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                        <option>This Month</option>
+                    </select>
                 </div>
-            </form>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg border border-gray-200 p-5">
+                        <p class="text-sm text-gray-500 mb-1">Avg Response Time</p>
+                        <p class="text-3xl font-bold text-gray-900">2.4 <span class="text-sm font-normal text-gray-500">mins</span></p>
+                        <p class="text-xs text-green-600 mt-2">↑ 15% vs last week</p>
+                    </div>
+                    <div class="bg-white rounded-lg border border-gray-200 p-5">
+                        <p class="text-sm text-gray-500 mb-1">Total Conversations</p>
+                        <p class="text-3xl font-bold text-gray-900">225</p>
+                        <p class="text-xs text-gray-500 mt-2">Last 7 days</p>
+                    </div>
+                    <div class="bg-white rounded-lg border border-gray-200 p-5">
+                        <p class="text-sm text-gray-500 mb-1">AI Auto-Resolved</p>
+                        <p class="text-3xl font-bold text-gray-900">67%</p>
+                        <p class="text-xs text-green-600 mt-2">↑ 8% vs last week</p>
+                    </div>
+                    <div class="bg-white rounded-lg border border-gray-200 p-5">
+                        <p class="text-sm text-gray-500 mb-1">New Leads</p>
+                        <p class="text-3xl font-bold text-gray-900">42</p>
+                        <p class="text-xs text-green-600 mt-2">↑ 14% vs last week</p>
+                    </div>
+                </div>
+
+                <!-- Double-line graph, Bar chart, Pie chart and Progress bars -->
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+                    <!-- Double-line graph -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="font-medium text-gray-900 mb-4">Daily Message Volume</h3>
+                        <div class="relative h-64 w-full">
+                            <canvas id="volumeChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Bar chart -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="font-medium text-gray-900 mb-4">Channel Distribution</h3>
+                        <div class="relative h-64 w-full">
+                            <canvas id="channelChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Pie chart -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="font-medium text-gray-900 mb-4">Intent Distribution</h3>
+                        <div class="relative h-64 w-full flex justify-center pb-4">
+                            <canvas id="intentPieChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Progress bars -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center">
+                        <h3 class="font-medium text-gray-900 mb-8">AI Performance Breakdown</h3>
+
+                        <div class="space-y-8">
+                            <div>
+                                <div class="flex justify-between text-sm mb-2.5">
+                                    <span class="text-gray-700 font-medium">Auto-Resolved by AI</span>
+                                    <span class="font-bold text-purple-600">67%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-2.5">
+                                    <div class="bg-purple-500 h-2.5 rounded-full" style="width: 67%"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-sm mb-2.5">
+                                    <span class="text-gray-700 font-medium">Required Human Agent</span>
+                                    <span class="font-bold text-gray-600">33%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-2.5">
+                                    <div class="bg-gray-400 h-2.5 rounded-full" style="width: 33%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="text-sm text-gray-500 mt-10 p-4 bg-gray-50 rounded-xl border border-gray-100 leading-relaxed">
+                            The AI is successfully handling the majority of incoming queries, keeping your agents' workload manageable and reducing average response times.
+                        </p>
+                    </div>
+                </div>
+
+                <script>
+                    // Global Styling Defaults
+                    Chart.defaults.font.family = "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+                    Chart.defaults.color = '#6b7280';
+                    Chart.defaults.scale.grid.color = '#f3f4f6';
+                    Chart.defaults.plugins.tooltip.padding = 10;
+                    Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+                    // 1. Daily Message Volume (2 Lines)
+                    const ctxVolume = document.getElementById('volumeChart').getContext('2d');
+                    new Chart(ctxVolume, {
+                        type: 'line',
+                        data: {
+                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                            datasets: [
+                                {
+                                    label: ' Facebook               ',
+                                    data: [45, 60, 50, 90, 65, 115, 145],
+                                    borderColor: '#3b82f6', // Blue
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                    borderWidth: 2,
+                                    tension: 0.4,
+                                    fill: true,
+                                    pointBackgroundColor: '#fff',
+                                    pointBorderColor: '#3b82f6'
+                                },
+                                {
+                                    label: ' Instagram',
+                                    data: [20, 35, 40, 55, 45, 60, 80],
+                                    borderColor: '#ec4899', // Pink
+                                    backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                                    borderWidth: 2,
+                                    tension: 0.4,
+                                    fill: true,
+                                    pointBackgroundColor: '#fff',
+                                    pointBorderColor: '#ec4899'
+                                }
+                            ]
+                        },
+
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8} }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, border: { display: false } },
+                                x: { grid: { display: false }, border: { display: false } }
+                            }
+                        }
+                    });
+
+                    // 2. Channel Distribution (Bar Chart)
+                    const ctxChannel = document.getElementById('channelChart').getContext('2d');
+                    new Chart(ctxChannel, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Facebook', 'Instagram'],
+                            datasets: [{
+                                label: 'Total Messages',
+                                data: [145, 80],
+                                backgroundColor: ['#3b82f6', '#ec4899'], // Blue and Pink
+                                borderRadius: 8,
+                                barThickness: 120
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, border: { display: false } },
+                                x: { grid: { display: false }, border: { display: false } }
+                            }
+                        }
+                    });
+
+                    // 3. Intent Distribution (Pie Chart)
+                    const ctxIntent = document.getElementById('intentPieChart').getContext('2d');
+                    new Chart(ctxIntent, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Lead', 'Support', 'General'],
+                            datasets: [{
+                                data: [65, 30, 5],
+                                backgroundColor: ['#10b981', '#3b82f6', '#9ca3af'], // Green, Blue, Gray
+                                borderWidth: 2,
+                                borderColor: '#ffffff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: { usePointStyle: true, padding: 20 }
+                                }
+                            }
+                        }
+                    });
+                </script>
+
+                <!-- Performance Insights -->
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+                    <h2 class="text-lg font-medium text-gray-900 mb-5">Performance Insights</h2>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div class="bg-green-50 border border-green-100 rounded-xl p-5">
+                            <h4 class="font-bold text-green-900 mb-2 flex items-center">
+                                <span class="mr-2 text-lg">✅</span> Strong Performance
+                            </h4>
+                            <p class="text-sm text-green-700 leading-relaxed">Response times are 15% faster than last week. Keep it up!</p>
+                        </div>
+
+                        <div class="bg-purple-50 border border-purple-100 rounded-xl p-5">
+                            <h4 class="font-bold text-purple-900 mb-2 flex items-center">
+                                <span class="mr-2 text-lg">🤖</span> AI Efficiency
+                            </h4>
+                            <p class="text-sm text-purple-700 leading-relaxed">AI is handling common queries about pricing and delivery times effectively.</p>
+                        </div>
+
+                        <div class="bg-amber-50 border border-amber-100 rounded-xl p-5">
+                            <h4 class="font-bold text-amber-900 mb-2 flex items-center">
+                                <span class="mr-2 text-lg">💡</span> Recommendation
+                            </h4>
+                            <p class="text-sm text-amber-700 leading-relaxed">Consider adding more team members during peak hours (2-6 PM).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+        <!----------Analytics_Frontend_Naylah---------------->
 
+        <!----------Settings_Frontend_Izaz_&_Naylah---------------->
+        <div id="view-settings" class="dashboard-view hidden-screen h-full flex flex-col bg-gray-50 overflow-y-auto">
+            <div class="bg-white border-b border-gray-200 px-6 py-5">
+                <h1 class="text-2xl font-bold text-gray-900">Settings</h1>
+                <p class="text-sm text-gray-500">Configure your CRM platform</p>
+            </div>
 
-    <script>
-        // ----------------------------------------------------
-        // 4A: ROUTING ENGINE (Handles SPA Navigation)
-        // ----------------------------------------------------
-        function navigateTo(targetId, pushToHistory = true) {
-            const token = localStorage.getItem('crm_token');
-            if (!token && !['screen-landing', 'screen-login', 'screen-register'].includes(targetId)) targetId = 'screen-landing';
-            
-            document.querySelectorAll('#screen-landing, #screen-login, #screen-register, #screen-dashboard').forEach(el => el.classList.add('hidden-screen'));
+            <div class="p-6 max-w-4xl w-full mx-auto space-y-6">
 
-            if (targetId.startsWith('view-')) {
-                document.getElementById('screen-dashboard').classList.remove('hidden-screen');
-                document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('hidden-screen'));
-                document.getElementById(targetId).classList.remove('hidden-screen');
-                
-                document.querySelectorAll('.nav-item').forEach(el => {
-                    el.classList.remove('text-blue-600', 'bg-blue-50', 'font-medium', 'border-r-4', 'border-blue-600');
-                });
-                document.getElementById('nav-' + targetId.split('-')[1]).classList.add('text-blue-600', 'bg-blue-50', 'font-medium', 'border-r-4', 'border-blue-600');
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">Business Information</h2>
 
-                if(targetId === 'view-settings') fetchSettingsData();
-            } else { document.getElementById(targetId).classList.remove('hidden-screen'); }
+                    <div id="business-info-container"></div>
+                </div>
 
-            if (pushToHistory) window.history.pushState({ screen: targetId }, "", "?view=" + targetId);
-        }
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">Team Members</h2>
 
-        window.addEventListener('popstate', (event) => {
-            if (event.state && event.state.screen) navigateTo(event.state.screen, false); 
-            else navigateTo('screen-landing', false);
-        });
+                    <div id="team-members-container" class="space-y-3"></div>
 
-        window.onload = () => {
-            const view = new URLSearchParams(window.location.search).get('view');
-            const token = localStorage.getItem('crm_token');
-            if (token && (!view || view === 'screen-login')) navigateTo('view-inbox', false);
-            else if (view) navigateTo(view, false);
-            else navigateTo('screen-landing', false);
-        };
+                    <button id="add-member-btn" onclick="openStaffModal()" class="w-full mt-4 py-2.5 border border-gray-200 bg-white rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 hidden transition-colors shadow-sm">
+                        + Add Team Member
+                    </button>
+                </div>
 
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-900 mb-1">Meta Platform Integration</h2>
+                    <p class="text-sm text-gray-500 mb-6">Connect your Facebook Page and Instagram Business Account to receive messages</p>
 
-        // ----------------------------------------------------
-        // 4B: UI HELPERS & AUTHENTICATION API CALLS
-        // ----------------------------------------------------
-        
-        // Toggle the profile menu popup
-        function toggleProfileMenu(e) {
-            e.stopPropagation(); // Stops the click from immediately triggering the window listener below
-            document.getElementById('profile-menu').classList.toggle('hidden');
-        }
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Webhook URL <span class="text-xs text-gray-400 font-normal ml-1">(Use this URL in your Meta App webhook configuration)</span></label>
+                            <div class="flex shadow-sm rounded-lg">
+                                <input type="text" readonly value="https://your-app.com/api/webhook" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-l-lg text-sm text-gray-600 focus:outline-none">
+                                <button class="px-4 py-2 bg-white border-t border-b border-r border-gray-200 rounded-r-lg text-sm font-medium text-gray-900 hover:bg-gray-100 transition-colors">Copy</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Verify Token</label>
+                            <div class="flex shadow-sm rounded-lg">
+                                <input type="text" readonly value="your_verify_token_123" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-l-lg text-sm text-gray-600 focus:outline-none">
+                                <button class="px-4 py-2 bg-white border-t border-b border-r border-gray-200 rounded-r-lg text-sm font-medium text-gray-900 hover:bg-gray-100 transition-colors">Copy</button>
+                            </div>
+                        </div>
+                    </div>
 
-        // If the user clicks anywhere else on the screen, close the menu
-        window.addEventListener('click', function() {
-            const menu = document.getElementById('profile-menu');
-            if (menu && !menu.classList.contains('hidden')) {
-                menu.classList.add('hidden');
+                    <div class="border-t border-gray-100 pt-6 space-y-4">
+                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
+                            <div class="flex items-center space-x-3">
+                                <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M9.19795 21.5H13.198V13.4901H16.8021L17.1979 9.50977H13.198V7.5C13.198 6.94772 13.6457 6.5 14.198 6.5H17.1979V2.5H14.198C11.4365 2.5 9.19795 4.73858 9.19795 7.5V9.50977H7.19795L6.80206 13.4901H9.19795V21.5Z"/></svg>
+                                <div>
+                                    <p class="font-bold text-gray-900">Facebook Page</p>
+                                    <p class="text-sm text-gray-500">Status: <span class="text-gray-400">Not Connected</span></p>
+                                </div>
+                            </div>
+                            <button class="px-6 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-900 shadow-sm transition-colors">Connect Facebook</button>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
+                            <div class="flex items-center space-x-3">
+                                <svg class="w-8 h-8 text-pink-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                                <div>
+                                    <p class="font-bold text-gray-900">Instagram Account</p>
+                                    <p class="text-sm text-gray-500">Status: <span class="text-gray-400">Not Connected</span></p>
+                                </div>
+                            </div>
+                            <button class="px-6 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-900 shadow-sm transition-colors">Connect Instagram</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-900 mb-6">AI Automation Settings</h2>
+
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-bold text-gray-900">Enable AI Assistant</p>
+                                <p class="text-sm text-gray-500">AI will automatically respond to common queries</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-bold text-gray-900">Banglish Support</p>
+                                <p class="text-sm text-gray-500">Understand Bengali written in English (e.g., "Dam koto")</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-bold text-gray-900">Auto-Reply</p>
+                                <p class="text-sm text-gray-500">Send automatic replies when agents are offline</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
+                            </label>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-100">
+                            <p class="font-bold text-gray-900 mb-1 mt-2">Knowledge Base (Product Catalog)</p>
+                            <p class="text-sm text-gray-500 mb-3">AI will use this to answer questions about products and prices</p>
+
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+                                <svg class="mx-auto h-10 w-10 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                <p class="text-sm font-medium text-gray-700">Upload your product list (PDF, TXT, or CSV)</p>
+                                <p class="text-xs text-gray-500 mt-1">Drag and drop or click to browse</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-900 mb-3">Auto-Reply Message Template</h2>
+                    <div>
+                        <textarea rows="2" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 resize-none shadow-inner">Thanks for reaching out! We will get back to you soon.</textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4 pb-10">
+                    <button class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-50 shadow-sm">Cancel</button>
+                    <button class="px-6 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-900 shadow-sm transition-colors">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="staff-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm">
+            <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
+                <div class="flex justify-between items-center mb-5">
+                    <h3 class="text-xl font-bold text-gray-900">Add New Staff Member</h3>
+                    <button onclick="closeStaffModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <form onsubmit="handleAddStaff(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="staff-name" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <input type="text" id="staff-phone" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Assign PIN</label>
+                        <input type="password" id="staff-pin" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="closeStaffModal()" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm transition-colors">Cancel</button>
+                        <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm transition-colors">Add Staff</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!----------Settings_Frontend_Izaz_&_Naylah---------------->
+
+        <script>
+            // ----------------------------------------------------
+            // 4A: ROUTING ENGINE (Handles SPA Navigation)
+            // ----------------------------------------------------
+            function navigateTo(targetId, pushToHistory = true) {
+                const token = localStorage.getItem('crm_token');
+                if (!token && !['screen-landing', 'screen-login', 'screen-register'].includes(targetId)) targetId = 'screen-landing';
+
+                document.querySelectorAll('#screen-landing, #screen-login, #screen-register, #screen-dashboard').forEach(el => el.classList.add('hidden-screen'));
+
+                if (targetId.startsWith('view-')) {
+                    document.getElementById('screen-dashboard').classList.remove('hidden-screen');
+                    document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('hidden-screen'));
+                    document.getElementById(targetId).classList.remove('hidden-screen');
+
+                    document.querySelectorAll('.nav-item').forEach(el => {
+                        el.classList.remove('text-blue-600', 'bg-blue-50', 'font-medium', 'border-r-4', 'border-blue-600');
+                    });
+                    document.getElementById('nav-' + targetId.split('-')[1]).classList.add('text-blue-600', 'bg-blue-50', 'font-medium', 'border-r-4', 'border-blue-600');
+
+                    if(targetId === 'view-settings') fetchSettingsData();
+                    if(targetId === 'view-inbox') fetchInboxData();
+                    if(targetId === 'view-customers') fetchCustomersData();
+                    if(targetId === 'view-analytics') fetchAnalyticsData();
+
+                } else { document.getElementById(targetId).classList.remove('hidden-screen'); }
+
+                if (pushToHistory) window.history.pushState({ screen: targetId }, "", "?view=" + targetId);
             }
-        });
 
-        // Placeholder for the Edit Profile button
-        function openEditProfileModal(e) {
-            e.stopPropagation(); 
-            document.getElementById('profile-menu').classList.add('hidden');
-            alert("The Edit Profile feature is coming next!");
-        }
+            window.addEventListener('popstate', (event) => {
+                if (event.state && event.state.screen) navigateTo(event.state.screen, false);
+                else navigateTo('screen-landing', false);
+            });
 
-        // UPDATED: Fetch real name from backend
-        async function setSidebarUser(token) {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            document.getElementById('user-role').innerText = payload.role.replace('ROLE_', '');
-            
-            // Put the phone number there temporarily so the UI doesn't look empty
-            document.getElementById('user-name').innerText = payload.sub; 
-            document.getElementById('user-avatar').innerText = payload.sub.charAt(0);
+            window.onload = () => {
+                const view = new URLSearchParams(window.location.search).get('view');
+                const token = localStorage.getItem('crm_token');
+                if (token && (!view || view === 'screen-login')) navigateTo('view-inbox', false);
+                else if (view) navigateTo(view, false);
+                else navigateTo('screen-landing', false);
+            };
 
-            // Fetch the actual Full Name from our new backend endpoint!
-            try {
-                const res = await fetch('http://localhost:8080/api/users/me', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (res.ok) {
-                    const user = await res.json();
-                    document.getElementById('user-name').innerText = user.fullName;
-                    document.getElementById('user-avatar').innerText = user.fullName.charAt(0).toUpperCase();
+
+            // ----------------------------------------------------
+            // 4B: UI HELPERS & AUTHENTICATION API CALLS
+            // ----------------------------------------------------
+
+            // Toggle the profile menu popup
+            function toggleProfileMenu(e) {
+                e.stopPropagation(); // Stops the click from immediately triggering the window listener below
+                document.getElementById('profile-menu').classList.toggle('hidden');
+            }
+
+            // If the user clicks anywhere else on the screen, close the menu
+            window.addEventListener('click', function() {
+                const menu = document.getElementById('profile-menu');
+                if (menu && !menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
                 }
-            } catch (e) { console.log("Could not load user name."); }
-        }
+            });
 
-        async function handleRegister(e) {
-            e.preventDefault();
-            const shopName = document.getElementById('reg-shop-name').value;
-            const category = document.getElementById('reg-category').value;
-            const adminName = document.getElementById('reg-admin-name').value;
-            const phone = document.getElementById('reg-phone').value;
-            const pin = document.getElementById('reg-pin').value;
+            // Placeholder for the Edit Profile button
+            function openEditProfileModal(e) {
+                e.stopPropagation();
+                document.getElementById('profile-menu').classList.add('hidden');
+                alert("The Edit Profile feature is coming next!");
+            }
 
-            try {
-                const response = await fetch('http://localhost:8080/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ shopName, businessCategory: category, adminFullName: adminName, phoneNumber: phone, pin })
-                });
-                if (response.ok) {
-                    alert("Shop created! Please sign in.");
-                    e.target.reset();
-                    navigateTo('screen-login');
-                } else { alert("Registration Error."); }
-            } catch (error) { alert("Cannot connect to server."); }
-        }
+            // UPDATED: Fetch real name from backend
+            async function setSidebarUser(token) {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                document.getElementById('user-role').innerText = payload.role.replace('ROLE_', '');
 
-        async function handleLogin(e) {
-            e.preventDefault();
-            const phone = document.getElementById('login-phone').value;
-            const pin = document.getElementById('login-pin').value;
-            try {
-                const response = await fetch('http://localhost:8080/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phoneNumber: phone, pin })
-                });
+                // Put the phone number there temporarily so the UI doesn't look empty
+                document.getElementById('user-name').innerText = payload.sub;
+                document.getElementById('user-avatar').innerText = payload.sub.charAt(0);
 
-                if (response.ok) {
-                    const data = await response.json();
-                    localStorage.setItem('crm_token', data.token);
-                    setSidebarUser(data.token);
-                    e.target.reset();
-                    navigateTo('view-inbox'); 
-                } else { 
-                    document.getElementById('login-error').classList.remove('hidden'); 
-                    document.getElementById('login-pin').value = ''; // NEW: Wipes just the PIN on a failed login
-                }
-            } catch (error) { document.getElementById('login-error').classList.remove('hidden'); }
-        }
+                // Fetch the actual Full Name from our new backend endpoint!
+                try {
+                    const res = await fetch('http://localhost:8080/api/users/me', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    if (res.ok) {
+                        const user = await res.json();
+                        document.getElementById('user-name').innerText = user.fullName;
+                        document.getElementById('user-avatar').innerText = user.fullName.charAt(0).toUpperCase();
+                    }
+                } catch (e) { console.log("Could not load user name."); }
+            }
 
-        function logout() {
-            localStorage.removeItem('crm_token');
-            navigateTo('screen-landing');
-        }
+            async function handleRegister(e) {
+                e.preventDefault();
+                const shopName = document.getElementById('reg-shop-name').value;
+                const category = document.getElementById('reg-category').value;
+                const adminName = document.getElementById('reg-admin-name').value;
+                const phone = document.getElementById('reg-phone').value;
+                const pin = document.getElementById('reg-pin').value;
 
+                try {
+                    const response = await fetch('http://localhost:8080/api/auth/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ shopName, businessCategory: category, adminFullName: adminName, phoneNumber: phone, pin })
+                    });
+                    if (response.ok) {
+                        alert("Shop created! Please sign in.");
+                        e.target.reset();
+                        navigateTo('screen-login');
+                    } else { alert("Registration Error."); }
+                } catch (error) { alert("Cannot connect to server."); }
+            }
 
-        // ----------------------------------------------------
-        // 4C: DATA FETCHING (CRUD OPERATIONS)
-        // ----------------------------------------------------
-        async function fetchSettingsData() {
-            const token = localStorage.getItem('crm_token');
-            if(!token) return;
-            setSidebarUser(token); 
+            async function handleLogin(e) {
+                e.preventDefault();
+                const phone = document.getElementById('login-phone').value;
+                const pin = document.getElementById('login-pin').value;
+                try {
+                    const response = await fetch('http://localhost:8080/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phoneNumber: phone, pin })
+                    });
 
-            // RBAC Check: Is the logged-in user an Admin?
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const isAdmin = payload.role === 'ADMIN' || payload.role === 'ROLE_ADMIN';
-            
-            // Toggle the "Add Team Member" button
-            document.getElementById('add-member-btn').style.display = isAdmin ? 'block' : 'none';
+                    if (response.ok) {
+                        const data = await response.json();
+                        localStorage.setItem('crm_token', data.token);
+                        setSidebarUser(data.token);
+                        e.target.reset();
+                        navigateTo('view-inbox');
+                    } else {
+                        document.getElementById('login-error').classList.remove('hidden');
+                        document.getElementById('login-pin').value = ''; // NEW: Wipes just the PIN on a failed login
+                    }
+                } catch (error) { document.getElementById('login-error').classList.remove('hidden'); }
+            }
 
-            const headers = { 'Authorization': 'Bearer ' + token };
+            function logout() {
+                localStorage.removeItem('crm_token');
+                navigateTo('screen-landing');
+            }
 
-            // 1. Fetch & Render Business Info
-            try {
-                const res = await fetch('http://localhost:8080/api/tenant/me', { headers });
-                if(res.ok) {
-                    const tenant = await res.json();
-                    
-                    // Fallback to empty string if database returns null (for brand new accounts)
-                    const sName = tenant.shopName || '';
-                    const sCat = tenant.businessCategory || '';
-                    const sAdd = tenant.businessAddress || '';
-                    const sPhone = tenant.contactPhone || '';
-                    const sEmail = tenant.contactEmail || '';
+            // ----------------------------------------------------
+            // 4C: DATA FETCHING (CRUD OPERATIONS)
+            // ----------------------------------------------------
+            async function fetchSettingsData() {
+                const token = localStorage.getItem('crm_token');
+                if(!token) return;
+                setSidebarUser(token);
 
-                    const container = document.getElementById('business-info-container');
+                // RBAC Check: Is the logged-in user an Admin?
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const isAdmin = payload.role === 'ADMIN' || payload.role === 'ROLE_ADMIN';
 
-                    if (isAdmin) {
-                        // ADMIN VIEW: Render an interactive form
-                        container.innerHTML = `
+                // Toggle the "Add Team Member" button
+                document.getElementById('add-member-btn').style.display = isAdmin ? 'block' : 'none';
+
+                const headers = { 'Authorization': 'Bearer ' + token };
+
+                // 1. Fetch & Render Business Info
+                try {
+                    const res = await fetch('http://localhost:8080/api/tenant/me', { headers });
+                    if(res.ok) {
+                        const tenant = await res.json();
+
+                        // Fallback to empty string if database returns null (for brand new accounts)
+                        const sName = tenant.shopName || '';
+                        const sCat = tenant.businessCategory || '';
+                        const sAdd = tenant.businessAddress || '';
+                        const sPhone = tenant.contactPhone || '';
+                        const sEmail = tenant.contactEmail || '';
+
+                        const container = document.getElementById('business-info-container');
+
+                        if (isAdmin) {
+                            // ADMIN VIEW: Render an interactive form
+                            container.innerHTML = `
                             <form onsubmit="handleUpdateTenant(event)">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
@@ -365,13 +1500,13 @@
                                     </div>
                                 </div>
                                 <div class="mt-6 flex justify-end">
-                                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition">Save Changes</button>
+                                    <button class="px-6 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-900 shadow-sm transition-colors">Save Changes</button>
                                 </div>
                             </form>
                         `;
-                    } else {
-                        // MODERATOR VIEW: Render read-only text elements
-                        container.innerHTML = `
+                        } else {
+                            // MODERATOR VIEW: Render read-only text elements
+                            container.innerHTML = `
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div><p class="text-sm font-bold text-gray-800">Shop Name</p><p class="text-gray-600 bg-gray-50 border border-gray-200 rounded px-3 py-2 mt-1">${sName}</p></div>
                                 <div><p class="text-sm font-bold text-gray-800">Category</p><p class="text-gray-600 bg-gray-50 border border-gray-200 rounded px-3 py-2 mt-1">${sCat}</p></div>
@@ -380,22 +1515,22 @@
                                 <div class="md:col-span-2"><p class="text-sm font-bold text-gray-800">Contact Email</p><p class="text-gray-600 bg-gray-50 border border-gray-200 rounded px-3 py-2 mt-1">${sEmail || '<span class="text-gray-400 italic">Not set</span>'}</p></div>
                             </div>
                         `;
-                    }
+                        }
 
-                } else { document.getElementById('business-info-container').innerHTML = `<p class="text-sm text-yellow-600">Could not load business information.</p>`; }
-            } catch(e) { console.log("Tenant endpoint error."); }
+                    } else { document.getElementById('business-info-container').innerHTML = `<p class="text-sm text-yellow-600">Could not load business information.</p>`; }
+                } catch(e) { console.log("Tenant endpoint error."); }
 
-            // 2. Fetch & Render Team Members
-            try {
-                const res = await fetch('http://localhost:8080/api/users/staff', { headers });
-                if(res.ok) {
-                    const staffList = await res.json();
-                    let html = '';
-                    staffList.forEach(staff => {
+                // 2. Fetch & Render Team Members
+                try {
+                    const res = await fetch('http://localhost:8080/api/users/staff', { headers });
+                    if(res.ok) {
+                        const staffList = await res.json();
+                        let html = '';
+                        staffList.forEach(staff => {
 
-                        let deleteBtn = isAdmin ? `<button onclick="deleteStaff(${staff.id})" class="text-red-500 hover:text-red-700 text-sm font-medium px-3 py-1 rounded hover:bg-red-50 transition">Remove</button>` : '';
+                            let deleteBtn = isAdmin ? `<button onclick="deleteStaff(${staff.id})" class="text-red-500 hover:text-red-700 text-sm font-medium px-3 py-1 rounded hover:bg-red-50 transition">Remove</button>` : '';
 
-                        html += `
+                            html += `
                         <div class="flex items-center justify-between py-3 border-b border-gray-100 group">
                             <div class="flex items-center">
                                 <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">${staff.fullName.charAt(0)}</div>
@@ -406,100 +1541,704 @@
                             </div>
                             ${deleteBtn}
                         </div>`;
+                        });
+                        document.getElementById('team-members-container').innerHTML = html;
+                    } else { document.getElementById('team-members-container').innerHTML = `<p class="text-sm text-yellow-600">Could not load team members.</p>`; }
+                } catch(e) { console.log("Staff endpoint error."); }
+            }
+
+            // ====================================================
+            // RESIZABLE COLUMNS
+            // ====================================================
+            function initResizableColumns() {
+                const col1 = document.getElementById('column-1');
+                const col3 = document.getElementById('column-3');
+                const handle1 = document.getElementById('resize-1');
+                const handle2 = document.getElementById('resize-2');
+
+                let isResizing = false;
+                let currentHandle = null;
+                let startX = 0;
+                let startWidth = 0;
+
+                function onMouseDown(e, handle, column) {
+                    isResizing = true;
+                    currentHandle = handle;
+                    startX = e.clientX;
+                    startWidth = column.offsetWidth;
+
+                    currentHandle.classList.add('active');
+                    document.body.style.cursor = 'col-resize';
+                    document.body.style.userSelect = 'none';
+
+                    e.preventDefault();
+                }
+
+                function onMouseMove(e) {
+                    if (!isResizing) return;
+
+                    const dx = e.clientX - startX;
+                    let newWidth = startWidth + dx;
+
+                    if (currentHandle === handle1) {
+                        const col = document.getElementById('column-1');
+                        const min = parseInt(col.style.minWidth) || 280;
+                        const max = parseInt(col.style.maxWidth) || 500;
+                        newWidth = Math.max(min, Math.min(max, newWidth));
+                        col.style.width = newWidth + 'px';
+                    } else if (currentHandle === handle2) {
+                        const col = document.getElementById('column-3');
+                        const min = parseInt(col.style.minWidth) || 280;
+                        const max = parseInt(col.style.maxWidth) || 450;
+                        // For right column, dragging left makes it wider
+                        newWidth = startWidth - dx;
+                        newWidth = Math.max(min, Math.min(max, newWidth));
+                        col.style.width = newWidth + 'px';
+                    }
+                }
+
+                function onMouseUp() {
+                    if (isResizing) {
+                        isResizing = false;
+                        if (currentHandle) {
+                            currentHandle.classList.remove('active');
+                        }
+                        document.body.style.cursor = '';
+                        document.body.style.userSelect = '';
+                    }
+                }
+
+                handle1.addEventListener('mousedown', (e) => onMouseDown(e, handle1, col1));
+                handle2.addEventListener('mousedown', (e) => onMouseDown(e, handle2, col3));
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            }
+
+            // ----------------------------------------------------
+            // 4D: POST & PUT LOGIC
+            // ----------------------------------------------------
+
+            // Tab Switching for Inbox
+            let currentInboxTab = 'facebook'; // Default tab
+
+            function switchInboxTab(tab) {
+                currentInboxTab = tab;
+
+                const fbTab = document.getElementById('tab-facebook');
+                const igTab = document.getElementById('tab-instagram');
+
+                // Define the class strings for reuse
+                const activeClasses = "flex items-center space-x-2 px-4 py-1.5 text-sm font-medium rounded-xl transition-all duration-200 bg-white shadow-sm text-gray-900";
+                const inactiveClasses = "flex items-center space-x-2 px-4 py-1.5 text-sm font-medium rounded-xl transition-all duration-200 text-gray-500 hover:text-gray-700";
+
+                if (tab === 'facebook') {
+                    fbTab.className = activeClasses;
+                    igTab.className = inactiveClasses;
+                    loadFacebookInbox();
+                } else {
+                    fbTab.className = inactiveClasses;
+                    igTab.className = activeClasses;
+                    loadInstagramInbox();
+                }
+            }
+
+            function loadFacebookInbox() {
+                // Show Facebook conversation list
+                document.getElementById('facebook-conversations').classList.remove('hidden');
+                document.getElementById('instagram-conversations').classList.add('hidden');
+
+                // Show Facebook message thread
+                document.getElementById('facebook-thread').classList.remove('hidden');
+                document.getElementById('instagram-thread').classList.add('hidden');
+
+                // Show Facebook sidebar
+                document.getElementById('facebook-sidebar').classList.remove('hidden');
+                document.getElementById('instagram-sidebar').classList.add('hidden');
+            }
+
+            function loadInstagramInbox() {
+                // Show Instagram conversation list
+                document.getElementById('facebook-conversations').classList.add('hidden');
+                document.getElementById('instagram-conversations').classList.remove('hidden');
+
+                // Show Instagram message thread
+                document.getElementById('facebook-thread').classList.add('hidden');
+                document.getElementById('instagram-thread').classList.remove('hidden');
+
+                // Show Instagram sidebar
+                document.getElementById('facebook-sidebar').classList.add('hidden');
+                document.getElementById('instagram-sidebar').classList.remove('hidden');
+            }
+
+            // ====================================================
+            // CREATE ORDER MODAL
+            // ====================================================
+            let currentOrderCustomer = {
+                name: 'Fatima Rahman',
+                phone: '01712345678',
+                address: 'Dhanmondi 15, Dhaka'
+            };
+
+            // Store the current chat context for extraction
+            let currentChatContext = '';
+
+            function openOrderModal(customerName, customerPhone, customerAddress, chatContext = '') {
+                // Update customer info
+                if (customerName) currentOrderCustomer.name = customerName;
+                if (customerPhone) currentOrderCustomer.phone = customerPhone;
+                if (customerAddress) currentOrderCustomer.address = customerAddress;
+                if (chatContext) currentChatContext = chatContext;
+
+                // Update modal title
+                document.getElementById('modal-customer-name').innerText = `Create Order for ${currentOrderCustomer.name}`;
+
+                // Pre-fill phone and address
+                document.getElementById('order-phone').value = currentOrderCustomer.phone;
+                document.getElementById('order-address').value = currentOrderCustomer.address;
+
+                // Clear other fields
+                document.getElementById('order-items').value = '';
+                document.getElementById('order-amount').value = '';
+                document.getElementById('order-delivery').value = 'Pathao';
+
+                // Reset payment method to COD
+                const paymentSelect = document.getElementById('payment-method');
+                if (paymentSelect) {
+                    paymentSelect.value = 'Cash on Delivery';
+                }
+
+                // Show modal
+                document.getElementById('create-order-modal').classList.remove('hidden');
+            }
+
+            function closeOrderModal() {
+                document.getElementById('create-order-modal').classList.add('hidden');
+            }
+
+            function extractFromChat(event) {
+                // This is a mock function - in production, you'd parse the actual chat
+                const mockExtractedData = {
+                    items: 'Sneakers (White, 42) x1',
+                    amount: '2500',
+                    address: currentOrderCustomer.address,
+                    phone: currentOrderCustomer.phone
+                };
+
+                // If it's Arif (Instagram), use different mock data
+                if (currentOrderCustomer.name === 'Arif Hossain') {
+                    mockExtractedData.items = 'Sneakers (White, 42) x1';
+                    mockExtractedData.amount = '2500';
+                } else if (currentOrderCustomer.name === 'Fatima Rahman') {
+                    mockExtractedData.items = 'White Sneakers (Size 40) x1';
+                    mockExtractedData.amount = '2500';
+                }
+
+                // Fill the form with extracted data
+                document.getElementById('order-items').value = mockExtractedData.items;
+                document.getElementById('order-amount').value = mockExtractedData.amount;
+                document.getElementById('order-phone').value = mockExtractedData.phone;
+                document.getElementById('order-address').value = mockExtractedData.address;
+
+                // Show success animation
+                const btn = event.target.closest('button');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Extracted!';
+                btn.classList.add('bg-green-50', 'border-green-200', 'text-green-700');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-green-50', 'border-green-200', 'text-green-700');
+                }, 1500);
+            }
+
+            function createOrder() {
+                const items = document.getElementById('order-items').value;
+                const amount = document.getElementById('order-amount').value;
+                const delivery = document.getElementById('order-delivery').value;
+                const phone = document.getElementById('order-phone').value;
+                const address = document.getElementById('order-address').value;
+
+                // Get selected payment method from the dropdown
+                const paymentSelect = document.getElementById('payment-method');
+                const paymentMethod = paymentSelect ? paymentSelect.value : 'Cash on Delivery';
+
+                if (!items || !amount) {
+                    alert('Please fill in items and amount');
+                    return;
+                }
+
+                // Log to console (no database)
+                console.log('Order created:', {
+                    customer: currentOrderCustomer.name,
+                    items,
+                    amount,
+                    delivery,
+                    paymentMethod,
+                    phone,
+                    address
+                });
+
+                // Show success message
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                toast.innerHTML = `✅ Order created for ${currentOrderCustomer.name}!<br>Amount: ${amount} BDT · ${paymentMethod}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+
+                closeOrderModal();
+            }
+
+            // Close modal when clicking outside
+            document.addEventListener('click', function(e) {
+                const modal = document.getElementById('create-order-modal');
+                if (e.target === modal) {
+                    closeOrderModal();
+                }
+            });
+
+            // ====================================================
+            // AI DRAFT FUNCTIONS
+            // ====================================================
+            function generateAiDraft() {
+                const drafts = [
+                    'Yes, we have that in stock! The price is 1500 BDT. Would you like to order?',
+                    'Sure! We can deliver within Dhaka in 1-2 days. Please share your address.',
+                    'Apologies for the delay. Let me check the tracking status for you right away.',
+                ];
+                const randomDraft = drafts[Math.floor(Math.random() * drafts.length)];
+                document.getElementById('ai-draft-text').innerText = randomDraft;
+                document.getElementById('ai-draft-banner').classList.remove('hidden');
+            }
+
+            function useAiDraft() {
+                const draftText = document.getElementById('ai-draft-text').innerText;
+                const textarea = document.querySelector('#facebook-thread textarea, #instagram-thread:not(.hidden) textarea');
+                if (textarea) {
+                    textarea.value = draftText;
+                }
+                document.getElementById('ai-draft-banner').classList.add('hidden');
+            }
+
+            function dismissAiDraft() {
+                document.getElementById('ai-draft-banner').classList.add('hidden');
+            }
+
+            // ====================================================
+            // INTERACTIVE TAGS
+            // ====================================================
+            function toggleTag(element) {
+                const tag = element;
+                const tagText = tag.innerText.trim();
+
+                // Define colors for each tag type
+                const tagColors = {
+                    'Bkash Pending': 'bg-pink-100 text-pink-800 border-pink-200',
+                    'Dhaka Inside': 'bg-green-100 text-green-800 border-green-200',
+                    'Outside Dhaka': 'bg-blue-100 text-blue-800 border-blue-200',
+                    'Urgent': 'bg-red-100 text-red-800 border-red-200',
+                    'VIP': 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                };
+
+                // Check if tag is currently selected (has colored background)
+                const isSelected = !tag.classList.contains('bg-white');
+
+                if (isSelected) {
+                    // Deselect: make white
+                    tag.className = 'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-300 tag-badge';
+                } else {
+                    // Select: apply color
+                    const colorClass = tagColors[tagText] || 'bg-gray-100 text-gray-800';
+                    tag.className = `inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colorClass} tag-badge`;
+                }
+            }
+
+            // --- GLOBAL STATE ---
+            let inboxConversations = {};
+            let currentSelectedContactId = null;
+
+            // --- API CALL & DATA PROCESSING ---
+            async function fetchInboxData() {
+                const token = localStorage.getItem('crm_token');
+                if (!token) return;
+
+                try {
+                    const res = await fetch('http://localhost:8080/api/messages', {
+                        headers: { 'Authorization': 'Bearer ' + token }
                     });
-                    document.getElementById('team-members-container').innerHTML = html;
-                } else { document.getElementById('team-members-container').innerHTML = `<p class="text-sm text-yellow-600">Could not load team members.</p>`; }
-            } catch(e) { console.log("Staff endpoint error."); }
-        }
 
-
-        // ----------------------------------------------------
-        // 4D: POST & PUT LOGIC
-        // ----------------------------------------------------
-        
-        // NEW PUT REQUEST: Update Business Information (Admins Only)
-        async function handleUpdateTenant(e) {
-            e.preventDefault();
-            const token = localStorage.getItem('crm_token');
-            
-            // Gather the data from the newly injected form
-            const shopName = document.getElementById('edit-shop-name').value;
-            const address = document.getElementById('edit-address').value;
-            const category = document.getElementById('edit-category').value;
-            const phone = document.getElementById('edit-phone').value;
-            const email = document.getElementById('edit-email').value;
-
-            try {
-                const res = await fetch('http://localhost:8080/api/tenant/me', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    // Payload matches TenantUpdateRequest exactly
-                    body: JSON.stringify({ 
-                        shopName: shopName, 
-                        businessCategory: category,
-                        businessAddress: address, 
-                        contactPhone: phone, 
-                        contactEmail: email 
-                    })
-                });
-                
-
-                if(res.ok) {
-                    alert("Business information updated successfully!");
-                    fetchSettingsData(); // Refresh the UI to prove it saved!
-                } else {
-                    alert("Failed to update. Make sure you are an Admin!");
+                    if (res.ok) {
+                        const messages = await res.json();
+                        processConversations(messages);
+                        renderConversationSidebar();
+                    }
+                } catch (e) {
+                    console.error("Error connecting to API:", e);
                 }
-            } catch(e) { alert("Server error."); }
-        }
+            }
 
-        // NEW DELETE REQUEST: Remove Staff (Admins Only)
-        async function deleteStaff(staffId) {
-            // A built-in browser popup to confirm they didn't misclick
-            if (!confirm("Are you sure you want to remove this team member?")) return;
-            
-            const token = localStorage.getItem('crm_token');
-            
-            try {
-                const res = await fetch(`http://localhost:8080/api/users/staff/${staffId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
+            function processConversations(messages) {
+                inboxConversations = {};
+                // Reverse so messages are chronological, meaning the last item is the latest
+                messages.reverse().forEach(msg => {
+                    const contactId = msg.contact.id;
+                    if (!inboxConversations[contactId]) {
+                        inboxConversations[contactId] = {
+                            contact: msg.contact,
+                            messages: []
+                        };
+                    }
+                    inboxConversations[contactId].messages.push(msg);
+                });
+            }
+
+            // --- RENDERING THE SIDEBAR ---
+            function renderConversationSidebar() {
+                const container = document.getElementById('facebook-conversations');
+                if (!container) return;
+
+                let html = '';
+
+                // Sort so the person who messaged most recently is at the top
+                const sortedConvos = Object.values(inboxConversations).sort((a, b) => {
+                    const lastMsgA = a.messages[a.messages.length - 1];
+                    const lastMsgB = b.messages[b.messages.length - 1];
+                    return new Date(lastMsgB.createdAt) - new Date(lastMsgA.createdAt);
                 });
 
-                if(res.ok) {
-                    fetchSettingsData(); // Refresh the list instantly to prove they are gone
-                } else {
-                    alert("Could not remove staff member. Make sure you are an Admin.");
+                // A small array of Tailwind colors to cycle through for avatars
+                const avatarColors = ['bg-purple-500', 'bg-green-500', 'bg-blue-500', 'bg-pink-500', 'bg-orange-500'];
+
+                sortedConvos.forEach(convo => {
+                    const latestMsg = convo.messages[convo.messages.length - 1];
+                    const contactName = convo.contact.name || 'Facebook User';
+
+                    // 1. Generate Initials (e.g., "Fatima Rahman" -> "FR")
+                    const initials = contactName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+                    // 2. Pick a consistent color for this specific user based on their name length
+                    const colorClass = avatarColors[contactName.length % avatarColors.length];
+
+                    // 3. Format Time to match your mockup (e.g., "10:25 AM")
+                    const timeString = new Date(latestMsg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                    // 4. Toggle your exact Tailwind classes for Active vs Inactive state
+                    const isSelected = currentSelectedContactId === convo.contact.id;
+                    const activeClasses = isSelected
+                        ? "bg-blue-50 border-l-4 border-l-blue-600 hover:bg-blue-50"
+                        : "hover:bg-gray-50 border-l-4 border-transparent"; // Added transparent border to prevent layout shift
+
+                    html += `
+                    <div onclick="selectConversation('${convo.contact.id}')" class="p-4 border-b border-gray-100 cursor-pointer transition ${activeClasses}">
+                        <div class="flex items-start justify-between mb-1">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full ${colorClass} text-white flex items-center justify-center font-bold text-sm">${initials}</div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-bold text-gray-900">${contactName}</p>
+                                    <div class="flex items-center space-x-1 mt-0.5">
+                                        <span class="text-xs text-gray-500">Facebook</span>
+                                        <span class="text-xs text-gray-400">•</span>
+                                        <span class="text-xs text-gray-500">Messenger</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-400">${timeString}</span>
+                        </div>
+
+                        <p class="text-sm text-gray-600 ml-13 truncate">${latestMsg.content}</p>
+
+                        <div class="flex items-center space-x-2 mt-2 ml-13">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Lead</span>
+                            <span class="text-xs text-gray-400">Assigned: Unassigned</span>
+                        </div>
+                    </div>`;
+                });
+
+                container.innerHTML = html;
+            }
+
+            // --- RENDER CHAT THREAD ---
+            function openChatThread(contactId) {
+                const convo = inboxConversations[contactId];
+                if (!convo) return;
+
+                const contactName = convo.contact.name || 'Facebook User';
+
+                // 1. Generate Initials and apply a consistent color (same logic as sidebar)
+                const initials = contactName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const avatarColors = ['bg-purple-500', 'bg-green-500', 'bg-blue-500', 'bg-pink-500', 'bg-orange-500'];
+                const colorClass = avatarColors[contactName.length % avatarColors.length];
+
+                // 2. Update Header
+                document.getElementById('chat-header-name').textContent = contactName;
+                const headerAvatar = document.getElementById('chat-header-avatar');
+                headerAvatar.textContent = initials;
+                headerAvatar.className = `w-10 h-10 rounded-full ${colorClass} text-white flex items-center justify-center font-bold`;
+
+                // 3. Render Messages
+                const chatContainer = document.getElementById('chat-messages');
+                let messagesHtml = '';
+
+                // Sort chronologically (oldest to newest) for the chat display
+                const threadMessages = [...convo.messages].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+                threadMessages.forEach(msg => {
+                    const isOutbound = msg.direction === 'OUTBOUND';
+                    const timeString = new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                    if (isOutbound) {
+                        // Your exact Tailwind design for Agent Responses
+                        messagesHtml += `
+                        <div class="flex items-start justify-end">
+                            <div class="mr-3 max-w-md">
+                                <div class="bg-blue-600 rounded-lg p-3 shadow-sm">
+                                    <p class="text-sm text-white">${msg.content}</p>
+                                </div>
+                                <span class="text-xs text-gray-400 mt-1 block text-right">${timeString}</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">ME</div>
+                        </div>`;
+                    } else {
+                        // Your exact Tailwind design for Customer Messages
+                        messagesHtml += `
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 rounded-full ${colorClass} text-white flex items-center justify-center font-bold text-xs flex-shrink-0">${initials}</div>
+                            <div class="ml-3 max-w-md">
+                                <div class="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
+                                    <p class="text-sm text-gray-800">${msg.content}</p>
+                                </div>
+                                <span class="text-xs text-gray-400 mt-1 block">${timeString}</span>
+                            </div>
+                        </div>`;
+                    }
+                });
+
+                chatContainer.innerHTML = messagesHtml;
+
+                // 4. Scroll to bottom of chat automatically
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            // --- CLICK HANDLER ---
+            function selectConversation(contactId) {
+                currentSelectedContactId = contactId;
+
+                // 1. Re-render the sidebar so the blue active indicator moves to the clicked item
+                renderConversationSidebar();
+
+                // 2. Load the chat thread in Column 2 (We will build this function next!)
+                openChatThread(contactId);
+            }
+
+            // --- SEND MESSAGE ---
+            async function sendMessage() {
+                const inputField = document.getElementById('chat-message-input');
+                const text = inputField.value.trim();
+
+                // Prevent sending empty messages or sending if no contact is selected
+                if (!text || !currentSelectedContactId) return;
+
+                const token = localStorage.getItem('crm_token');
+
+                // Updated payload to match exactly what your backend expects
+                const payload = {
+                    recipient: {
+                        id: currentSelectedContactId
+                    },
+                    message: {
+                        text: text
+                    }
+                };
+
+                try {
+                    const res = await fetch('http://localhost:8080/api/outbound', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        // 1. Clear the input box so you can type the next message
+                        inputField.value = '';
+
+                        // 2. Fetch the updated messages from the database
+                        await fetchInboxData();
+
+                        // 3. Re-open the chat thread so it renders the new message and scrolls down
+                        openChatThread(currentSelectedContactId);
+                    } else {
+                        console.error("Failed to send message. Status:", res.status);
+                        alert("Failed to send message. Please check your connection.");
+                    }
+                } catch (e) {
+                    console.error("Error connecting to send API:", e);
                 }
-            } catch(e) { alert("Server error."); }
-        }
+            }
 
-        // POST REQUEST: Add new staff member
-        function openStaffModal() { document.getElementById('staff-modal').classList.remove('hidden'); }
-        function closeStaffModal() { document.getElementById('staff-modal').classList.add('hidden'); }
+            async function fetchCustomersData() {
+                // Will connect to /api/customers
+                console.log("Customers loaded");
+            }
 
-        async function handleAddStaff(e) {
-            e.preventDefault();
-            const token = localStorage.getItem('crm_token');
-            const name = document.getElementById('staff-name').value;
-            const phone = document.getElementById('staff-phone').value;
-            const pin = document.getElementById('staff-pin').value;
+            async function fetchAnalyticsData() {
+                // Will connect to /api/analytics
+                console.log("Analytics loaded");
+            }
 
-            try {
-                const res = await fetch('http://localhost:8080/api/users/staff', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ fullName: name, phoneNumber: phone, pin: pin })
-                });
+            // NEW PUT REQUEST: Update Business Information (Admins Only)
+            async function handleUpdateTenant(e) {
+                e.preventDefault();
+                const token = localStorage.getItem('crm_token');
 
-                if(res.ok) {
-                    alert("Staff member successfully hired!");
-                    e.target.reset();
-                    closeStaffModal();
-                    fetchSettingsData(); 
-                } else { alert("Could not add staff. Make sure the phone number is unique."); }
-            } catch(e) { alert("Server error."); }
-        }
-    </script>
+                // Gather the data from the newly injected form
+                const shopName = document.getElementById('edit-shop-name').value;
+                const address = document.getElementById('edit-address').value;
+                const category = document.getElementById('edit-category').value;
+                const phone = document.getElementById('edit-phone').value;
+                const email = document.getElementById('edit-email').value;
+
+                try {
+                    const res = await fetch('http://localhost:8080/api/tenant/me', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        // Payload matches TenantUpdateRequest exactly
+                        body: JSON.stringify({
+                            shopName: shopName,
+                            businessCategory: category,
+                            businessAddress: address,
+                            contactPhone: phone,
+                            contactEmail: email
+                        })
+                    });
+
+                    if(res.ok) {
+                        alert("Business information updated successfully!");
+                        fetchSettingsData(); // Refresh the UI to prove it saved!
+                    } else {
+                        alert("Failed to update. Make sure you are an Admin!");
+                    }
+                } catch(e) { alert("Server error."); }
+            }
+
+            // NEW DELETE REQUEST: Remove Staff (Admins Only)
+            async function deleteStaff(staffId) {
+                // A built-in browser popup to confirm they didn't misclick
+                if (!confirm("Are you sure you want to remove this team member?")) return;
+
+                const token = localStorage.getItem('crm_token');
+
+                try {
+                    const res = await fetch(`http://localhost:8080/api/users/staff/${staffId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+
+                    if(res.ok) {
+                        fetchSettingsData(); // Refresh the list instantly to prove they are gone
+                    } else {
+                        alert("Could not remove staff member. Make sure you are an Admin.");
+                    }
+                } catch(e) { alert("Server error."); }
+            }
+
+            // POST REQUEST: Add new staff member
+            function openStaffModal() { document.getElementById('staff-modal').classList.remove('hidden'); }
+            function closeStaffModal() { document.getElementById('staff-modal').classList.add('hidden'); }
+
+            async function handleAddStaff(e) {
+                e.preventDefault();
+                const token = localStorage.getItem('crm_token');
+                const name = document.getElementById('staff-name').value;
+                const phone = document.getElementById('staff-phone').value;
+                const pin = document.getElementById('staff-pin').value;
+
+                try {
+                    const res = await fetch('http://localhost:8080/api/users/staff', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ fullName: name, phoneNumber: phone, pin: pin })
+                    });
+
+                    if(res.ok) {
+                        alert("Staff member successfully hired!");
+                        e.target.reset();
+                        closeStaffModal();
+                        fetchSettingsData();
+                    } else { alert("Could not add staff. Make sure the phone number is unique."); }
+                } catch(e) { alert("Server error."); }
+            }
+        </script>
+
+        <!-- Create Order Modal -->
+        <div id="create-order-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900" id="modal-customer-name">Create Order for Fatima Rahman</h2>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Items</label>
+                        <input type="text" id="order-items" placeholder="e.g., T-Shirt (Black, L) x1, Jeans (Blue, 32) x1"
+                               class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Amount (BDT)</label>
+                        <input type="number" id="order-amount" placeholder="1500"
+                               class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Method</label>
+                        <select id="order-delivery" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>Pathao</option>
+                            <option>Steadfast</option>
+                            <option>RedX</option>
+                            <option>Self Pickup</option>
+                        </select>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                        <select id="payment-method" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Cash on Delivery">Cash on Delivery</option>
+                            <option value="Bkash">Bkash</option>
+                            <option value="Nagad">Nagad</option>
+                            <option value="Rocket">Rocket</option>
+                        </select>
+                    </div>
+
+                    <!-- Extract from Chat Button -->
+                    <div class="flex justify-end">
+                        <button onclick="extractFromChat(event)" class="flex items-center px-4 py-2 bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 hover:bg-purple-100 transition">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                            </svg>
+                            Extract from Chat
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <input type="text" id="order-phone" placeholder="01712345678"
+                               class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                        <textarea id="order-address" rows="2" placeholder="Dhanmondi 15, Dhaka"
+                                  class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                    <button onclick="closeOrderModal()" class="px-4 py-2 text-gray-600 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
+                    <button onclick="createOrder()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">Create Order</button>
+                </div>
+            </div>
+        </div>
 </body>
 </html>
