@@ -51,6 +51,8 @@ public class SecurityConfiguration {
                                 // THE NEW RULE: ONLY Admins can delete staff (DELETE)
                                 .requestMatchers(HttpMethod.DELETE, "/api/users/staff/**").hasRole("ADMIN")
 
+                                .requestMatchers("/api/ai/**").hasRole("ADMIN")
+
                                 // For EVERYTHING else (like GET /api/users/staff and GET /api/tenant/me),
                                 // you just need to be a logged-in user!
                                 .anyRequest().authenticated()
