@@ -37,4 +37,12 @@ public class Contact {
     @JsonIgnore
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL)
     private List<Message> messageList = new ArrayList<>();
+
+
+
+    // ==========================================
+    // Naylah Testing using Mockito
+    private String notes; // To store "Delivery after 6pm" etc.
+    private String tags;  // To store "VIP", "Wholesaler"
+    // ==========================================
 }
