@@ -1,5 +1,7 @@
 package com.dbinbox.aiinbox.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,6 +28,11 @@ public class Message
 
     private String messageType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "conversation_id")
+    @JsonIgnore
+    private Conversation conversation;
+
     @Enumerated(EnumType.STRING) // Saves as "INBOUND" in DB
     private Direction direction;
 
@@ -39,6 +46,7 @@ public class Message
     @JoinColumn(name = "contact_id")
     private Contact contact;
 
+
     // Defined as public enums (can be in this file or separate ones)
     public enum Direction
     {
@@ -47,6 +55,9 @@ public class Message
 
     public enum SenderType
     {
-        USER, BOT, AGENT
+        USER, ADMIN, AI
     }
+
+    @JsonProperty("is_echo") Boolean isEcho; // CRITICAL: To ignore messages sent BY your page
+
 }

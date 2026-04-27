@@ -1,90 +1,116 @@
 package com.dbinbox.aiinbox.service;
 
-//import com.dbinbox.aiinbox.ai.assistant.AiAssistantService;
+import com.dbinbox.aiinbox.ai.assistant.CustomerAssistantService;
+import com.dbinbox.aiinbox.ai.assistant.IntentClassifier;
+import com.dbinbox.aiinbox.ai.tools.ProductTool;
 import com.dbinbox.aiinbox.dto.UserFacebookProfile;
 import com.dbinbox.aiinbox.dto.MessengerWebhookPayload;
 import com.dbinbox.aiinbox.model.Contact;
+import com.dbinbox.aiinbox.model.Conversation;
 import com.dbinbox.aiinbox.model.Message;
 import com.dbinbox.aiinbox.repository.ContactRepo;
+import com.dbinbox.aiinbox.repository.ConversationRepo;
 import com.dbinbox.aiinbox.repository.MessageRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.ArrayList;
-import java.util.List;
+
 
 @Service
 public class InboundMessageService
 {
 
-    //change
     @Autowired
     private ContactRepo contactRepo;
 
-    //change
     @Autowired
     private MessageRepo messageRepo;
 
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
-    //private AiAssistantService aiAssistantService; // Inject the brain
-
-
-    //take from DB
     @Value("${meta.api.pat}")
     private String pageAccessToken;
 
     @Value("${meta.api.base-url}")
     private String fbBaseUrl;
 
-    // REMOVED: class-level messageContent and senderId to prevent multi-user bugs
+    // Add these missing autowires
+    @Autowired
+    private IntentClassifier intentClassifier;
 
-    public String processInboundMessage(MessengerWebhookPayload payload)
+    @Autowired
+    private ConversationRepo conversationRepo;
+    @Autowired
+    private OutboundMessageService outboundMessageService;
+
+    @Autowired
+    private ProductTool productTool;
+
+    @Autowired
+    private CustomerAssistantService customerAssistantService;
+
+    public void processInboundMessage(MessengerWebhookPayload payload)
     {
-        if (payload.entry() == null) return null;
-
-        String aiResponse = null;
+        if (payload.entry() == null) return;
 
         for (MessengerWebhookPayload.MessengerEntry entry : payload.entry()) {
-            if (entry.messageEventList() == null) continue;
-
             for (MessengerWebhookPayload.MessageEvent event : entry.messageEventList()) {
-                if (event.message() == null) continue;
+                // 1. IS IT A MESSAGE? (Ignore delivery receipts/read receipts)
+                //if (event.message() == null || Boolean.TRUE.equals(event.message().isEcho())) continue;
 
-                String currentSenderId = event.sender().id();
                 String mid = event.message().mid();
 
-                Contact contact = getOrCreateContact(currentSenderId);
+                // 2. DEDUPLICATION (The Quota Shield)
+                if (messageRepo.existsByMetaMid(mid)) continue;
 
-                // 1. Handle Text
-                if (event.message().text() != null)
+                String senderId = event.sender().id();
+                Contact contact = getOrCreateContact(senderId);
+                Conversation conversation = getOrCreateConversation(contact);
+
+                // 3. CIRCUIT BREAKER: If human is active, just save and stop
+                //if (conversation.getState() == Conversation.State.ESCALATED) {
+                    saveMessage(contact, event.message().text(), "text", mid);
+                    // Trigger a WebSocket/Notification for the frontend dashboard here
+                    //continue;
+
+
+                String userText = event.message().text();
+                String intent = intentClassifier.classify(userText);
+
+                if ("PRODUCT_QUERY".equalsIgnoreCase(intent))
                 {
-                    String userText = event.message().text();
-                    saveMessage(contact, userText, "text", mid);
-
-                    // GET AI RESPONSE HERE
-                    //aiResponse = aiAssistantService.getResponse(currentSenderId, userText);
+                    System.out.println("DEBUG: Routing to AI Tool Flow...");
+                    // Call the specific method that has the ChatClient + ProductTool
+                    handleAiFlow(conversation, userText);
                 }
-
-                // 2. Handle Attachments
-                if (event.message().attachments() != null) {
-                    for (MessengerWebhookPayload.Attachment attachment : event.message().attachments()) {
-                        saveMessage(contact, attachment.payload().url(), attachment.type(), mid);
-                    }
+                else if ("ORDER_REQUEST".equalsIgnoreCase(intent))
+                {
+                    // We can use the same AI logic, Gemini will see both tools
+                    // and choose 'draftOrder' because of the intent!
+                    handleAiFlow(conversation, userText);
+                }
+                else if ("HUMAN".equalsIgnoreCase(intent))
+                {
+                    System.out.println("HUMAN NEEDED");
+                }
+                else
+                {
+                    System.out.println("DEBUG: No action needed, just saving.");
+                }
                 }
             }
         }
-        return "Thanks for messaging us..."; // Return this so the Controller can send it back to Meta
+
+    private void handleAiFlow(Conversation conversation, String userText)
+    {
+        customerAssistantService.handleAiLogic(conversation, userText);
     }
 
-    // ... (rest of your existing private methods stay the same)
-
-
-    private Contact getOrCreateContact(String senderId) {
+    private Contact getOrCreateContact(String senderId)
+    {
         return contactRepo.findById(senderId)
                 .orElseGet(() -> {
                     Contact newContact = new Contact();
@@ -99,32 +125,36 @@ public class InboundMessageService
                 });
     }
 
-    private UserFacebookProfile fetchProfileFromMeta(String senderId) {
-        // If it's a test ID from Postman, don't even try to call Meta
-        if (senderId.startsWith("user_")) {
-            return null;
-        }
+    private Conversation getOrCreateConversation(Contact contact) {
+        return conversationRepo.findByContactAndIsActiveTrue(contact)
+                .orElseGet(() -> {
+                    Conversation conv = new Conversation();
+                    conv.setContact(contact);
+                    conv.setState(Conversation.State.AI); // Start new chats with AI
+                    //conv.setActive(true);
+                    return conversationRepo.save(conv);
+                });
+    }
 
+    private UserFacebookProfile fetchProfileFromMeta(String senderId)
+    {
         String url = String.format("%s%s?fields=first_name,last_name&access_token=%s",
                 fbBaseUrl, senderId, pageAccessToken);
 
-        try {
-            return restTemplate.getForObject(url, UserFacebookProfile.class);
-        } catch (Exception e) {
-            // Log the error but don't crash the app
-            System.err.println("Could not fetch Meta profile for ID: " + senderId + ". Using default.");
-            return null;
-        }
+        // Use the autowired restTemplate instead of creating a new one
+        return restTemplate.getForObject(url, UserFacebookProfile.class);
     }
 
-    private String parseNameFromProfile(UserFacebookProfile profile) {
+    private String parseNameFromProfile(UserFacebookProfile profile)
+    {
         if (profile != null && profile.first_name() != null) {
             return profile.first_name() + " " + (profile.last_name() != null ? profile.last_name() : "");
         }
         return "Facebook User";
     }
 
-    private void saveMessage(Contact contact, String content, String type, String mid) {
+    private void saveMessage(Contact contact, String content, String type, String mid)
+    {
         Message newMessage = new Message();
         newMessage.setContent(content);
         newMessage.setMetaMid(mid); // Crucial for deduplication
@@ -139,14 +169,6 @@ public class InboundMessageService
         System.out.println("Saved " + type + " message from: " + contact.getName());
     }
 
-    //@Autowired
-    //aiAssistance.getResponse(senderId, messageContent);
 
-    // Inside your MessageService or InboundMessageService
-    public List<Message> getMessagesForContact(String contactId)
-    {
-        // This assumes your MessageRepo has a method to find by the contact's ID
-        return messageRepo.findByContactIdOrderByCreatedAtAsc(contactId);
-    }
 
 }

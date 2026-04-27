@@ -60,21 +60,28 @@ async function refreshMessages(contactId) {
 
             messages.forEach(msg => {
                 const bubble = document.createElement('div');
-
-                // MATCHING YOUR MODEL:
-                // Direction.OUTBOUND is for messages from the CRM/AI
                 const isFromCRM = msg.direction === 'OUTBOUND';
 
                 if (isFromCRM) {
-                    // BLUE BUBBLE (Right)
-                    bubble.className = "bg-[#0084FF] text-white p-3 rounded-2xl rounded-tr-none self-end max-w-[75%] text-sm shadow-sm mb-1";
+                    bubble.className = "p-3 rounded-2xl rounded-tr-none self-end max-w-[75%] text-sm shadow-sm mb-1 " +
+                        (msg.content.includes("RENDER_ORDER_CARD") ? "bg-white border-2 border-blue-500 text-gray-900" : "bg-[#0084FF] text-white");
                 } else {
-                    // GRAY BUBBLE (Left)
                     bubble.className = "bg-[#E4E6EB] text-gray-900 p-3 rounded-2xl rounded-tl-none self-start max-w-[75%] text-sm shadow-sm mb-1";
                 }
 
-                // MATCHING YOUR MODEL: Using 'content' field
-                bubble.innerText = msg.content;
+                // INTERCEPT THE SIGNAL
+                if (msg.content.includes("RENDER_ORDER_CARD|")) {
+                    try {
+                        const jsonPart = msg.content.split("|")[1];
+                        const orderData = JSON.parse(jsonPart);
+                        bubble.innerHTML = renderOrderForm(orderData);
+                    } catch (e) {
+                        bubble.innerText = msg.content; // Fallback if JSON is messy
+                    }
+                } else {
+                    bubble.innerText = msg.content;
+                }
+
                 chatBubbles.appendChild(bubble);
             });
 
@@ -136,4 +143,29 @@ async function sendAiCommand() {
         input.value = '';
         loadConversations(); // Refresh sidebar in case name changed
     } catch (err) { console.error("AI fail:", err); }
+}
+
+function renderOrderForm(data) {
+    return `
+        <div class="flex flex-col gap-2 min-w-[200px]">
+            <div class="flex items-center gap-2 border-b pb-1 mb-1">
+                <span class="text-blue-600 font-bold">🛒 Draft Order</span>
+            </div>
+            <div class="space-y-1 text-xs">
+                <p><strong>SKU:</strong> ${data.sku}</p>
+                <p><strong>Size:</strong> ${data.size}</p>
+                <p><strong>Qty:</strong> ${data.qty}</p>
+                <p><strong>Address:</strong> ${data.address}</p>
+            </div>
+            <button onclick="confirmDraftOrder('${data.sku}')" 
+                    class="mt-2 bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded transition text-xs">
+                Confirm & Send to Customer
+            </button>
+        </div>
+    `;
+}
+
+// Placeholder for when you eventually want to save
+function confirmDraftOrder(sku) {
+    alert("Order for " + sku + " confirmed! (Next step: implement save to DB)");
 }

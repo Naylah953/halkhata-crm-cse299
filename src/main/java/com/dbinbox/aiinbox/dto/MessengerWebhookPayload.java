@@ -30,7 +30,13 @@ public record MessengerWebhookPayload(
             String mid,
             String text,
             List<Attachment> attachments // Added to handle images/audio
-    ) {}
+    ) {
+        public Boolean isEcho()
+        {
+            return true;
+        }
+
+    }
 
     public record Attachment(
             String type, // "image", "audio", "video", "file"

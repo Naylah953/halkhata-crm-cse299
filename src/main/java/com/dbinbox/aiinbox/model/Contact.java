@@ -22,11 +22,21 @@ public class Contact
     @Id
     private String id;
     private String name;
+    private String address;
+    private String contactNumber;
 
     public Contact(String id, String name)
     {
         this.id = id;
         this.name = name;
+    }
+
+    public Contact(String id, String name, String address, String contactNumber)
+    {
+        this.id = id;
+        this.name = name;
+        this.address = address;
+        this.contactNumber = contactNumber;
     }
 
     @JsonIgnore

@@ -10,26 +10,28 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class ModeratorTools {
+public class ModeratorTools
+{
 
     @Autowired
     private ContactRepo contactRepo;
 
-    /**
-     * Requirement: Check if contact exists before creation.
-     */
+    //check - redundant if contact creation is automatic upon message arrival
     @Tool(description = "Create a new contact or update a placeholder contact with a real name.")
     public String createContact(
             @ToolParam(description = "The PSID of the user") String psid,
-            @ToolParam(description = "The actual name provided by the user") String name) {
+            @ToolParam(description = "The actual name provided by the user") String name)
+    {
 
         Optional<Contact> existingContact = contactRepo.findById(psid);
 
-        if (existingContact.isPresent()) {
+        if (existingContact.isPresent())
+        {
             Contact contact = existingContact.get();
 
             // Check if the current name is the generic placeholder
-            if ("Facebook User".equalsIgnoreCase(contact.getName())) {
+            if ("Facebook User".equalsIgnoreCase(contact.getName()))
+            {
                 contact.setName(name);
                 contactRepo.save(contact);
                 return "Updated placeholder contact! User is now saved as: " + name;
@@ -44,9 +46,7 @@ public class ModeratorTools {
         return "Successfully created new contact: " + name;
     }
 
-    /**
-     * Requirement: Only update the parameters passed by the user.
-     */
+
     @Tool(description = "Update an existing contact's details. Only provide fields that the user explicitly wants to change.")
     public String updateContact(
             @ToolParam(description = "The unique PSID of the contact to update") String psid,
@@ -56,7 +56,8 @@ public class ModeratorTools {
 
         Optional<Contact> existingContact = contactRepo.findById(psid);
 
-        if (existingContact.isEmpty()) {
+        if (existingContact.isEmpty())
+        {
             return "Error: Could not find a contact with ID " + psid + " to update.";
         }
 
@@ -73,7 +74,8 @@ public class ModeratorTools {
     }
 
     @Tool(description = "Delete a contact from the CRM database.")
-    public String deleteContact(@ToolParam(description = "The PSID of the contact to remove") String psid) {
+    public String deleteContact(@ToolParam(description = "The PSID of the contact to remove") String psid)
+    {
         if (!contactRepo.existsById(psid)) {
             return "Error: Contact with ID " + psid + " does not exist.";
         }

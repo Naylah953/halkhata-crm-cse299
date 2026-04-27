@@ -30,6 +30,14 @@ public class ModeratorController
         this.messageService = messageService;
     }
 
+    //capture 'psid' from UI
+    @PostMapping("/chat/{psid}")
+    public String handleCommand(@PathVariable String psid, @RequestBody String message)
+    {
+        return moderatorAssistantService.useAssistant(message, psid);
+    }
+
+
     @PostMapping("/ai-assistant")
     public ResponseEntity<String> chatWithAssistant(@RequestBody ModeratorChatRequest request)
     {
@@ -38,8 +46,10 @@ public class ModeratorController
         return ResponseEntity.ok(response);
     }
 
+    //all contacts fetched from DB and displayed on UI
     @GetMapping("/contacts")
-    public List<Contact> getContacts() {
+    public List<Contact> getContacts()
+    {
         return contactRepository.findAll().stream()
                 .map(contact -> new Contact(
                         contact.getId(),
@@ -48,10 +58,16 @@ public class ModeratorController
                 .toList();
     }
 
-    @GetMapping("/messages/{contactId}")
-    public ResponseEntity<List<Message>> getChatHistory(@PathVariable String contactId) {
+
+    //fetch all messages for a contact
+    /*@GetMapping("/messages/{contactId}")
+    public ResponseEntity<List<Message>> getChatHistory(@PathVariable String contactId)
+    {
         return ResponseEntity.ok(messageService.getMessagesForContact(contactId));
-    }
+    }*/
+
+
+
 
 
 

@@ -13,13 +13,11 @@ import org.springframework.web.bind.annotation.*;
 public class InboundMessageController {
 
     private final InboundMessageService service;
-    //private final AiAssistantService aiAssistantService;
     private final String VERIFY_TOKEN = "social_crm_2026";
 
     public InboundMessageController(InboundMessageService service)
     {
         this.service = service;
-        //this.aiAssistantService = aiAssistantService;
     }
 
     @GetMapping(value = "/webhook", produces = MediaType.TEXT_PLAIN_VALUE)
@@ -34,17 +32,16 @@ public class InboundMessageController {
         return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
+
+    //endpoint to receive the payload
+
     @PostMapping(value = "/webhook")
     public ResponseEntity<Void> handleIncoming(@RequestBody MessengerWebhookPayload payload) {
-        // This now returns the AI's "Banglish" response!
-        String responseForUser = service.processInboundMessage(payload);
+        // 1. Hand it off to the service immediately.
+        // Because the service method is @Async, this call returns instantly.
+        service.processInboundMessage(payload);
 
-        if (responseForUser != null) {
-            // TODO: Call your MetaMessageSender here
-            System.out.println("Ready to send to Meta: " + responseForUser);
-        }
-
+        // 2. Return 200 OK to Meta IMMEDIATELY.
+        // This stops Meta from sending those annoying duplicates.
         return ResponseEntity.ok().build();
-    }
-    // NOTE: I removed the extra @PostMapping without a path to avoid ambiguity.
-}
+    }}

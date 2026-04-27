@@ -51,11 +51,11 @@ public class OutboundMessageService {
         }
     }
 
-    private void saveToDatabase(String psid, String text) {
+    public void saveToDatabase(String psid, String text) {
         Message outboundMsg = new Message();
         outboundMsg.setContent(text);
         outboundMsg.setDirection(Message.Direction.OUTBOUND); // This triggers the purple CSS
-        outboundMsg.setSenderType(Message.SenderType.BOT);
+        outboundMsg.setSenderType(Message.SenderType.AI);
         outboundMsg.setMessageType("text");
 
         // Find the contact so the message appears in the right chat thread
