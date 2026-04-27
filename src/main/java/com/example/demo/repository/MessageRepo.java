@@ -11,4 +11,7 @@ public interface MessageRepo extends JpaRepository<Message, Long> {
 
     // NEW MULTI-TENANT RULE: Only fetch messages where the linked Contact belongs to the given Tenant ID
     List<Message> findByContact_Tenant_IdOrderByCreatedAtDesc(Long tenantId);
+
+    // AI looking at one person's history securely
+    List<Message> findTop10ByContact_IdAndContact_Tenant_IdOrderByCreatedAtDesc(String psid, Long tenantId);
 }
