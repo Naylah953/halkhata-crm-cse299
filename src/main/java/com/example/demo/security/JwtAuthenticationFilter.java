@@ -31,22 +31,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
+        String jwt = null;
         final String userPhoneNumber;
 
-        // If the header is missing or doesn't start with Bearer, move to the next filter
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // 1. Extract JWT from Header OR URL Query Parameter
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7);
+        } else if (request.getParameter("token") != null) {
+            jwt = request.getParameter("token"); // For SSE connections
+        }
+
+        // If no token is found, move to the next filter
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Extract token (remove "Bearer " prefix)
-        jwt = authHeader.substring(7);
         userPhoneNumber = jwtService.extractUsername(jwt);
 
-        // If we found a phone number and the user is not already authenticated in this session
         if (userPhoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userPhoneNumber);
 
             if (jwtService.isTokenValid(jwt, userDetails)) {
@@ -56,7 +59,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails.getAuthorities()
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // Inject the user into the security context
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

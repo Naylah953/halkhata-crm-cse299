@@ -11,6 +11,7 @@ import com.example.demo.repository.TenantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -23,10 +24,12 @@ public class InboundMessageService {
     @Autowired private MessageRepo messageRepo;
     @Autowired private TenantRepository tenantRepository;
     @Autowired private RestTemplate restTemplate;
+    @Autowired private SseService sseService;
 
     @Value("${meta.api.base-url}")
     private String fbBaseUrl;
 
+    @Transactional
     public void processInboundMessage(MessengerWebhookPayload payload) {
         if (payload.entry() == null) return;
 
@@ -111,7 +114,12 @@ public class InboundMessageService {
         newMessage.setDirection(Message.Direction.INBOUND);
         newMessage.setSenderType(Message.SenderType.USER);
 
-        messageRepo.save(newMessage);
+        // Save to DB
+        newMessage = messageRepo.save(newMessage);
         System.out.println("Saved inbound message for shop: " + contact.getTenant().getName());
+
+        // --- THE MAGIC HAPPENS HERE ---
+        // Push the new message instantly to any connected browser for this specific shop
+        sseService.pushMessageToTenant(contact.getTenant().getId(), newMessage);
     }
 }

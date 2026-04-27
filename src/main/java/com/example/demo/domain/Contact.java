@@ -18,7 +18,6 @@ public class Contact {
 
     @Id
     private String id; // Facebook PSID
-
     private String name;
 
     @JsonIgnore

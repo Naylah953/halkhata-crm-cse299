@@ -27,6 +27,9 @@ public class OutboundMessageService {
     // 1. ADD THE USER REPOSITORY
     @Autowired private AppUserRepository userRepository;
 
+    // Inject the SseService
+    @Autowired private SseService sseService;
+
     @Value("${meta.api.base-url}")
     private String fbBaseUrl;
 
@@ -89,6 +92,10 @@ public class OutboundMessageService {
         outboundMsg.setMessageType("text");
         outboundMsg.setContact(contact);
 
-        messageRepo.save(outboundMsg);
+        // Capture the saved entity so it has the generated ID and timestamp
+        outboundMsg = messageRepo.save(outboundMsg);
+
+        // Push the outgoing message to all active agents for this tenant
+        sseService.pushMessageToTenant(contact.getTenant().getId(), outboundMsg);
     }
 }
