@@ -1,8 +1,6 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.AiAnalyticsResponse;
-import com.example.demo.dto.gemini.GeminiRequest;
-import com.example.demo.dto.gemini.GeminiResponse;
 import lombok.RequiredArgsConstructor;
 import com.example.demo.dto.OpenAiDto;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +8,6 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import java.sql.ResultSetMetaData;
@@ -23,12 +20,6 @@ public class AiAnalyticsService {
 
     private final JdbcTemplate jdbcTemplate;
     private final RestClient restClient;
-
-    // --- GEMINI CONFIG ---
-    @Value("${gemini.api.url}")
-    private String geminiUrl;
-    @Value("${gemini.api.key}")
-    private String geminiKey;
 
     // --- OPENROUTER CONFIG ---
     @Value("${openrouter.api.url}")
@@ -66,69 +57,40 @@ public class AiAnalyticsService {
 
         String rawSql = "";
 
-        // 3. Call Gemini
+        // 3. Call AI Engine
         try {
-            System.out.println("Attempting AI generation with Primary Engine (Gemini)...");
-            GeminiRequest request = GeminiRequest.builder()
-                    .systemInstruction(GeminiRequest.SystemInstruction.builder()
-                            .parts(List.of(GeminiRequest.Part.builder().text(systemInstruction).build())).build())
-                    .contents(List.of(GeminiRequest.Content.builder()
-                            .role("user")
-                            .parts(List.of(GeminiRequest.Part.builder().text(userPrompt).build())).build()))
+            System.out.println("Attempting AI generation with OpenRouter...");
+
+            OpenAiDto.Request request = OpenAiDto.Request.builder()
+                    .model(openRouterModel)
+                    .messages(List.of(
+                            OpenAiDto.Message.builder().role("system").content(systemInstruction).build(),
+                            OpenAiDto.Message.builder().role("user").content(userPrompt).build()
+                    ))
                     .build();
 
-            GeminiResponse response = restClient.post()
-                    .uri(geminiUrl + "?key=" + geminiKey)
+            OpenAiDto.Response response = restClient.post()
+                    .uri(openRouterUrl)
+                    .header("Authorization", "Bearer " + openRouterKey)
+                    .header("HTTP-Referer", "http://localhost:8080")
                     .body(request)
                     .retrieve()
-                    .body(GeminiResponse.class);
+                    .body(OpenAiDto.Response.class);
 
-            rawSql = response.getCandidates().get(0).getContent().getParts().get(0).getText();
-            System.out.println("Success! Gemini generated the query.");
+            rawSql = response.getChoices().get(0).getMessage().getContent();
+            System.out.println("Success! OpenRouter generated the query.");
 
-        } catch (Exception geminiException) {
-
-            // ==========================================
-            // FALLBACK ENGINE: OPENROUTER
-            // ==========================================
-            System.out.println("Gemini failed (" + geminiException.getMessage() + "). Pivoting to Fallback Engine (OpenRouter)...");
-
-            try {
-                OpenAiDto.Request request = OpenAiDto.Request.builder()
-                        .model(openRouterModel)
-                        .messages(List.of(
-                                OpenAiDto.Message.builder().role("system").content(systemInstruction).build(),
-                                OpenAiDto.Message.builder().role("user").content(userPrompt).build()
-                        ))
-                        .build();
-
-                OpenAiDto.Response response = restClient.post()
-                        .uri(openRouterUrl)
-                        .header("Authorization", "Bearer " + openRouterKey)
-                        .header("HTTP-Referer", "http://localhost:8080")
-                        .body(request)
-                        .retrieve()
-                        .body(OpenAiDto.Response.class);
-
-                rawSql = response.getChoices().get(0).getMessage().getContent();
-                System.out.println("Success! OpenRouter generated the query.");
-
-            } catch (Exception openRouterException) {
-                // If BOTH engines fail, return the graceful error
-                System.out.println("CRITICAL: Both AI engines failed. OpenRouter error: " + openRouterException.getMessage());
-                return AiAnalyticsResponse.builder()
-                        .aiSummary("Our AI analysts are currently overwhelmed. Please try again in a few moments.")
-                        .isTable(false)
-                        .build();
-            }
+        } catch (Exception openRouterException) {
+            System.out.println("CRITICAL: OpenRouter failed. Error: " + openRouterException.getMessage());
+            return AiAnalyticsResponse.builder()
+                    .aiSummary("Our AI analysts are currently overwhelmed. Please try again in a few moments.")
+                    .isTable(false)
+                    .build();
         }
 
         // Clean the AI output just in case it wraps it in markdown
         rawSql = rawSql.replaceAll("```sql", "").replaceAll("```", "").trim();
         System.out.println("\n=== FINAL AI GENERATED SQL ===\n" + rawSql + "\n============================\n");
-
-        // ADD THIS LINE TO DEBUG:
-        System.out.println("\n=== GEMINI GENERATED SQL ===\n" + rawSql + "\n============================\n");
 
         // "Freeze" the variable so the lambda accepts it
         final String finalSql = rawSql;

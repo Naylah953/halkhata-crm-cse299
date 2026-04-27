@@ -1,13 +1,9 @@
-gemini:
-  api:
-    key: #key here
-    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent
-
 openrouter:
   api:
+    # MANUAL REST CLIENT: Needs the FULL path because you call it directly
     url: https://openrouter.ai/api/v1/chat/completions
-    key: #key here
-    model: meta-llama/llama-3.3-70b-instruct:free
+    key: #openrouter key - ask Izaz
+    model: meta-llama/llama-3.3-70b-instruct
 
 spring:
   # ---------------------------------------------------------
@@ -16,16 +12,17 @@ spring:
   ai:
     # 1. Fallback Provider (OpenRouter)
     openai:
-      api-key: #key here
-      base-url: https://openrouter.ai # Must be base URL only for Spring AI
+      api-key: #openrouter key - ask Izaz
+      # SPRING AI: Needs to end in /api because Spring auto-appends /v1/chat/completions
+      base-url: https://openrouter.ai/api
       chat:
         options:
-          model: meta-llama/llama-3.3-70b-instruct:free
+          model: meta-llama/llama-3.3-70b-instruct
 
     # 2. Primary Provider (Google Gemini)
     google:
       genai:
-        api-key: #key here
+        api-key: #gemini key
         chat:
           options:
             model: gemini-2.5-flash-lite

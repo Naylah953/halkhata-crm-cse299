@@ -9,19 +9,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class ModeratorAssistantService {
 
-    private final ChatClient primaryClient;   // Gemini
-    private final ChatClient fallbackClient;  // OpenRouter
+    private final ChatClient primaryClient;   // OpenRouter
+    private final ChatClient fallbackClient;  // Gemini
 
     public ModeratorAssistantService(
             GoogleGenAiChatModel geminiModel,
             OpenAiChatModel openRouterModel,
             ModeratorTools moderatorTools) {
 
-        this.primaryClient = ChatClient.builder(geminiModel)
+        // 1. Set OpenRouter as the Primary
+        this.primaryClient = ChatClient.builder(openRouterModel)
                 .defaultTools(moderatorTools)
                 .build();
 
-        this.fallbackClient = ChatClient.builder(openRouterModel)
+        // 2. Set Gemini as the Fallback
+        this.fallbackClient = ChatClient.builder(geminiModel)
                 .defaultTools(moderatorTools)
                 .build();
     }
@@ -43,7 +45,7 @@ public class ModeratorAssistantService {
             """;
 
         try {
-            System.out.println("Manager AI: Attempting conversation with Gemini...");
+            System.out.println("Manager AI: Attempting conversation with Primary Engine (OpenRouter)...");
             return primaryClient.prompt()
                     .system(s -> s.text(systemInstruction)
                             .param("contextContactId", currentContactId)
@@ -53,9 +55,9 @@ public class ModeratorAssistantService {
                     .call()
                     .content();
 
-        } catch (Exception geminiException) {
+        } catch (Exception openRouterException) {
 
-            System.out.println("Manager AI: Gemini failed (" + geminiException.getMessage() + "). Pivoting to OpenRouter...");
+            System.out.println("Manager AI: OpenRouter failed (" + openRouterException.getMessage() + "). Pivoting to Fallback Engine (Gemini)...");
 
             try {
                 return fallbackClient.prompt()
@@ -67,7 +69,7 @@ public class ModeratorAssistantService {
                         .call()
                         .content();
 
-            } catch (Exception openRouterException) {
+            } catch (Exception geminiException) {
                 return "I'm sorry, I am currently offline and cannot execute tools or update the database right now. Please try again later.";
             }
         }

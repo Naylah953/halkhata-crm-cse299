@@ -291,73 +291,34 @@
                     </div>
 
                     <div id="facebook-conversations" class="flex-1 overflow-y-auto">
-                        <div class="p-4 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition bg-blue-50 border-l-4 border-l-blue-600">
-                            <div class="flex items-start justify-between mb-1">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-sm">FR</div>
-                                    <div class="ml-3">
-                                        <p class="text-sm font-bold text-gray-900">Fatima Rahman</p>
-                                        <div class="flex items-center space-x-1 mt-0.5">
-                                            <span class="text-xs text-gray-500">Facebook</span>
-                                            <span class="text-xs text-gray-400">•</span>
-                                            <span class="text-xs text-gray-500">Messenger</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <span class="text-xs text-gray-400">10:25 AM</span>
-                            </div>
-                            <p class="text-sm text-gray-600 ml-13 truncate">Size 40 ase? Dhaka te delivery kot...</p>
-                            <div class="flex items-center space-x-2 mt-2">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Lead</span>
-                                <span class="text-xs text-gray-400">Assigned: Tasnim</span>
-                            </div>
-                        </div>
 
-                        <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition">
-                            <div class="flex items-start justify-between mb-1">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm">NT</div>
-                                    <div class="ml-3">
-                                        <p class="text-sm font-bold text-gray-900">Nishat Tasnim</p>
-                                        <div class="flex items-center space-x-1 mt-0.5">
-                                            <span class="text-xs text-gray-500">Facebook</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <span class="text-xs text-gray-400">9:45 AM</span>
-                            </div>
-                            <p class="text-sm text-gray-600 ml-13 truncate">Haa, order korte chai. Cash on del...</p>
-                            <div class="flex items-center space-x-2 mt-2">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Lead</span>
-                                <span class="text-xs text-gray-400">Assigned: Rahim</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
                 <div class="resize-handle" id="resize-1"></div>
 
                 <div class="flex-1 flex flex-col bg-gray-50">
-                    <div id="facebook-thread" class="flex-1 flex flex-col">
-                        <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div id="chat-header-avatar" class="w-10 h-10 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold">FR</div>
-                                <div class="ml-3">
-                                    <p id="chat-header-name" class="font-bold text-gray-900">Fatima Rahman</p>
-                                    <div class="flex items-center space-x-2 text-xs text-gray-500">
-                                        <span>Facebook</span>
-                                        <span>•</span>
-                                        <span>Messenger</span>
-                                    </div>
+                    <div id="facebook-thread" class="flex-1 flex flex-col hidden-screen"> <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div id="chat-header-avatar" class="w-10 h-10 rounded-full bg-gray-300 text-white flex items-center justify-center font-bold">
+                            </div>
+                            <div class="ml-3">
+                                <p id="chat-header-name" class="font-bold text-gray-900">
+                                </p>
+                                <div class="flex items-center space-x-2 text-xs text-gray-500">
+                                    <span>Facebook</span>
+                                    <span>•</span>
+                                    <span>Messenger</span>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <button onclick="openOrderModal('Fatima Rahman', '01712345678', 'Dhanmondi 15, Dhaka')"
-                                        class="px-3 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-100 border border-gray-300 shadow-sm flex items-center gap-2">
-                                    🛒 Create Order
-                                </button>
-                            </div>
                         </div>
+                        <div class="flex items-center space-x-2">
+                            <button id="create-order-btn" onclick="openOrderModal('', '', '')"
+                                    class="px-3 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-100 border border-gray-300 shadow-sm flex items-center gap-2">
+                                🛒 Create Order
+                            </button>
+                        </div>
+                    </div>
 
                         <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4" style="min-height: 350px; max-height: calc(100vh - 280px);">
                         </div>
@@ -394,6 +355,10 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div id="empty-state" class="flex-1 flex items-center justify-center">
+                        <p class="text-gray-500">Select a conversation to start messaging</p>
                     </div>
                 </div>
 
@@ -2403,10 +2368,14 @@
             function selectConversation(contactId) {
                 currentSelectedContactId = contactId;
 
+                // --- ADD THESE TWO LINES TO FIX THE VISIBILITY BUG ---
+                document.getElementById('empty-state').classList.add('hidden-screen');
+                document.getElementById('facebook-thread').classList.remove('hidden-screen');
+
                 // 1. Re-render the sidebar so the blue active indicator moves to the clicked item
                 renderConversationSidebar();
 
-                // 2. Load the chat thread in Column 2 (We will build this function next!)
+                // 2. Load the chat thread in Column 2
                 openChatThread(contactId);
             }
 
@@ -2592,6 +2561,64 @@
                 }
             });
 
+            document.addEventListener('DOMContentLoaded', () => {
+                // A reusable function to handle drag-to-resize
+                function setupResizer(resizerId, columnId, isRightSide) {
+                    const resizer = document.getElementById(resizerId);
+                    const column = document.getElementById(columnId);
+
+                    if (!resizer || !column) return;
+
+                    let startX, startWidth;
+
+                    // This function runs every time the mouse moves during a drag
+                    function doDrag(e) {
+                        if (isRightSide) {
+                            // For the right sidebar, moving the mouse left INCREASES width
+                            column.style.width = (startWidth - (e.clientX - startX)) + 'px';
+                        } else {
+                            // For the left sidebar, moving the mouse right INCREASES width
+                            column.style.width = (startWidth + (e.clientX - startX)) + 'px';
+                        }
+                    }
+
+                    // This function runs when the user lets go of the mouse button
+                    function stopDrag() {
+                        document.removeEventListener('mousemove', doDrag);
+                        document.removeEventListener('mouseup', stopDrag);
+                        resizer.classList.remove('active');
+
+                        // Reset cursor
+                        document.body.style.cursor = 'default';
+                    }
+
+                    // Listen for the initial mouse click on the resize handle
+                    resizer.addEventListener('mousedown', function(e) {
+                        startX = e.clientX;
+                        startWidth = parseInt(window.getComputedStyle(column).width, 10);
+
+                        // Add listeners to the whole document so dragging works even if the mouse leaves the handle
+                        document.addEventListener('mousemove', doDrag);
+                        document.addEventListener('mouseup', stopDrag);
+
+                        // Add an active class for styling (e.g., turning the bar blue)
+                        resizer.classList.add('active');
+
+                        // Force cursor to stay as col-resize while dragging
+                        document.body.style.cursor = 'col-resize';
+
+                        // Prevent text highlighting while dragging
+                        e.preventDefault();
+                    });
+                }
+
+                // Initialize Left Sidebar Resizer
+                setupResizer('resize-1', 'column-1', false);
+
+                // Initialize Right Sidebar Resizer
+                setupResizer('resize-2', 'column-3', true);
+            });
+
             // 3. Complete Context-Aware AI Chat Logic
             async function sendAiMessage(messageText) {
                 if (!messageText || messageText.trim() === '') return;
@@ -2649,6 +2676,7 @@
                             context: currentView
                         })
                     });
+
 
                     if (!response.ok) throw new Error("Server response wasn't OK");
 
