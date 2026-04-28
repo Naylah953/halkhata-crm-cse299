@@ -30,8 +30,8 @@ public class ModeratorAssistantService {
 
     public String useAssistant(String moderatorPrompt, String currentContactId, Long tenantId) {
 
-        // Safely handle missing tenantId during testing
-        String safeTenantId = (tenantId != null) ? String.valueOf(tenantId) : "UNKNOWN";
+        // Safely handle missing tenantId during testing (Fixed to prevent TypeMismatchException)
+        String safeTenantId = (tenantId != null) ? String.valueOf(tenantId) : "-1";
 
         String systemInstruction = """
             You are a CRM Admin Assistant for Halkhata. 
@@ -51,7 +51,7 @@ public class ModeratorAssistantService {
                             .param("contextContactId", currentContactId)
                             .param("currentTenantId", safeTenantId))
                     .user(moderatorPrompt)
-                    .advisors(a -> a.param("chat_memory_conversation_id", currentContactId))
+                    .advisors(a -> a.param("chat_memory_conversation_id", currentContactId).param("chat_client_max_tool_calls", 3))
                     .call()
                     .content();
 

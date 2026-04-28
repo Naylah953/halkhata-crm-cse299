@@ -105,6 +105,17 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    // --- NEW METHOD ADDED ---
+    public List<OrderDto> getOrdersByCustomer(String username, Long customerId) {
+        Tenant tenant = getStaffFromUsername(username).getTenant();
+
+        // Fetches orders strictly tied to this specific customer AND this specific shop
+        return orderRepository.findAllByCustomerIdAndTenantId(customerId, tenant.getId())
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
     private OrderDto mapToDto(Order order) {
         OrderDto dto = new OrderDto();
         dto.setId(order.getId());

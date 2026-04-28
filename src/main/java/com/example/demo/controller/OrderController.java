@@ -26,4 +26,10 @@ public class OrderController {
     public ResponseEntity<List<OrderDto>> getOrders(Principal principal) {
         return ResponseEntity.ok(orderService.getOrders(principal.getName()));
     }
+
+    // --- NEW ENDPOINT ---
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<OrderDto>> getOrdersByCustomer(Principal principal, @PathVariable Long customerId) {
+        return ResponseEntity.ok(orderService.getOrdersByCustomer(principal.getName(), customerId));
+    }
 }

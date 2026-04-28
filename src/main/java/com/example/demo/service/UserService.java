@@ -70,7 +70,7 @@ public class UserService {
 
         Tenant t = currentUser.getTenant();
 
-        // UPDATED: Now returns the Facebook fields to the frontend UI
+        // UPDATED: Now returns the Facebook fields and AI toggle to the frontend UI
         return new TenantResponse(
                 t.getName(),
                 t.getBusinessCategory(),
@@ -78,12 +78,13 @@ public class UserService {
                 t.getContactPhone(),
                 t.getContactEmail(),
                 t.getFacebookPageId(),
-                t.getPageAccessToken()
+                t.getPageAccessToken(),
+                t.isEnableAiReplies() // --- NEW ---
         );
     }
 
     // ==========================================
-    // 4. UPDATE BUSINESS INFO
+    // 4. UPDATE BUSINESS INFO (Fixed for Partial Updates)
     // ==========================================
     @Transactional
     public TenantResponse updateTenantDetails(String currentUsername, TenantUpdateRequest request) {
@@ -92,19 +93,37 @@ public class UserService {
 
         Tenant tenant = currentUser.getTenant();
 
-        tenant.setName(request.getShopName());
-        tenant.setBusinessCategory(request.getBusinessCategory());
-        tenant.setBusinessAddress(request.getBusinessAddress());
-        tenant.setContactPhone(request.getContactPhone());
-        tenant.setContactEmail(request.getContactEmail());
+        // Only update the fields that the frontend actually sent (not null)
+        if (request.getShopName() != null) {
+            tenant.setName(request.getShopName());
+        }
+        if (request.getBusinessCategory() != null) {
+            tenant.setBusinessCategory(request.getBusinessCategory());
+        }
+        if (request.getBusinessAddress() != null) {
+            tenant.setBusinessAddress(request.getBusinessAddress());
+        }
+        if (request.getContactPhone() != null) {
+            tenant.setContactPhone(request.getContactPhone());
+        }
+        if (request.getContactEmail() != null) {
+            tenant.setContactEmail(request.getContactEmail());
+        }
+        if (request.getFacebookPageId() != null) {
+            tenant.setFacebookPageId(request.getFacebookPageId());
+        }
+        if (request.getPageAccessToken() != null) {
+            tenant.setPageAccessToken(request.getPageAccessToken());
+        }
 
-        // Save the Meta credentials to the entity
-        tenant.setFacebookPageId(request.getFacebookPageId());
-        tenant.setPageAccessToken(request.getPageAccessToken());
+        // The AI Toggle
+        if (request.getEnableAiReplies() != null) {
+            tenant.setEnableAiReplies(request.getEnableAiReplies());
+        }
 
         tenantRepository.save(tenant);
 
-        // UPDATED: Return the complete updated details including Meta data
+        // Return the complete updated details
         return new TenantResponse(
                 tenant.getName(),
                 tenant.getBusinessCategory(),
@@ -112,7 +131,8 @@ public class UserService {
                 tenant.getContactPhone(),
                 tenant.getContactEmail(),
                 tenant.getFacebookPageId(),
-                tenant.getPageAccessToken()
+                tenant.getPageAccessToken(),
+                tenant.isEnableAiReplies()
         );
     }
 

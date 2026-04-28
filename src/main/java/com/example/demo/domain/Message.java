@@ -18,6 +18,8 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // --- ADDED: unique = true to enforce webhook deduplication at the DB level ---
+    @Column(unique = true)
     private String metaMid;
 
     @Column(columnDefinition = "TEXT")

@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import com.example.demo.ai.assistant.CustomerAssistantService;
+import com.example.demo.ai.assistant.IntentClassifier;
 import com.example.demo.dto.UserFacebookProfile;
 import com.example.demo.dto.MessengerWebhookPayload;
 import com.example.demo.domain.Contact;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -25,6 +28,11 @@ public class InboundMessageService {
     @Autowired private TenantRepository tenantRepository;
     @Autowired private RestTemplate restTemplate;
     @Autowired private SseService sseService;
+
+    // --- NEW AI DEPENDENCIES ---
+    @Autowired private IntentClassifier intentClassifier;
+    @Autowired private CustomerAssistantService customerAssistantService;
+    @Autowired private OutboundMessageService outboundMessageService;
 
     @Value("${meta.api.base-url}")
     private String fbBaseUrl;
@@ -106,20 +114,65 @@ public class InboundMessageService {
     }
 
     private void saveMessage(Contact contact, String content, String type, String mid) {
+
+        // ==========================================
+        // 0. DEDUPLICATION CHECK (Stop Meta Retries)
+        // ==========================================
+        if (mid != null && messageRepo.existsByMetaMid(mid)) {
+            System.out.println("Duplicate Meta webhook ignored. MID already exists: " + mid);
+            return; // Completely stop processing this duplicate
+        }
+
+        // 1. INCREMENT THE UNREAD COUNT AND SAVE THE CONTACT FIRST
+        int currentCount = (contact.getUnreadCount() == null) ? 0 : contact.getUnreadCount();
+        contact.setUnreadCount(currentCount + 1);
+
+        // --- THE FIX: Create a final variable for the lambda to use safely ---
+        final Contact finalContact = contactRepo.save(contact);
+
+        // 2. CREATE AND SAVE THE MESSAGE
         Message newMessage = new Message();
         newMessage.setContent(content);
         newMessage.setMetaMid(mid);
         newMessage.setMessageType(type);
-        newMessage.setContact(contact);
+        newMessage.setContact(finalContact); // Use the finalContact
         newMessage.setDirection(Message.Direction.INBOUND);
         newMessage.setSenderType(Message.SenderType.USER);
 
-        // Save to DB
-        newMessage = messageRepo.save(newMessage);
-        System.out.println("Saved inbound message for shop: " + contact.getTenant().getName());
+        Message savedMessage = messageRepo.save(newMessage);
+        System.out.println("Saved inbound message for shop: " + finalContact.getTenant().getName());
 
-        // --- THE MAGIC HAPPENS HERE ---
-        // Push the new message instantly to any connected browser for this specific shop
-        sseService.pushMessageToTenant(contact.getTenant().getId(), newMessage);
+        // 3. REAL-TIME UI UPDATE
+        sseService.pushMessageToTenant(finalContact.getTenant().getId(), savedMessage);
+
+        // ==========================================
+        // 4. ASYNCHRONOUS AI ROUTING LOGIC
+        // ==========================================
+        if ("text".equals(type)) {
+
+            if (finalContact.getTenant().isEnableAiReplies()) {
+
+                // IMPORTANT: Push the heavy AI logic to a background thread!
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        String intent = intentClassifier.classify(content);
+                        System.out.println("AI Intent Detected: " + intent);
+
+                        if ("PRODUCT_QUERY".equals(intent) || "ORDER_REQUEST".equals(intent)) {
+                            // Safely use finalContact inside the background thread
+                            String aiReply = customerAssistantService.handleAiLogic(finalContact, content, finalContact.getTenant().getId());
+                            outboundMessageService.sendAiReply(finalContact, aiReply);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Async AI execution failed: " + e.getMessage());
+                        // --- THE TRACE TO REVEAL THE REAL ERROR ---
+                        e.printStackTrace();
+                    }
+                });
+
+            } else {
+                System.out.println("AI ignored message: Auto-Reply is DISABLED for shop " + finalContact.getTenant().getName());
+            }
+        }
     }
 }

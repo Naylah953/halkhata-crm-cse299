@@ -29,4 +29,10 @@ public class CustomerController {
     public ResponseEntity<List<CustomerDto>> getCustomers(Principal principal) {
         return ResponseEntity.ok(customerService.getCustomers(principal.getName()));
     }
+
+    // --- NEW ENDPOINT ---
+    @GetMapping("/{id}")
+    public ResponseEntity<CustomerDto> getCustomerById(Principal principal, @PathVariable Long id) {
+        return ResponseEntity.ok(customerService.getCustomerById(principal.getName(), id));
+    }
 }

@@ -1,9 +1,6 @@
 package com.example.demo.dto;
 
 import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 public class TenantUpdateRequest {
@@ -12,7 +9,9 @@ public class TenantUpdateRequest {
     private String contactPhone;
     private String contactEmail;
     private String businessCategory;
-
     private String facebookPageId;
     private String pageAccessToken;
+
+    // --- NEW: Global Auto-AI Toggle ---
+    private Boolean enableAiReplies;
 }

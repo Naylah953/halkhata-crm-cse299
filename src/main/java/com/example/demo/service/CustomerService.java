@@ -87,6 +87,17 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
+    // --- NEW METHOD ADDED ---
+    public CustomerDto getCustomerById(String username, Long id) {
+        Tenant tenant = getTenantFromUsername(username);
+
+        // Fetch the customer, ensuring they belong to this exact shop
+        Customer customer = customerRepository.findByIdAndTenantId(id, tenant.getId())
+                .orElseThrow(() -> new RuntimeException("Customer not found or does not belong to your shop."));
+
+        return mapToDto(customer);
+    }
+
     private CustomerDto mapToDto(Customer customer) {
         CustomerDto dto = new CustomerDto();
         dto.setId(customer.getId());

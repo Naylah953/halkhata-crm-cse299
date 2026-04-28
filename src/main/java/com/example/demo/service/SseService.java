@@ -1,11 +1,12 @@
 package com.example.demo.service;
 
+import com.example.demo.domain.Contact;
 import com.example.demo.domain.Message;
-import org.springframework.scheduling.annotation.Scheduled; // 1. Added import
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,33 +34,58 @@ public class SseService {
         }
     }
 
+    // ==========================================
+    // NEW METHOD FOR AI UI UPDATES
+    // ==========================================
+    public void pushContactUpdateToTenant(Long tenantId, Contact contact) {
+        List<SseEmitter> emitters = tenantEmitters.get(tenantId);
+        if (emitters != null) {
+            List<SseEmitter> deadEmitters = new ArrayList<>();
+            for (SseEmitter emitter : emitters) {
+                try {
+                    // Send an event named "contactUpdate" containing the updated Contact object
+                    emitter.send(SseEmitter.event().name("contactUpdate").data(contact));
+                } catch (Exception e) {
+                    deadEmitters.add(emitter);
+                }
+            }
+            emitters.removeAll(deadEmitters);
+        }
+    }
+
     public void pushMessageToTenant(Long tenantId, Message message) {
         List<SseEmitter> emitters = tenantEmitters.get(tenantId);
         if (emitters != null) {
+            List<SseEmitter> deadEmitters = new ArrayList<>();
             for (SseEmitter emitter : emitters) {
                 try {
                     // Send an event named "newMessage" containing the serialized Message object
                     emitter.send(SseEmitter.event().name("newMessage").data(message));
-                } catch (IOException e) {
-                    emitter.completeWithError(e); // This will trigger removal via onError
+                } catch (Exception e) {
+                    // Catch ALL exceptions (like IllegalStateException from a closed browser tab)
+                    deadEmitters.add(emitter);
                 }
             }
+            // Instantly prune all dead connections so we don't try them again
+            emitters.removeAll(deadEmitters);
         }
     }
 
-    // 2. ADDED THIS NEW METHOD
     @Scheduled(fixedRate = 30000) // Runs every 30 seconds
     public void sendHeartbeat() {
         tenantEmitters.forEach((tenantId, emitters) -> {
+            List<SseEmitter> deadEmitters = new ArrayList<>();
             for (SseEmitter emitter : emitters) {
                 try {
                     // Send a lightweight "ping" event to keep the connection alive
                     emitter.send(SseEmitter.event().name("ping").data("keep-alive"));
-                } catch (IOException e) {
-                    // If the ping fails, the browser was closed. Safely trigger removal.
-                    emitter.completeWithError(e);
+                } catch (Exception e) {
+                    // If the ping fails because the browser closed, mark it for removal
+                    deadEmitters.add(emitter);
                 }
             }
+            // Prune dead tabs gracefully
+            emitters.removeAll(deadEmitters);
         });
     }
 }

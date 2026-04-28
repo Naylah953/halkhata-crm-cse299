@@ -15,4 +15,7 @@ public class TenantResponse {
     // The newly added Meta fields
     private String facebookPageId;
     private String pageAccessToken;
+
+    // --- NEW: Global Auto-AI Toggle ---
+    private boolean enableAiReplies;
 }

@@ -42,6 +42,10 @@ public class Tenant {
 
     private boolean isActive = true;
 
+    // --- NEW: Global Auto-AI Toggle ---
+    @Column(name = "enable_ai_replies", nullable = false)
+    private boolean enableAiReplies = false;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;

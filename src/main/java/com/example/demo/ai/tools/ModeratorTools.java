@@ -5,6 +5,7 @@ import com.example.demo.domain.Tenant;
 import com.example.demo.repository.ContactRepo;
 import com.example.demo.service.AiAnalyticsService;
 import com.example.demo.dto.AiAnalyticsResponse;
+import com.example.demo.service.SseService;
 
 import jakarta.persistence.EntityManager;
 import org.springframework.ai.tool.annotation.Tool;
@@ -21,13 +22,60 @@ public class ModeratorTools {
     private ContactRepo contactRepo;
 
     @Autowired
-    private EntityManager entityManager; // Used to safely fetch the Tenant reference
+    private EntityManager entityManager;
 
     @Autowired
     private AiAnalyticsService aiAnalyticsService;
 
-    // --- THE ANALYTICS BRIDGE TOOL ---
-    // --- THE ANALYTICS BRIDGE TOOL ---
+    @Autowired
+    private SseService sseService;
+
+    // --- SECURED NEW AI ACTION FLAG TOOLS ---
+
+    @Tool(description = "Call this tool if the user asks a complex question you cannot answer, or specifically asks to speak to a human manager/support agent.")
+    public String flagForHuman(
+            @ToolParam(description = "The unique PSID of the contact to flag") String psid,
+            @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
+
+        // SECURE READ
+        Optional<Contact> contactOpt = contactRepo.findByIdAndTenantId(psid, tenantId);
+
+        if (contactOpt.isPresent()) {
+            Contact contact = contactOpt.get();
+            contact.setRequiresHuman(true);
+            contactRepo.save(contact);
+
+            // FIRE REAL-TIME UI UPDATE
+            sseService.pushContactUpdateToTenant(tenantId, contact);
+
+            return "Successfully flagged this conversation for human intervention.";
+        }
+        return "Error: Could not find contact in this shop.";
+    }
+
+    @Tool(description = "Call this tool when you have successfully collected the user's desired product, size, color, and delivery address, and are ready for a human to finalize the order.")
+    public String markOrderReady(
+            @ToolParam(description = "The unique PSID of the contact whose order is ready") String psid,
+            @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
+
+        // SECURE READ
+        Optional<Contact> contactOpt = contactRepo.findByIdAndTenantId(psid, tenantId);
+
+        if (contactOpt.isPresent()) {
+            Contact contact = contactOpt.get();
+            contact.setOrderReady(true);
+            contactRepo.save(contact);
+
+            // FIRE REAL-TIME UI UPDATE
+            sseService.pushContactUpdateToTenant(tenantId, contact);
+
+            return "Successfully marked this conversation as having an order ready for review.";
+        }
+        return "Error: Could not find contact in this shop.";
+    }
+
+    // --- EXISTING TOOLS BELOW ---
+
     @Tool(description = "Use this tool ANYTIME the user asks for analytics, sales data, product inventory, order history, or complex statistics. Pass their exact question as the prompt.")
     public String runDatabaseAnalytics(
             @ToolParam(description = "The exact question the user asked about their data") String prompt,
@@ -38,7 +86,6 @@ public class ModeratorTools {
         AiAnalyticsResponse response = aiAnalyticsService.processAnalyticsQuery(prompt, tenantId);
 
         if (response.isTable()) {
-            // Extract the raw data rows so the Manager AI can read them
             String rawData = response.getTableData().getRows().toString();
 
             return "Raw Database Results: " + rawData +
@@ -48,14 +95,12 @@ public class ModeratorTools {
         }
     }
 
-    // --- Fariza's ADAPTED CRM TOOLS ---
     @Tool(description = "Create a new contact or update a placeholder contact with a real name.")
     public String createContact(
             @ToolParam(description = "The PSID of the user") String psid,
             @ToolParam(description = "The actual name provided by the user") String name,
             @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
 
-        // SECURE READ: Ensure we only look in this specific shop
         Optional<Contact> existingContact = contactRepo.findByIdAndTenantId(psid, tenantId);
 
         if (existingContact.isPresent()) {
@@ -68,12 +113,10 @@ public class ModeratorTools {
             return "Contact already exists with name: " + contact.getName();
         }
 
-        // SECURE WRITE: Link the new contact to the current Tenant
         Contact newContact = new Contact();
         newContact.setId(psid);
         newContact.setName(name);
 
-        // Get a proxy reference to the Tenant without hitting the DB
         Tenant tenantRef = entityManager.getReference(Tenant.class, tenantId);
         newContact.setTenant(tenantRef);
 

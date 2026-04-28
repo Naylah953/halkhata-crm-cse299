@@ -1,6 +1,7 @@
 package com.example.demo.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,7 +34,29 @@ public class Contact {
     @JoinColumn(name = "customer_id") // Nullable by default
     private Customer customer;
 
+    // --- THE FIX: Forces Jackson to output "customerId": X in the JSON ---
+    @JsonProperty("customerId")
+    public Long getCustomerId() {
+        return this.customer != null ? this.customer.getId() : null;
+    }
+
     @JsonIgnore
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL)
     private List<Message> messageList = new ArrayList<>();
+
+    // ==========================================
+    // NEW REAL-TIME UI FIELDS
+    // ==========================================
+
+    // Changed 'int' to 'Integer' to prevent null mapping errors
+    @Column(name = "unread_count")
+    private Integer unreadCount = 0;
+
+    // Changed 'boolean' to 'Boolean' to prevent null mapping errors
+    @Column(name = "requires_human")
+    private Boolean requiresHuman = false;
+
+    // Changed 'boolean' to 'Boolean' to prevent null mapping errors
+    @Column(name = "order_ready")
+    private Boolean orderReady = false;
 }

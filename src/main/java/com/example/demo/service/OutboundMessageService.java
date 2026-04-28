@@ -84,6 +84,35 @@ public class OutboundMessageService {
         }
     }
 
+    // ==========================================
+    // NEW: DEDICATED AI OUTBOUND METHOD (No Security Context Required)
+    // ==========================================
+    public void sendAiReply(Contact contact, String text) {
+        Tenant tenant = contact.getTenant();
+        String pat = tenant.getPageAccessToken();
+
+        if (pat == null || pat.isEmpty()) {
+            System.err.println("Cannot send AI message: Shop has no Page Access Token configured.");
+            return;
+        }
+
+        // Format the response for Meta
+        CRMResponse response = new CRMResponse(new CRMResponse.Recipient(contact.getId()), new CRMResponse.Message(text));
+        String url = fbBaseUrl + "me/messages?access_token=" + pat;
+
+        try {
+            var metaResponse = restTemplate.postForEntity(url, response, String.class);
+
+            if (metaResponse.getStatusCode().is2xxSuccessful()) {
+                // Notice your saveToDatabase method ALREADY sets SenderType.BOT!
+                saveToDatabase(contact, text);
+                System.out.println("Automated AI message sent successfully for shop: " + tenant.getId());
+            }
+        } catch (Exception e) {
+            System.err.println("Error sending AI message to Meta: " + e.getMessage());
+        }
+    }
+
     private void saveToDatabase(Contact contact, String text) {
         Message outboundMsg = new Message();
         outboundMsg.setContent(text);

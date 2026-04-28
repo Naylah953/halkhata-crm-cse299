@@ -2,7 +2,7 @@ openrouter:
   api:
     # MANUAL REST CLIENT: Needs the FULL path because you call it directly
     url: https://openrouter.ai/api/v1/chat/completions
-    key: #openrouter key - ask Izaz
+    key:
     model: meta-llama/llama-3.3-70b-instruct
 
 spring:
@@ -12,7 +12,7 @@ spring:
   ai:
     # 1. Fallback Provider (OpenRouter)
     openai:
-      api-key: #openrouter key - ask Izaz
+      api-key:
       # SPRING AI: Needs to end in /api because Spring auto-appends /v1/chat/completions
       base-url: https://openrouter.ai/api
       chat:
@@ -22,7 +22,7 @@ spring:
     # 2. Primary Provider (Google Gemini)
     google:
       genai:
-        api-key: #gemini key
+        api-key:
         chat:
           options:
             model: gemini-2.5-flash-lite
