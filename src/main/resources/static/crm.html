@@ -348,10 +348,16 @@
                             </div>
 
                             <div class="flex items-center space-x-2">
-                                <button id="create-order-btn" onclick="openOrderModal('', '', '')"
-                                        class="px-4 py-2 bg-white text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 hover:text-gray-900 border border-gray-200 transition-colors flex items-center gap-2 group shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+                                <button id="create-order-btn"
+                                        class="relative px-4 py-2 bg-white text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 hover:text-gray-900 border border-gray-200 transition-colors flex items-center gap-2 group shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+
                                     <svg class="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                     Create Order
+
+                                    <span id="order-ready-badge" class="hidden absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-500 border-2 border-white"></span>
+                                    </span>
                                 </button>
                             </div>
                         </div>
@@ -362,24 +368,12 @@
                         <div class="p-4 bg-white border-t border-gray-100 shrink-0">
                             <div class="flex items-center space-x-2">
 
-                                <button class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors focus:outline-none" title="Voice message">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
-                                </button>
-
-                                <button class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors focus:outline-none" title="Attach image/file">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                                </button>
-
                                 <input
                                         type="text"
                                         id="chat-message-input"
-                                        placeholder="Message... (Supports Bangla/Banglish)"
+                                        placeholder="Aa"
                                         class="flex-1 px-5 py-3 mx-1 bg-gray-50 border border-gray-100 rounded-full text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all placeholder-gray-400"
                                 >
-
-                                <button onclick="generateAiDraft()" class="p-2.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-colors focus:outline-none" title="AI Suggested Reply">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                                </button>
 
                                 <button
                                         onclick="sendMessage()"
@@ -1155,56 +1149,6 @@
                         // Clear Order History
                         document.getElementById('sidebar-order-history').innerHTML =
                             '<p class="text-xs text-gray-400 italic text-center py-4">No orders found.</p>';
-                    }
-
-                    function renderOrderHistory(orders) {
-                        const historyContainer = document.getElementById('sidebar-order-history');
-
-                        if (!orders || orders.length === 0) {
-                            historyContainer.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-4">No orders found.</p>';
-                            return;
-                        }
-
-                        // Build the dynamic order cards based on your Enum Statuses
-                        historyContainer.innerHTML = orders.map(order => {
-                            const orderDate = new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-                            // Exact styling for your 5 specific statuses
-                            let statusBadge = '';
-                            switch(order.status) {
-                                case 'DELIVERED':
-                                    statusBadge = `<span class="text-[10px] font-bold uppercase tracking-wider text-green-700 bg-green-50 border border-green-100 px-2 py-0.5 rounded-md">Delivered</span>`;
-                                    break;
-                                case 'PENDING':
-                                    statusBadge = `<span class="text-[10px] font-bold uppercase tracking-wider text-yellow-700 bg-yellow-50 border border-yellow-100 px-2 py-0.5 rounded-md">Pending</span>`;
-                                    break;
-                                case 'CONFIRMED':
-                                    statusBadge = `<span class="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">Confirmed</span>`;
-                                    break;
-                                case 'SHIPPED':
-                                    statusBadge = `<span class="text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-md">Shipped</span>`;
-                                    break;
-                                case 'CANCELLED':
-                                    statusBadge = `<span class="text-[10px] font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-100 px-2 py-0.5 rounded-md">Cancelled</span>`;
-                                    break;
-                                default:
-                                    statusBadge = `<span class="text-[10px] font-bold uppercase tracking-wider text-gray-700 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-md">${order.status || 'UNKNOWN'}</span>`;
-                            }
-
-                            return `
-                                <div class="bg-white border border-gray-100 hover:border-gray-200 transition-colors rounded-xl p-4 shadow-sm group cursor-pointer">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <span class="text-xs font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded text-center">#${order.id}</span>
-                                        ${statusBadge}
-                                    </div>
-                                    <p class="text-[13px] font-medium text-gray-800 tracking-tight mb-1 truncate">${order.productName || 'Order Items'}</p>
-                                    <div class="flex justify-between items-center mt-3">
-                                        <span class="text-[11px] font-medium text-gray-400">${orderDate}</span>
-                                        <span class="text-[13px] font-bold text-blue-600">${order.totalAmount} BDT</span>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('');
                     }
 
                 </script>
@@ -2002,117 +1946,331 @@
                 document.getElementById('facebook-sidebar').classList.remove('hidden');
             }
 
-            // ====================================================
-            // CREATE ORDER MODAL
-            // ====================================================
-            let currentOrderCustomer = {
-                name: 'Fatima Rahman',
-                phone: '01712345678',
-                address: 'Dhanmondi 15, Dhaka'
-            };
+            // --- STATE MANAGEMENT ---
+            let currentOrderCustomer = { id: null, name: '', phone: '', address: '' };
+            let currentDraftId = null; // Tracks if we are reviewing an AI draft
 
-            // Store the current chat context for extraction
-            let currentChatContext = '';
+            // ... MODAL OPEN/LOAD ...
+            // Cache for product options so we don't hit the database every time we add a row
+            let cachedProductOptions = '<option value="">Select a product...</option>';
+            let productsLoaded = false;
 
-            function openOrderModal(customerName, customerPhone, customerAddress, chatContext = '') {
-                // Update customer info
-                if (customerName) currentOrderCustomer.name = customerName;
-                if (customerPhone) currentOrderCustomer.phone = customerPhone;
-                if (customerAddress) currentOrderCustomer.address = customerAddress;
-                if (chatContext) currentChatContext = chatContext;
+            // Ensure dropdown options hold the actual price for auto-calculation
+            async function loadShopProducts() {
+                if (productsLoaded) return;
+                try {
+                    const response = await apiCall('/api/products');
+                    if (response.ok) {
+                        const products = await response.json();
+                        // ADDED data-price
+                        cachedProductOptions = '<option value="" data-price="0">Select a product...</option>' +
+                            products.map(p => `<option value="${p.id}" data-price="${p.price}">${p.baseName} - ৳${p.price}</option>`).join('');
+                        productsLoaded = true;
+                    }
+                } catch (error) {
+                    console.error("Failed to load products for dropdown", error);
+                }
+            }
 
-                // Update modal title
-                document.getElementById('modal-customer-name').innerText = `Create Order for ${currentOrderCustomer.name}`;
+            // Add row with change listeners linked to our auto-calculator
+            function addOrderItemRow(productId = '', quantity = 1) {
+                const container = document.getElementById('dynamic-items-container');
+                const row = document.createElement('div');
+                // Made the row look cleaner without harsh borders
+                row.className = 'item-row flex space-x-2 items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm';
 
-                // Pre-fill phone and address
-                document.getElementById('order-phone').value = currentOrderCustomer.phone;
-                document.getElementById('order-address').value = currentOrderCustomer.address;
+                row.innerHTML = `
+                    <select onchange="calculateTotal()" class="item-select flex-1 px-2 py-1.5 bg-transparent text-sm font-medium focus:outline-none cursor-pointer text-gray-800">
+                        ${cachedProductOptions}
+                    </select>
+                    <div class="flex items-center border-l border-gray-200 pl-3">
+                        <input type="number" min="1" oninput="calculateTotal()" class="item-qty w-16 px-2 py-1 text-center bg-gray-50 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold" value="${quantity}">
+                    </div>
+                    <button type="button" onclick="this.parentElement.remove(); calculateTotal();" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-md transition-colors ml-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                `;
 
-                // Clear other fields
-                document.getElementById('order-items').value = '';
-                document.getElementById('order-amount').value = '';
-                document.getElementById('order-delivery').value = 'Pathao';
+                container.appendChild(row);
 
-                // Reset payment method to COD
-                const paymentSelect = document.getElementById('payment-method');
-                if (paymentSelect) {
-                    paymentSelect.value = 'Cash on Delivery';
+                if (productId) {
+                    row.querySelector('.item-select').value = productId;
                 }
 
-                // Show modal
+                calculateTotal(); // Trigger calculation immediately upon adding a row
+            }
+
+            // The New Auto-Calculator Engine
+            function calculateTotal() {
+                let total = 0;
+                const rows = document.querySelectorAll('#dynamic-items-container .item-row');
+
+                rows.forEach(row => {
+                    const selectEl = row.querySelector('.item-select');
+                    const qtyEl = row.querySelector('.item-qty');
+
+                    if (selectEl && qtyEl) {
+                        const selectedOption = selectEl.options[selectEl.selectedIndex];
+                        const price = parseFloat(selectedOption?.getAttribute('data-price') || 0);
+                        const quantity = parseInt(qtyEl.value || 0);
+
+                        if (!isNaN(price) && !isNaN(quantity) && quantity > 0) {
+                            total += (price * quantity);
+                        }
+                    }
+                });
+
+                // Updates our fancy summary box
+                document.getElementById('order-amount').value = total.toFixed(2);
+            }
+
+            async function openOrderModal(contactId, customerName, customerPhone, customerAddress) {
+                await loadShopProducts();
+
+                currentOrderCustomer = { id: contactId, name: customerName, phone: customerPhone, address: customerAddress };
+                currentDraftId = null;
+
+                // Reset UI
+                document.getElementById('modal-customer-name').innerText = `Create Order`;
+                document.getElementById('order-phone').value = customerPhone || '';
+                document.getElementById('order-address').value = customerAddress || '';
+                document.getElementById('order-amount').value = '0.00';
+                document.getElementById('dynamic-items-container').innerHTML = '';
+                document.getElementById('btn-discard-draft').classList.add('hidden');
+
+                if (contactId) {
+                    try {
+                        const response = await apiCall(`/api/drafts/contact/${contactId}`);
+                        if (response.ok) {
+                            const drafts = await response.json();
+
+                            if (drafts && drafts.length > 0) {
+                                const draft = drafts[0];
+                                currentDraftId = draft.id;
+
+                                document.getElementById('order-phone').value = draft.providedPhone || '';
+                                document.getElementById('order-address').value = draft.providedAddress || '';
+
+                                if (draft.deliveryMethod) document.getElementById('order-delivery').value = draft.deliveryMethod;
+                                if (draft.paymentMethod) document.getElementById('payment-method').value = draft.paymentMethod;
+
+                                if(draft.items && draft.items.length > 0) {
+                                    draft.items.forEach(item => {
+                                        addOrderItemRow(item.productId, item.quantity);
+                                    });
+                                } else {
+                                    addOrderItemRow();
+                                }
+
+                                document.getElementById('modal-customer-name').innerHTML = `Review AI Draft <span class="text-sm font-medium text-gray-500 ml-2">for ${customerName}</span>`;
+                                document.getElementById('btn-discard-draft').classList.remove('hidden');
+                            } else {
+                                addOrderItemRow();
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Failed to fetch drafts:", error);
+                        addOrderItemRow();
+                    }
+                } else {
+                    addOrderItemRow();
+                }
+
+                calculateTotal(); // Run one final check before showing to user
                 document.getElementById('create-order-modal').classList.remove('hidden');
             }
 
             function closeOrderModal() {
                 document.getElementById('create-order-modal').classList.add('hidden');
+                document.getElementById('btn-discard-draft').classList.add('hidden');
             }
 
-            function extractFromChat(event) {
-                // This is a mock function - in production, you'd parse the actual chat
-                const mockExtractedData = {
-                    items: 'Sneakers (White, 42) x1',
-                    amount: '2500',
-                    address: currentOrderCustomer.address,
-                    phone: currentOrderCustomer.phone
-                };
+            // The New Backend Discard API Hook
+            async function rejectDraft() {
+                if (!currentDraftId) return;
 
-                if (currentOrderCustomer.name === 'Fatima Rahman') {
-                    mockExtractedData.items = 'White Sneakers (Size 40) x1';
-                    mockExtractedData.amount = '2500';
+                // Optional: Add a simple browser confirmation for safety
+                if (!confirm("Are you sure you want to discard this AI draft?")) return;
+
+                try {
+                    const response = await apiCall(`/api/drafts/${currentDraftId}`, { method: 'DELETE' });
+
+                    if (response.ok) {
+                        // Provide visual feedback
+                        alert("Draft discarded successfully.");
+
+                        // Wipe the green notification badge off the CRM
+                        if (typeof clearOrderReadyBadge === 'function') {
+                            clearOrderReadyBadge();
+                        }
+
+                        closeOrderModal();
+                    } else {
+                        alert('Failed to discard draft from database.');
+                    }
+                } catch (error) {
+                    console.error("Error rejecting draft:", error);
+                    alert('Network error while discarding draft.');
                 }
-
-                // Fill the form with extracted data
-                document.getElementById('order-items').value = mockExtractedData.items;
-                document.getElementById('order-amount').value = mockExtractedData.amount;
-                document.getElementById('order-phone').value = mockExtractedData.phone;
-                document.getElementById('order-address').value = mockExtractedData.address;
-
-                // Show success animation
-                const btn = event.target.closest('button');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '✅ Extracted!';
-                btn.classList.add('bg-green-50', 'border-green-200', 'text-green-700');
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.remove('bg-green-50', 'border-green-200', 'text-green-700');
-                }, 1500);
             }
 
-            function createOrder() {
-                const items = document.getElementById('order-items').value;
-                const amount = document.getElementById('order-amount').value;
-                const delivery = document.getElementById('order-delivery').value;
-                const phone = document.getElementById('order-phone').value;
-                const address = document.getElementById('order-address').value;
+            function renderOrderHistory(orders) {
+                const historyContainer = document.getElementById('sidebar-order-history');
 
-                // Get selected payment method from the dropdown
-                const paymentSelect = document.getElementById('payment-method');
-                const paymentMethod = paymentSelect ? paymentSelect.value : 'Cash on Delivery';
-
-                if (!items || !amount) {
-                    alert('Please fill in items and amount');
+                if (!orders || orders.length === 0) {
+                    historyContainer.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">No orders found.</p>';
                     return;
                 }
 
-                // Log to console (no database)
-                console.log('Order created:', {
-                    customer: currentOrderCustomer.name,
-                    items,
-                    amount,
-                    delivery,
-                    paymentMethod,
-                    phone,
-                    address
+                // 1. Sort chronologically (Newest first)
+                const sortedOrders = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                // 2. Build the dynamic order cards
+                historyContainer.innerHTML = sortedOrders.map(order => {
+                    const orderDate = new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                    // Clean, medium-weight status badges
+                    let statusBadge = '';
+                    switch(order.status) {
+                        case 'DELIVERED':
+                            statusBadge = `<span class="text-[11px] font-medium uppercase tracking-wider text-green-700 bg-green-50 px-2 py-0.5 rounded-md">Delivered</span>`;
+                            break;
+                        case 'PENDING':
+                            statusBadge = `<span class="text-[11px] font-medium uppercase tracking-wider text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded-md">Pending</span>`;
+                            break;
+                        case 'CONFIRMED':
+                            statusBadge = `<span class="text-[11px] font-medium uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">Confirmed</span>`;
+                            break;
+                        case 'SHIPPED':
+                            statusBadge = `<span class="text-[11px] font-medium uppercase tracking-wider text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">Shipped</span>`;
+                            break;
+                        case 'CANCELLED':
+                            statusBadge = `<span class="text-[11px] font-medium uppercase tracking-wider text-red-700 bg-red-50 px-2 py-0.5 rounded-md">Cancelled</span>`;
+                            break;
+                        default:
+                            statusBadge = `<span class="text-[11px] font-medium uppercase tracking-wider text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md">${order.status || 'Unknown'}</span>`;
+                    }
+
+                    // 3. Render the nested items vertically
+                    let itemsHtml = '<p class="text-[13px] text-gray-400 italic">No items found</p>';
+                    if (order.items && order.items.length > 0) {
+                        itemsHtml = order.items.map(item => `
+                            <div class="flex justify-between items-center text-[13px] text-gray-800 mb-1.5">
+                                <span class="truncate pr-2">
+                                    ${item.productName}
+                                    <span class="text-gray-400 ml-1 text-xs">x${item.quantity}</span>
+                                </span>
+                                <span class="font-medium text-gray-700 flex-shrink-0">৳${item.price}</span>
+                            </div>
+            `           ).join('');
+                    }
+
+                    return `
+                        <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm mb-3">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-medium text-gray-600 bg-gray-50 border border-gray-100 px-2 py-1 rounded">#${order.id}</span>
+                                ${statusBadge}
+                            </div>
+
+                            <div class="mb-4">
+                                ${itemsHtml}
+                            </div>
+
+                            <hr class="border-gray-100 mb-3">
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-[12px] text-gray-500">${orderDate}</span>
+                                <span class="text-[14px] font-medium text-gray-900">Total: ৳${order.totalAmount}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async function createOrder() {
+                const uiItems = [];
+                const itemRows = document.querySelectorAll('.item-row');
+
+                itemRows.forEach(row => {
+                    const productId = row.querySelector('.item-select').value;
+                    const quantity = parseInt(row.querySelector('.item-qty').value);
+
+                    if (productId && quantity > 0) {
+                        uiItems.push({ productId: parseInt(productId), quantity: quantity });
+                    }
                 });
 
-                // Show success message
+                if (uiItems.length === 0) {
+                    alert("Please select at least one product for the order.");
+                    return;
+                }
+
+                const payload = {
+                    overridePhone: document.getElementById('order-phone').value,
+                    overrideAddress: document.getElementById('order-address').value,
+                    overrideDelivery: document.getElementById('order-delivery').value,
+                    overridePayment: document.getElementById('payment-method').value,
+                    items: uiItems
+                };
+
+                if (currentDraftId) {
+                    try {
+                        const response = await apiCall(`/api/drafts/${currentDraftId}/confirm`, {
+                            method: 'POST',
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            // Wipe the badge
+                            const badge = document.getElementById(`badge-${currentOrderCustomer.id}`);
+                            if(badge) badge.classList.add('hidden');
+
+                            closeOrderModal();
+
+                            // INSTANT REFRESH: Reload the right column silently
+                            loadCustomerData(currentOrderCustomer.id);
+                        } else {
+                            alert("Failed to confirm draft order.");
+                        }
+                    } catch (error) {
+                        console.error("Error confirming draft:", error);
+                    }
+                    return;
+                }
+
+                // --- MANUAL ORDER LOGIC ---
+                try {
+                    const response = await apiCall('/api/orders', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            customerId: currentOrderCustomer.id,
+                            deliveryMethod: payload.overrideDelivery,
+                            paymentMethod: payload.overridePayment,
+                            items: payload.items
+                        })
+                    });
+
+                    if (response.ok) {
+                        closeOrderModal();
+
+                        // INSTANT REFRESH: Reload the right column silently
+                        loadCustomerData(currentOrderCustomer.id);
+                    } else {
+                        alert("Failed to create manual order.");
+                    }
+                } catch (error) {
+                    console.error("Error creating manual order:", error);
+                }
+            }
+
+
+            // Helper Toast Function for Success Messages
+            function showToast(message) {
                 const toast = document.createElement('div');
                 toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                toast.innerHTML = `✅ Order created for ${currentOrderCustomer.name}!<br>Amount: ${amount} BDT · ${paymentMethod}`;
+                toast.innerHTML = message;
                 document.body.appendChild(toast);
                 setTimeout(() => toast.remove(), 4000);
-
-                closeOrderModal();
             }
 
             // Close modal when clicking outside
@@ -2126,15 +2284,30 @@
             // ====================================================
             // AI DRAFT FUNCTIONS
             // ====================================================
-            function generateAiDraft() {
-                const drafts = [
-                    'Yes, we have that in stock! The price is 1500 BDT. Would you like to order?',
-                    'Sure! We can deliver within Dhaka in 1-2 days. Please share your address.',
-                    'Apologies for the delay. Let me check the tracking status for you right away.',
-                ];
-                const randomDraft = drafts[Math.floor(Math.random() * drafts.length)];
-                document.getElementById('ai-draft-text').innerText = randomDraft;
-                document.getElementById('ai-draft-banner').classList.remove('hidden');
+            async function generateAiDraft() {
+                if (!currentOrderCustomer.id) return; // Ensure we have a selected contact
+
+                const draftTextEl = document.getElementById('ai-draft-text');
+                const draftBanner = document.getElementById('ai-draft-banner');
+
+                // Show loading state
+                draftTextEl.innerText = "✨ AI is reading the chat history...";
+                draftBanner.classList.remove('hidden');
+
+                try {
+                    // Hit the endpoint we planned for Step 2
+                    const response = await apiCall(`/api/v1/admin/ai-assistant/draft/${currentOrderCustomer.id}`);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        draftTextEl.innerText = data.suggestion; // Map the AI string to the banner
+                    } else {
+                        draftTextEl.innerText = "⚠️ Failed to generate a draft. Please try again.";
+                    }
+                } catch (error) {
+                    console.error("AI Draft Error:", error);
+                    draftTextEl.innerText = "⚠️ Network error while generating draft.";
+                }
             }
 
             function useAiDraft() {
@@ -2148,35 +2321,6 @@
 
             function dismissAiDraft() {
                 document.getElementById('ai-draft-banner').classList.add('hidden');
-            }
-
-            // ====================================================
-            // INTERACTIVE TAGS
-            // ====================================================
-            function toggleTag(element) {
-                const tag = element;
-                const tagText = tag.innerText.trim();
-
-                // Define colors for each tag type
-                const tagColors = {
-                    'Bkash Pending': 'bg-pink-100 text-pink-800 border-pink-200',
-                    'Dhaka Inside': 'bg-green-100 text-green-800 border-green-200',
-                    'Outside Dhaka': 'bg-blue-100 text-blue-800 border-blue-200',
-                    'Urgent': 'bg-red-100 text-red-800 border-red-200',
-                    'VIP': 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                };
-
-                // Check if tag is currently selected (has colored background)
-                const isSelected = !tag.classList.contains('bg-white');
-
-                if (isSelected) {
-                    // Deselect: make white
-                    tag.className = 'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-300 tag-badge';
-                } else {
-                    // Select: apply color
-                    const colorClass = tagColors[tagText] || 'bg-gray-100 text-gray-800';
-                    tag.className = `inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colorClass} tag-badge`;
-                }
             }
 
             // --- GLOBAL STATE ---
@@ -2211,18 +2355,33 @@
                     return;
                 }
 
-                // 2. Open the SSE Connection (passing the token in the URL)
+                // 2. Open the SSE Connection
                 const eventSource = new EventSource(`http://localhost:8080/api/messages/stream?token=${token}`);
 
-                // 3. Listen for 'newMessage' events sent by the backend SseService
+                // 3. Listen for 'newMessage' events
                 eventSource.addEventListener('newMessage', function(event) {
                     const newMessage = JSON.parse(event.data);
                     const contactId = newMessage.contact.id;
                     const timeString = new Date(newMessage.createdAt || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
                     if (inboxConversations[contactId] && inboxConversations[contactId].messages) {
+                        // Push the new message to history
                         inboxConversations[contactId].messages.push(newMessage);
+
+                        // --- THE FIX: PRESERVE AI FLAGS FROM STALE BACKEND PAYLOAD ---
+                        // Before overwriting the contact with the one attached to the message,
+                        // check if our current UI state already has the flags set to TRUE.
+                        const currentRequiresHuman = inboxConversations[contactId].contact.requiresHuman;
+                        const currentOrderReady = inboxConversations[contactId].contact.orderReady;
+
+                        // Overwrite with the message's contact snapshot
                         inboxConversations[contactId].contact = newMessage.contact;
+
+                        // If we already knew they needed a human or had a draft ready,
+                        // re-apply those 'true' states even if the incoming message says 'false'
+                        if (currentRequiresHuman) inboxConversations[contactId].contact.requiresHuman = true;
+                        if (currentOrderReady) inboxConversations[contactId].contact.orderReady = true;
+                        // -------------------------------------------------------------
 
                         if (currentSelectedContactId !== contactId) {
                             renderConversationSidebar();
@@ -2232,37 +2391,38 @@
                         }
                     }
 
+                    // --- RENDER MESSAGE UI ---
                     if (currentSelectedContactId === contactId) {
                         const chatContainer = document.getElementById('chat-messages');
                         const contactName = newMessage.contact.name || "Customer";
                         const initials = contactName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
                         const avatarColors = ['bg-purple-500', 'bg-green-500', 'bg-blue-500', 'bg-pink-500', 'bg-orange-500'];
                         const colorClass = avatarColors[contactName.length % avatarColors.length];
 
                         let messageHtml = '';
-
                         if (newMessage.direction === 'OUTBOUND') {
                             messageHtml = `
-                                <div class="flex items-start justify-end group">
-                                    <div class="mr-3 max-w-md">
-                                        <div class="bg-blue-600 rounded-2xl rounded-tr-sm p-3 shadow-sm">
-                                            <p class="text-sm text-white leading-relaxed">${newMessage.content}</p>
-                                        </div>
-                                        <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1.5 block text-right">${timeString}</span>
+                            <div class="flex items-start justify-end group animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div class="mr-3 max-w-md">
+                                    <div class="bg-blue-600 rounded-2xl rounded-tr-sm p-3 shadow-sm">
+                                        <p class="text-sm text-white leading-relaxed">${newMessage.content}</p>
                                     </div>
-                                    <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm">ME</div>
-                                </div>`;
+                                    <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1.5 block text-right">${timeString}</span>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm">ME</div>
+                            </div>`;
                         } else {
                             messageHtml = `
-                                <div class="flex items-start group">
-                                    <div class="w-8 h-8 rounded-full ${colorClass} text-white flex items-center justify-center font-medium text-xs flex-shrink-0 shadow-sm">${initials}</div>
-                                    <div class="ml-3 max-w-md">
-                                        <div class="bg-white border border-gray-100 rounded-2xl rounded-tl-sm p-4 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)]">
-                                            <p class="text-sm text-gray-700 leading-relaxed">${newMessage.content}</p>
-                                        </div>
-                                        <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1.5 block">${timeString}</span>
+                            <div class="flex items-start group animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div class="w-8 h-8 rounded-full ${colorClass} text-white flex items-center justify-center font-medium text-xs flex-shrink-0 shadow-sm">${initials}</div>
+                                <div class="ml-3 max-w-md">
+                                    <div class="bg-white border border-gray-100 rounded-2xl rounded-tl-sm p-4 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)]">
+                                        <p class="text-sm text-gray-700 leading-relaxed">${newMessage.content}</p>
                                     </div>
-                                </div>`;
+                                    <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1.5 block">${timeString}</span>
+                                </div>
+                            </div>`;
                         }
 
                         chatContainer.insertAdjacentHTML('beforeend', messageHtml);
@@ -2271,32 +2431,45 @@
                     }
                 });
 
-                // ==========================================
-                // NEW: Listen for AI Contact Updates (Flags/Orders)
-                // ==========================================
+                // 4. Listen for AI Contact Updates (This handles the initial flag trigger)
                 eventSource.addEventListener('contactUpdate', function(event) {
                     const updatedContact = JSON.parse(event.data);
                     const contactId = updatedContact.id;
 
-                    // If we have this contact in memory, update their state
                     if (inboxConversations[contactId]) {
-                        console.log(`AI updated state for ${contactId}: requiresHuman=${updatedContact.requiresHuman}, orderReady=${updatedContact.orderReady}`);
+                        console.log(`AI updated state for ${contactId}: orderReady=${updatedContact.orderReady}`);
 
                         // Overwrite the old contact details with the new ones from the database
                         inboxConversations[contactId].contact = updatedContact;
 
-                        // Instantly re-render the sidebar to show or hide the AI badges!
+                        // Instantly re-render the sidebar to show the draft badge there
                         renderConversationSidebar();
 
-                        // If this is the active chat, we will eventually trigger the Order Modal badge here
-                        if (currentSelectedContactId === contactId && updatedContact.orderReady) {
-                            // TODO: Update the "Create Order" button to pulse or show a badge
+                        // --- NEW: DYNAMIC HEADER BADGE LOGIC ---
+                        // Only update the button badge if the admin is currently looking at this specific customer
+                        if (currentSelectedContactId === contactId) {
+                            const badge = document.getElementById('order-ready-badge');
+                            const btn = document.getElementById('create-order-btn');
+
+                            if (updatedContact.orderReady) {
+                                // 1. Unhide the green dot
+                                if (badge) badge.classList.remove('hidden');
+
+                                // 2. Add a brief physical bounce to the button to catch their eye
+                                if (btn) {
+                                    btn.classList.add('animate-bounce');
+                                    setTimeout(() => btn.classList.remove('animate-bounce'), 3000); // stops bouncing after 3s
+                                }
+                            } else {
+                                // Hide it if the backend says there's no draft anymore
+                                if (badge) badge.classList.add('hidden');
+                            }
                         }
                     }
                 });
 
                 eventSource.onerror = function(err) {
-                    console.error("SSE connection dropped. Attempting to reconnect in 5 seconds...");
+                    console.error("SSE connection dropped. Attempting to reconnect...");
                     eventSource.close();
                     setTimeout(initializeRealTimeChat, 5000);
                 };
@@ -2304,17 +2477,35 @@
 
             function processConversations(messages) {
                 inboxConversations = {};
-                // Reverse so messages are chronological, meaning the last item is the latest
+
+                // Reverse so messages are chronological (oldest first)
                 messages.reverse().forEach(msg => {
                     const contactId = msg.contact.id;
+
                     if (!inboxConversations[contactId]) {
                         inboxConversations[contactId] = {
                             contact: msg.contact,
                             messages: []
                         };
+                    } else {
+                        // THE FIX: Overwrite the contact state with newer messages as we loop
+                        inboxConversations[contactId].contact = msg.contact;
                     }
+
                     inboxConversations[contactId].messages.push(msg);
                 });
+            }
+
+            function clearOrderReadyBadge() {
+                // 1. Hide the green dot visually
+                const badge = document.getElementById('order-ready-badge');
+                if (badge) badge.classList.add('hidden');
+
+                // 2. Update the local UI state so it doesn't pop back up if they switch chats
+                if (currentSelectedContactId && inboxConversations[currentSelectedContactId]) {
+                    inboxConversations[currentSelectedContactId].contact.orderReady = false;
+                    renderConversationSidebar(); // Removes the badge from the sidebar too
+                }
             }
 
             // --- RENDERING THE SIDEBAR ---
@@ -2542,14 +2733,28 @@
 
                     // 2. Instantly update the Profile Header (Snappy UI)
                     const contactName = convo.contact.name || "Customer";
-                    // Safely handles names with double spaces without crashing
                     const initials = contactName.trim().split(/\s+/).map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
                     document.getElementById('profile-name').innerText = contactName;
                     document.getElementById('profile-avatar').innerText = initials;
 
+                    // --- NEW: DYNAMICALLY WIRE THE CREATE ORDER BUTTON ---
+                    const createOrderBtn = document.getElementById('create-order-btn');
+                    if (createOrderBtn) {
+                        createOrderBtn.onclick = () => {
+                            // Read from the profile UI elements (replace these IDs with your actual HTML IDs)
+                            // If they are empty (e.g., a new lead), it safely passes empty strings!
+                            const phoneEl = document.getElementById('profile-phone');
+                            const addressEl = document.getElementById('profile-address');
+
+                            const currentPhone = phoneEl ? phoneEl.innerText : '';
+                            const currentAddress = addressEl ? addressEl.innerText : '';
+
+                            openOrderModal(contactId, contactName, currentPhone, currentAddress);
+                        };
+                    }
+
                     // 3. FETCH CUSTOMER DATA
-                    // We can now safely rely on the flat ID provided by your Spring Boot @JsonProperty
                     if (convo.contact.customerId) {
                         loadCustomerData(convo.contact.customerId);
                     } else {
@@ -2561,7 +2766,6 @@
                 renderConversationSidebar();
                 openChatThread(contactId);
             }
-
             async function loadCustomerData(customerId) {
                 console.log(`--- DEBUG: loadCustomerData Triggered for ID: ${customerId} ---`);
                 try {
@@ -2976,68 +3180,85 @@
             }
         </script>
 
-        <div id="create-order-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-xl font-bold text-gray-900" id="modal-customer-name">Create Order for Fatima Rahman</h2>
+        <div id="create-order-modal" class="hidden fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+
+                <div class="px-6 py-4 border-b border-gray-100 bg-white flex-shrink-0">
+                    <h2 class="text-lg font-medium text-gray-900 tracking-tight" id="modal-customer-name">Create Order</h2>
                 </div>
 
-                <div class="p-6 space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Items</label>
-                        <input type="text" id="order-items" placeholder="e.g., T-Shirt (Black, L) x1, Jeans (Blue, 32) x1"
-                               class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Amount (BDT)</label>
-                        <input type="number" id="order-amount" placeholder="1500"
-                               class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Method</label>
-                        <select id="order-delivery" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option>Pathao</option>
-                            <option>Steadfast</option>
-                            <option>RedX</option>
-                            <option>Self Pickup</option>
-                        </select>
-                    </div>
+                <div class="p-6 space-y-6 overflow-y-auto custom-scrollbar">
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-                        <select id="payment-method" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="Cash on Delivery">Cash on Delivery</option>
-                            <option value="Bkash">Bkash</option>
-                            <option value="Nagad">Nagad</option>
-                            <option value="Rocket">Rocket</option>
-                        </select>
-                    </div>
+                        <label class="block text-sm font-medium text-gray-900 mb-3">Order Items</label>
 
-                    <div class="flex justify-end">
-                        <button onclick="extractFromChat(event)" class="flex items-center px-4 py-2 bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 hover:bg-purple-100 transition">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-                            </svg>
-                            Extract from Chat
+                        <div id="dynamic-items-container" class="space-y-3">
+                        </div>
+
+                        <button type="button" onclick="addOrderItemRow()" class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center transition-colors focus:outline-none rounded">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Add Product
                         </button>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                        <input type="text" id="order-phone" placeholder="01712345678"
-                               class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <hr class="border-gray-100">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Delivery Method</label>
+                            <select id="order-delivery" class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer shadow-sm">
+                                <option value="PATHAO">Pathao</option>
+                                <option value="STEADFAST">Steadfast</option>
+                                <option value="REDX">RedX</option>
+                                <option value="SELF_PICKUP">Self Pickup</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Payment Method</label>
+                            <select id="payment-method" class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer shadow-sm">
+                                <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
+                                <option value="BKASH">Bkash</option>
+                                <option value="NAGAD">Nagad</option>
+                                <option value="ROCKET">Rocket</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
-                        <textarea id="order-address" rows="2" placeholder="Dhanmondi 15, Dhaka"
-                                  class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
+                            <input type="text" id="order-phone" placeholder="01712345678" class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Delivery Address</label>
+                            <textarea id="order-address" rows="2" placeholder="Dhanmondi 15, Dhaka" class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-sm"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4 flex justify-between items-center border border-gray-200">
+                        <span class="text-sm font-medium text-gray-700">Total Amount</span>
+                        <div class="flex items-center">
+                            <span class="text-sm font-medium text-gray-500 mr-1.5">BDT</span>
+                            <input type="text" id="order-amount" readonly class="w-24 bg-transparent text-right text-lg font-medium text-gray-900 focus:outline-none cursor-default" value="0.00">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="px-6 py-4 border-t border-gray-100 bg-white flex-shrink-0 flex justify-between items-center rounded-b-xl">
+                    <button id="btn-discard-draft" onclick="rejectDraft()" class="hidden px-4 py-2.5 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/40">
+                        Discard Draft
+                    </button>
+                    <div class="flex space-x-3 ml-auto">
+                        <button onclick="closeOrderModal()" class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
+                            Cancel
+                        </button>
+                        <button id="btn-confirm-order" onclick="createOrder()" class="px-4 py-2.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-1">
+                            Confirm Order
+                        </button>
                     </div>
                 </div>
 
-                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                    <button onclick="closeOrderModal()" class="px-4 py-2 text-gray-600 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
-                    <button onclick="createOrder()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">Create Order</button>
-                </div>
             </div>
         </div>
     </div>

@@ -9,16 +9,22 @@ import org.springframework.stereotype.Service;
 public class IntentClassifier {
     private final ChatClient chatClient;
 
-    // THE FIX: Explicitly ask Spring for the Gemini model, not a generic builder
     public IntentClassifier(OpenAiChatModel openRouterModel) {
         this.chatClient = ChatClient.builder(openRouterModel).build();
     }
 
     public String classify(String text) {
         return chatClient.prompt()
-                .system("Classify the message into: 'PRODUCT_QUERY' (asking about items), 'ORDER_REQUEST' (wants to buy/purchase/order), or 'OTHER'. Reply with ONLY the word.")
+                .system("""
+                    Classify the message into exactly ONE of these categories:
+                    - 'PRODUCT_QUERY': Customer asking about prices, stock, or items.
+                    - 'ORDER_REQUEST': Customer wants to buy, purchase, or start an order.
+                    - 'HUMAN_REQUEST': Customer wants a person, agent, human, or mentions 'intervention'.
+                    - 'OTHER': General greetings or unrelated chat.
+                    
+                    Reply with ONLY the category word.
+                    """)
                 .user(text)
-                .advisors(a -> a.param("chat_client_max_tool_calls", 3))
                 .call()
                 .content().toUpperCase().trim();
     }

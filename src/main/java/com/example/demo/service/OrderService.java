@@ -127,6 +127,20 @@ public class OrderService {
         dto.setDeliveryMethod(order.getDeliveryMethod());
         dto.setPaymentMethod(order.getPaymentMethod());
         dto.setCreatedAt(order.getCreatedAt());
+
+        // NEW: Map the Order Items into the DTO safely
+        if (order.getItems() != null) {
+            List<OrderDto.OrderItemDto> itemDtos = order.getItems().stream().map(item -> {
+                OrderDto.OrderItemDto itemDto = new OrderDto.OrderItemDto();
+                itemDto.setProductId(item.getProduct().getId());
+                itemDto.setProductName(item.getProduct().getBaseName());
+                itemDto.setQuantity(item.getQuantity());
+                itemDto.setPrice(item.getUnitPrice());
+                return itemDto;
+            }).collect(Collectors.toList());
+            dto.setItems(itemDtos);
+        }
+
         return dto;
     }
 }

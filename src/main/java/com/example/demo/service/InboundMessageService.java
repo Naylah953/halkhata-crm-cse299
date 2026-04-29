@@ -115,64 +115,52 @@ public class InboundMessageService {
 
     private void saveMessage(Contact contact, String content, String type, String mid) {
 
-        // ==========================================
         // 0. DEDUPLICATION CHECK (Stop Meta Retries)
-        // ==========================================
         if (mid != null && messageRepo.existsByMetaMid(mid)) {
             System.out.println("Duplicate Meta webhook ignored. MID already exists: " + mid);
-            return; // Completely stop processing this duplicate
+            return;
         }
 
-        // 1. INCREMENT THE UNREAD COUNT AND SAVE THE CONTACT FIRST
+        // 1. UPDATE CONTACT STATE
         int currentCount = (contact.getUnreadCount() == null) ? 0 : contact.getUnreadCount();
         contact.setUnreadCount(currentCount + 1);
-
-        // --- THE FIX: Create a final variable for the lambda to use safely ---
         final Contact finalContact = contactRepo.save(contact);
 
-        // 2. CREATE AND SAVE THE MESSAGE
+        // 2. SAVE MESSAGE
         Message newMessage = new Message();
         newMessage.setContent(content);
         newMessage.setMetaMid(mid);
         newMessage.setMessageType(type);
-        newMessage.setContact(finalContact); // Use the finalContact
+        newMessage.setContact(finalContact);
         newMessage.setDirection(Message.Direction.INBOUND);
         newMessage.setSenderType(Message.SenderType.USER);
 
         Message savedMessage = messageRepo.save(newMessage);
-        System.out.println("Saved inbound message for shop: " + finalContact.getTenant().getName());
 
         // 3. REAL-TIME UI UPDATE
         sseService.pushMessageToTenant(finalContact.getTenant().getId(), savedMessage);
 
-        // ==========================================
         // 4. ASYNCHRONOUS AI ROUTING LOGIC
-        // ==========================================
-        if ("text".equals(type)) {
+        if ("text".equals(type) && finalContact.getTenant().isEnableAiReplies()) {
 
-            if (finalContact.getTenant().isEnableAiReplies()) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    String intent = intentClassifier.classify(content);
+                    System.out.println("AI Intent Detected: " + intent);
 
-                // IMPORTANT: Push the heavy AI logic to a background thread!
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        String intent = intentClassifier.classify(content);
-                        System.out.println("AI Intent Detected: " + intent);
+                    // --- THE FIX: ADD HUMAN_REQUEST TO THE ALLOWED INTENTS ---
+                    if ("PRODUCT_QUERY".equals(intent) || "ORDER_REQUEST".equals(intent) || "HUMAN_REQUEST".equals(intent)) {
 
-                        if ("PRODUCT_QUERY".equals(intent) || "ORDER_REQUEST".equals(intent)) {
-                            // Safely use finalContact inside the background thread
-                            String aiReply = customerAssistantService.handleAiLogic(finalContact, content, finalContact.getTenant().getId());
-                            outboundMessageService.sendAiReply(finalContact, aiReply);
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Async AI execution failed: " + e.getMessage());
-                        // --- THE TRACE TO REVEAL THE REAL ERROR ---
-                        e.printStackTrace();
+                        // This calls CustomerAssistantService, which uses the ModeratorTools.requestHuman tool
+                        String aiReply = customerAssistantService.handleAiLogic(finalContact, content, finalContact.getTenant().getId());
+
+                        outboundMessageService.sendAiReply(finalContact, aiReply);
                     }
-                });
-
-            } else {
-                System.out.println("AI ignored message: Auto-Reply is DISABLED for shop " + finalContact.getTenant().getName());
-            }
+                } catch (Exception e) {
+                    System.err.println("Async AI execution failed: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
         }
     }
 }

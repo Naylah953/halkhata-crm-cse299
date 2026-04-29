@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class OrderDto {
@@ -19,4 +20,15 @@ public class OrderDto {
     private DeliveryMethod deliveryMethod;
     private PaymentMethod paymentMethod;
     private LocalDateTime createdAt;
+
+    // NEW: The nested items list
+    private List<OrderItemDto> items;
+
+    @Data
+    public static class OrderItemDto {
+        private Long productId;
+        private String productName;
+        private Integer quantity;
+        private BigDecimal price;
+    }
 }

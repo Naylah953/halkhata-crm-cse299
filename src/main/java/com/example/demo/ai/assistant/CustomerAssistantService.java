@@ -40,6 +40,27 @@ public class CustomerAssistantService {
                 .map(m -> m.getSenderType() + ": " + m.getContent())
                 .collect(Collectors.joining("\n"));
 
+        /* --- ORIGINAL SYSTEM INSTRUCTION (Commented out for later) ---
+        String systemInstruction = """
+                You are a helpful customer support AI for a shop in Bangladesh.
+
+                [CONTEXT]
+                Current Contact ID: {contactId}
+                Current Tenant ID: {tenantId}
+
+                [CHAT HISTORY]
+                {history}
+
+                [INSTRUCTIONS]
+                - Be polite and concise.
+                - If the user asks for a price or product, use the 'productLookup' tool.
+                - If they want to buy, ask for their name, phone number, and delivery address.
+                - Once you have their name, phone, address, and the items they want, use the 'draftOrder' tool.
+                - ALWAYS pass the exact {contactId} and {tenantId} provided above when calling tools.
+                """;
+        */
+
+        // --- NEW SYSTEM INSTRUCTION (For Prototype Dummy Testing) ---
         String systemInstruction = """
                 You are a helpful customer support AI for a shop in Bangladesh.
                 
@@ -53,8 +74,8 @@ public class CustomerAssistantService {
                 [INSTRUCTIONS]
                 - Be polite and concise.
                 - If the user asks for a price or product, use the 'productLookup' tool.
-                - If they want to buy, ask for their name, phone number, and delivery address.
-                - Once you have their name, phone, address, and the items they want, use the 'draftOrder' tool.
+                - CRITICAL RULE FOR ORDERING: If the customer expresses ANY intent to buy, purchase, or order, you must IMMEDIATELY call the `draftOrder` tool. DO NOT ask them what they want to buy. DO NOT ask for their name, phone number, or delivery address. Just call the tool instantly.
+                - CRITICAL RULE FOR HUMAN HANDOFF: If the user asks to speak to a human, agent, or representative, immediately call the `requestHuman` tool.
                 - ALWAYS pass the exact {contactId} and {tenantId} provided above when calling tools.
                 """;
 
@@ -65,7 +86,7 @@ public class CustomerAssistantService {
                             .param("tenantId", safeTenantId)
                             .param("history", historyContext))
                     .user(userText)
-                    .tools(productTool)
+                    .tools(productTool) // Make sure productTool has both draftOrder and requestHuman
                     .advisors(a -> a.param("chat_client_max_tool_calls", 3))
                     .call()
                     .content();
@@ -76,4 +97,3 @@ public class CustomerAssistantService {
         }
     }
 }
-
