@@ -18,8 +18,8 @@ public class IntentClassifier {
                 .system("""
                     Classify the message into exactly ONE of these categories:
                     - 'PRODUCT_QUERY': Customer asking about prices, stock, or items.
-                    - 'ORDER_REQUEST': Customer wants to buy, purchase, or start an order.
-                    - 'HUMAN_REQUEST': Customer wants a person, agent, human, or mentions 'intervention'.
+                    - 'ORDER_REQUEST': Customer wants to buy, purchase, or start an order. They may name the product specifically or choose from a list given to them, and, when prompted, will provide their phone number and delivery address. 
+                    - 'HUMAN_REQUEST': Either customer wants a person, agent, human, or mentions 'intervention' OR they express frustration, mention problems/defects.
                     - 'OTHER': General greetings or unrelated chat.
                     
                     Reply with ONLY the category word.

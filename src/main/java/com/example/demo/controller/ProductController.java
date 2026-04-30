@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ProductCreateRequest;
 import com.example.demo.dto.ProductDto;
+import com.example.demo.dto.ProductUpdateRequest;
 import com.example.demo.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,5 +28,13 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<ProductDto>> getAllProducts(Principal principal) {
         return ResponseEntity.ok(productService.getAllProducts(principal.getName()));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductDto> updateProduct(
+            Principal principal,
+            @PathVariable Long id,
+            @RequestBody ProductUpdateRequest request) {
+        return ResponseEntity.ok(productService.updateProduct(principal.getName(), id, request));
     }
 }

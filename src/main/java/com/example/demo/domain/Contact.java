@@ -45,18 +45,34 @@ public class Contact {
     private List<Message> messageList = new ArrayList<>();
 
     // ==========================================
-    // NEW REAL-TIME UI FIELDS
+    // REAL-TIME UI FIELDS
     // ==========================================
 
-    // Changed 'int' to 'Integer' to prevent null mapping errors
     @Column(name = "unread_count")
     private Integer unreadCount = 0;
 
-    // Changed 'boolean' to 'Boolean' to prevent null mapping errors
     @Column(name = "requires_human")
     private Boolean requiresHuman = false;
 
-    // Changed 'boolean' to 'Boolean' to prevent null mapping errors
     @Column(name = "order_ready")
     private Boolean orderReady = false;
+
+    @Column(name = "ai_summary", columnDefinition = "TEXT")
+    private String aiSummary;
+
+    // ==========================================
+    // NEW FIELDS FOR AI MODERATOR TOOLS
+    // ==========================================
+
+    // Store comma-separated tags (e.g., "VIP, Spammer, Wholesaler")
+    @Column(name = "tags")
+    private String tags;
+
+    // TEXT type to hold long AI-generated profile summaries or human notes
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
+
+    public void setAdminBriefing(String aiSummary) {
+        this.aiSummary = aiSummary;
+    }
 }

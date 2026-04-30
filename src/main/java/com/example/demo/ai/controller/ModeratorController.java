@@ -2,14 +2,16 @@ package com.example.demo.ai.controller;
 
 import com.example.demo.ai.assistant.ModeratorAssistantService;
 import com.example.demo.ai.dto.ModeratorChatRequest;
-import com.example.demo.domain.Contact; // Adjust if your model is in a different folder
-import com.example.demo.repository.ContactRepo; // Adjust if your repo is in a different folder
-// import com.example.demo.service.InboundMessageService; // Uncomment if you bring this over later
+import com.example.demo.domain.AppUser;
+import com.example.demo.domain.Contact;
+import com.example.demo.repository.AppUserRepository;
+import com.example.demo.repository.ContactRepo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -18,31 +20,44 @@ public class ModeratorController {
 
     private final ModeratorAssistantService moderatorAssistantService;
     private final ContactRepo contactRepository;
-    // private final InboundMessageService messageService;
+    private final AppUserRepository userRepository;
 
     @Autowired
-    public ModeratorController(ModeratorAssistantService moderatorAssistantService, ContactRepo contactRepository) {
+    public ModeratorController(ModeratorAssistantService moderatorAssistantService, ContactRepo contactRepository, AppUserRepository userRepository) {
         this.moderatorAssistantService = moderatorAssistantService;
         this.contactRepository = contactRepository;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/ai-assistant")
     public ResponseEntity<String> chatWithAssistant(
             @RequestBody ModeratorChatRequest request,
-            @RequestHeader(value = "X-Tenant-ID", required = false) Long tenantId) {
+            Principal principal) {
 
-        // Pass both the Contact ID and the Tenant ID into the Brain
+        // SECURE READ: Find the logged-in user via their JWT Principal
+        AppUser currentUser = userRepository.findByPhoneNumber(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Logged in user not found"));
+
+        Long secureTenantId = currentUser.getTenant().getId();
+
+        // Pass the Admin's Name into the AI for a better user experience
+        String adminName = currentUser.getFullName();
+
         String response = moderatorAssistantService.useAssistant(
                 request.getMessage(),
                 request.getContactId(),
-                tenantId);
+                secureTenantId,
+                adminName); // <--- Added parameter
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/contacts")
-    public List<Contact> getContacts(@RequestHeader(value = "X-Tenant-ID") Long tenantId) {
-        // SECURE READ: Only fetch contacts belonging to this specific shop
-        return contactRepository.findByTenantId(tenantId);
+    public List<Contact> getContacts(Principal principal) {
+        // SECURE READ: Find the logged-in user and enforce tenant boundaries
+        AppUser currentUser = userRepository.findByPhoneNumber(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Logged in user not found"));
+
+        return contactRepository.findByTenantId(currentUser.getTenant().getId());
     }
 }

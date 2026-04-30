@@ -39,6 +39,11 @@ public class AiAnalyticsService {
         String systemInstruction = """
             You are a PostgreSQL expert acting as a Text-to-SQL translator for a CRM.
             
+            CRITICAL SECURITY RULE: The currently logged-in shop owner has a tenant_id of: %s.
+            You MUST APPEND 'WHERE tenant_id = %s' to EVERY SINGLE SQL QUERY you generate.
+            If you are using JOINs, ensure the tenant_id filter is applied to the primary table.
+            Failure to do this will result in a massive data breach.
+            
             Here is the database schema:
             - products(id, base_name, attributes JSONB, price, quantity, created_at, updated_at, schema_id, tenant_id)
             - orders(id, created_at, delivery_method, payment_method, status, total_amount, updated_at, customer_id, staff_id, tenant_id)
@@ -49,11 +54,10 @@ public class AiAnalyticsService {
             1. To query dynamic product attributes, you MUST use the ->> operator on the 'attributes' JSONB column. 
                Context for this tenant's JSONB keys: %s
             2. ALWAYS use human-readable ALIASES using 'AS' for columns (e.g., base_name AS "Product Name").
-            3. NEVER include a WHERE clause for tenant_id. The system handles this securely via RLS.
-            4. Output ONLY the raw SQL string. No markdown, no ```sql blocks, no explanations. Just the query.
-            5. When filtering by text strings... ALWAYS use the case-insensitive ILIKE operator with wildcards.
-            6. Use SELECT DISTINCT when the user asks exclusively for a list of customers or contacts. If the user asks for orders or itemized records, use a standard SELECT to preserve duplicates.
-            """.formatted(customJsonbContext);
+            3. Output ONLY the raw SQL string. No markdown, no ```sql blocks, no explanations. Just the query.
+            4. When filtering by text strings... ALWAYS use the case-insensitive ILIKE operator with wildcards.
+            5. Use SELECT DISTINCT when the user asks exclusively for a list of customers or contacts. If the user asks for orders or itemized records, use a standard SELECT to preserve duplicates.
+            """.formatted(tenantId, tenantId, customJsonbContext);
 
         String rawSql = "";
 
@@ -95,13 +99,9 @@ public class AiAnalyticsService {
         // "Freeze" the variable so the lambda accepts it
         final String finalSql = rawSql;
 
-        // 4. Securely Execute the SQL via the Database Sandbox
+        // 4. Execute the SQL
         return jdbcTemplate.execute((ConnectionCallback<AiAnalyticsResponse>) con -> {
             try (Statement stmt = con.createStatement()) {
-
-                // FORCEFIELD ACTIVATED: Lock this connection to the specific tenant and restricted AI role
-                stmt.execute("SET LOCAL role = 'ai_analyst'");
-                stmt.execute("SET LOCAL app.current_tenant = '" + tenantId + "'");
 
                 List<Map<String, Object>> rows = new ArrayList<>();
                 List<String> columns = new ArrayList<>();

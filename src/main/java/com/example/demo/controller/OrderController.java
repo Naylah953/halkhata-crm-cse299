@@ -32,4 +32,14 @@ public class OrderController {
     public ResponseEntity<List<OrderDto>> getOrdersByCustomer(Principal principal, @PathVariable Long customerId) {
         return ResponseEntity.ok(orderService.getOrdersByCustomer(principal.getName(), customerId));
     }
+
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<List<OrderDto>> getOrdersByProduct(Principal principal, @PathVariable Long productId) {
+        return ResponseEntity.ok(orderService.getOrdersByProduct(principal.getName(), productId));
+    }
+
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<OrderDto> cancelOrder(Principal principal, @PathVariable Long id) {
+        return ResponseEntity.ok(orderService.cancelOrder(principal.getName(), id));
+    }
 }

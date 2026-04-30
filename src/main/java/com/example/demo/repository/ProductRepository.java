@@ -23,4 +23,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // NEW: Secure product search for the AI Tool
     // ==========================================
     List<Product> findByTenantIdAndBaseNameContainingIgnoreCase(Long tenantId, String baseName);
+
+    // FRIEND'S UPGRADE: Fallback search by category/schema name
+    List<Product> findByTenantIdAndSchema_NameContainingIgnoreCase(Long tenantId, String schemaName);
 }

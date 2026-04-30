@@ -30,53 +30,9 @@ public class ModeratorTools {
     @Autowired
     private SseService sseService;
 
-    // --- SECURED NEW AI ACTION FLAG TOOLS ---
-
-    @Tool(description = "Call this tool if the user asks a complex question you cannot answer, or specifically asks to speak to a human manager/support agent.")
-    public String flagForHuman(
-            @ToolParam(description = "The unique PSID of the contact to flag") String psid,
-            @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
-
-        // SECURE READ
-        Optional<Contact> contactOpt = contactRepo.findByIdAndTenantId(psid, tenantId);
-
-        if (contactOpt.isPresent()) {
-            Contact contact = contactOpt.get();
-            contact.setRequiresHuman(true);
-            contactRepo.save(contact);
-
-            // FIRE REAL-TIME UI UPDATE
-            sseService.pushContactUpdateToTenant(tenantId, contact);
-
-            return "Successfully flagged this conversation for human intervention.";
-        }
-        return "Error: Could not find contact in this shop.";
-    }
-
-    @Tool(description = "Call this tool when you have successfully collected the user's desired product, size, color, and delivery address, and are ready for a human to finalize the order.")
-    public String markOrderReady(
-            @ToolParam(description = "The unique PSID of the contact whose order is ready") String psid,
-            @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
-
-        // SECURE READ
-        Optional<Contact> contactOpt = contactRepo.findByIdAndTenantId(psid, tenantId);
-
-        if (contactOpt.isPresent()) {
-            Contact contact = contactOpt.get();
-            contact.setOrderReady(true);
-            contactRepo.save(contact);
-
-            // FIRE REAL-TIME UI UPDATE
-            sseService.pushContactUpdateToTenant(tenantId, contact);
-
-            return "Successfully marked this conversation as having an order ready for review.";
-        }
-        return "Error: Could not find contact in this shop.";
-    }
-
     // --- EXISTING TOOLS BELOW ---
 
-    @Tool(description = "Use this tool ANYTIME the user asks for analytics, sales data, product inventory, order history, or complex statistics. Pass their exact question as the prompt.")
+    @Tool(description = "CRITICAL: Use this tool whenever the user asks about sales, products, inventory, revenue, or customer lists. Pass their exact question. DO NOT use this for conversational chat.")
     public String runDatabaseAnalytics(
             @ToolParam(description = "The exact question the user asked about their data") String prompt,
             @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
@@ -89,17 +45,19 @@ public class ModeratorTools {
             String rawData = response.getTableData().getRows().toString();
 
             return "Raw Database Results: " + rawData +
-                    " \n\n[SYSTEM NOTE: The frontend is already rendering this exact data as a visual table for the user. Your job is to read the raw results above and write a brief, insightful summary (2-3 sentences) highlighting the key takeaways. Do not list all the raw data out, just provide the human-readable analysis.]";
+                    " \n\n[SYSTEM NOTE: The UI is already showing this data as a table. Write a brief 2-sentence summary highlighting the most interesting metric from this data. Do not list everything.]";
         } else {
             return "Analytics Result: " + response.getAiSummary();
         }
     }
 
-    @Tool(description = "Create a new contact or update a placeholder contact with a real name.")
+    @Tool(description = "Creates a new CRM contact or updates an anonymous 'Facebook User' placeholder with their real name.")
     public String createContact(
             @ToolParam(description = "The PSID of the user") String psid,
             @ToolParam(description = "The actual name provided by the user") String name,
             @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
+
+        if (psid == null || psid.equals("NONE")) return "Error: Cannot create contact without a PSID.";
 
         Optional<Contact> existingContact = contactRepo.findByIdAndTenantId(psid, tenantId);
 
@@ -108,7 +66,7 @@ public class ModeratorTools {
             if ("Facebook User".equalsIgnoreCase(contact.getName())) {
                 contact.setName(name);
                 contactRepo.save(contact);
-                return "Updated placeholder contact! User is now saved as: " + name;
+                return "Success. Inform the admin that the placeholder contact was updated to " + name;
             }
             return "Contact already exists with name: " + contact.getName();
         }
@@ -121,34 +79,59 @@ public class ModeratorTools {
         newContact.setTenant(tenantRef);
 
         contactRepo.save(newContact);
-        return "Successfully created new contact: " + name;
+        return "Success. Inform the admin that the new contact '" + name + "' was securely created.";
     }
 
-    @Tool(description = "Update an existing contact's details.")
+    @Tool(description = "Updates an existing CRM contact. You can update their name, phone number, or address.")
     public String updateContact(
             @ToolParam(description = "The unique PSID of the contact to update") String psid,
-            @ToolParam(description = "The new name") String name,
+            @ToolParam(description = "The new name (leave empty if not updating)") String name,
+            @ToolParam(description = "The new phone number (leave empty if not updating)") String phone,
+            @ToolParam(description = "The new address (leave empty if not updating)") String address,
             @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
+
+        if (psid == null || psid.equals("NONE")) return "Error: No customer selected to update.";
 
         Optional<Contact> existingContact = contactRepo.findByIdAndTenantId(psid, tenantId);
 
         if (existingContact.isEmpty()) {
-            return "Error: Could not find a contact with ID " + psid + " in this shop to update.";
+            return "Error: Could not find a contact with ID " + psid + " in this shop.";
         }
 
         Contact contact = existingContact.get();
-        if (name != null && !name.isBlank()) {
+        boolean updated = false;
+
+        if (name != null && !name.trim().isEmpty()) {
             contact.setName(name);
+            updated = true;
         }
 
-        contactRepo.save(contact);
-        return "Successfully updated contact: " + contact.getName();
+        // Uncomment these if your Contact entity has these fields!
+        /*
+        if (phone != null && !phone.trim().isEmpty()) {
+            contact.setPhone(phone);
+            updated = true;
+        }
+        if (address != null && !address.trim().isEmpty()) {
+            contact.setAddress(address);
+            updated = true;
+        }
+        */
+
+        if (updated) {
+            contactRepo.save(contact);
+            return "Success. Tell the admin that the contact's details were successfully updated.";
+        } else {
+            return "No valid fields were provided to update.";
+        }
     }
 
-    @Tool(description = "Delete a contact from the CRM database.")
+    @Tool(description = "Deletes a contact from the CRM database. Use with caution.")
     public String deleteContact(
             @ToolParam(description = "The PSID of the contact to remove") String psid,
             @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
+
+        if (psid == null || psid.equals("NONE")) return "Error: No customer selected to delete.";
 
         Optional<Contact> contact = contactRepo.findByIdAndTenantId(psid, tenantId);
 
@@ -157,6 +140,6 @@ public class ModeratorTools {
         }
 
         contactRepo.delete(contact.get());
-        return "Contact " + psid + " has been safely deleted from this shop.";
+        return "Success. Inform the admin that the contact has been permanently deleted.";
     }
 }

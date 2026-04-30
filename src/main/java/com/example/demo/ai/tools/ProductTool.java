@@ -26,46 +26,52 @@ public class ProductTool {
     @Autowired private EntityManager entityManager;
     @Autowired private SseService sseService;
 
-    @Tool(description = "Lookup product price and availability by name. Use this when the customer asks about a product.")
+    // --- NEW: Record for dynamic JSON item mapping from the AI ---
+    public record AiDraftItem(
+            @ToolParam(description = "The ID of the product") Long productId,
+            @ToolParam(description = "The quantity the user wants") Integer quantity
+    ) {}
+
+    @Tool(description = "Lookup products in the shop. Use this BEFORE drafting an order to find the exact Product ID, Price, and Stock availability.")
     public String productLookup(
-            @ToolParam(description = "The name of the product to search for") String query,
+            @ToolParam(description = "The core product name. ALWAYS use singular nouns and root keywords (e.g., use 'shirt' instead of 'shirts').") String query,
             @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
 
+        System.out.println("AI is searching inventory for: " + query);
+
         List<Product> products = productRepo.findByTenantIdAndBaseNameContainingIgnoreCase(tenantId, query);
-        if (products.isEmpty()) return "I couldn't find any products matching '" + query + "'.";
 
-        return products.stream()
-                .map(p -> String.format("- %s: %.2f BDT (%d in stock)", p.getBaseName(), p.getPrice(), p.getQuantity()))
-                .collect(Collectors.joining("\n"));
+        if (products.isEmpty()) {
+            products = productRepo.findByTenantIdAndSchema_NameContainingIgnoreCase(tenantId, query);
+        }
+
+        if (products.isEmpty()) {
+            return "Sorry, we don't have any products or categories matching '" + query + "'.";
+        }
+
+        StringBuilder result = new StringBuilder("I found the following items:\n");
+        for (Product p : products) {
+            result.append(String.format("- ID: %d | Name: %s | Price: %.2f BDT | Stock: %d\n",
+                    p.getId(), p.getBaseName(), p.getPrice(), p.getQuantity()));
+        }
+
+        if (products.size() > 1) {
+            result.append("\nPlease ask the user which specific one they would like to order.");
+        }
+
+        return result.toString();
     }
-
-        /* --- COMMENTED OUT FOR GENERIC DUMMY TESTING ---
-
-    @Tool(description = "Saves a draft order. Call this ONLY after successfully collecting the customer's name, phone, delivery address, and desired items.")
-    public String draftOrder(
-
-            @ToolParam(description = "The customer's actual name") String name,
-            @ToolParam(description = "The customer's phone number") String phone,
-            @ToolParam(description = "The delivery address") String address,
-            @ToolParam(description = "A clear text summary of the items they want to buy") String items,
-            @ToolParam(description = "The PSID of the contact") String contactId,
-            @ToolParam(description = "The tenant ID of the current shop") Long tenantId) { ... }
-
-    */
 
     /**
      * MUST READ: INSTRUCTION FOR FUTURE DEVELOPERS
      * * This is a test tool for AI-driven order drafting.
      * DO NOT REMOVE the 30-second debounce logic or the early return constraints.
-     * * Context: Generative LLMs (e.g., Llama 3, Gemini) natively execute independent
-     * tasks via parallel tool calling within a single conversational turn. If the
-     * model hallucinates or attempts a self-correction loop, it can fire multiple
-     * identical requests simultaneously (e.g., 7 parallel requests in < 1 second).
-     * * - The 30-second debounce guarantees idempotency against parallel spam, preventing
-     * duplicate database row creation and maintaining schema integrity.
      */
-    @Tool(description = "Creates a NEW order draft. Call this strictly ONCE per order confirmation.")
+    @Tool(description = "Creates a NEW order draft. Call this ONLY AFTER the user has explicitly given you their real phone number and delivery address. NEVER invent or use placeholder values.")
     public String draftOrder(
+            @ToolParam(description = "The list of products the customer is ordering") List<AiDraftItem> items,
+            @ToolParam(description = "The REAL phone number provided by the customer. Do not guess or use placeholders.") String phoneNumber,
+            @ToolParam(description = "The REAL delivery address provided by the customer. Do not guess or use placeholders.") String address,
             @ToolParam(description = "The PSID of the contact") String contactId,
             @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
 
@@ -85,35 +91,39 @@ public class ProductTool {
             }
         }
 
-        // 2. Strict Insertion Logic
+        // 2. Strict Initialization
         DraftOrder draft = new DraftOrder();
         draft.setContact(contact);
         draft.setTenant(contact.getTenant());
         draft.setStatus(DraftOrder.DraftStatus.PENDING);
 
+        // Dynamically applying the AI's parsed customer details
         draft.setProvidedName(contact.getName());
-        draft.setProvidedPhone("01700000003");
-        draft.setProvidedEmail("izaz@example.com");
-        draft.setProvidedAddress("Dhanmondi, Dhaka");
+        draft.setProvidedPhone(phoneNumber);
+        draft.setProvidedAddress(address);
         draft.setDeliveryMethod(DeliveryMethod.PATHAO);
         draft.setPaymentMethod(PaymentMethod.CASH_ON_DELIVERY);
 
-        // --- RESTORED DUMMY PAYLOAD LINE ITEM ---
-        // Item 1
-        DraftOrderItem item1 = new DraftOrderItem();
-        item1.setProductId(1L);
-        item1.setQuantity(1);
-        draft.addDraftItem(item1);
+        // 3. THE DYNAMIC ITEM LOOP (WITH FRIEND'S STOCK CHECK)
+        for (AiDraftItem aiItem : items) {
+            Product product = productRepo.findByIdAndTenantId(aiItem.productId(), tenantId)
+                    .orElseThrow(() -> new RuntimeException("Product not found with ID: " + aiItem.productId()));
 
-        // Item 2
-        DraftOrderItem item2 = new DraftOrderItem();
-        item2.setProductId(1L);
-        item2.setQuantity(2);
-        draft.addDraftItem(item2);
+            // FRIEND'S UPGRADE: Check if the shop actually has enough stock!
+            if (product.getQuantity() < aiItem.quantity()) {
+                return "SYSTEM HALT: Only " + product.getQuantity() + " units of '" + product.getBaseName() +
+                        "' are in stock. Execution aborted. Ask the customer to reduce their quantity or choose another item.";
+            }
+
+            DraftOrderItem orderItem = new DraftOrderItem();
+            orderItem.setProductId(aiItem.productId());
+            orderItem.setQuantity(aiItem.quantity());
+            draft.addDraftItem(orderItem);
+        }
 
         draftOrderRepo.save(draft);
 
-        // 3. Update realtime UI state
+        // 4. Update realtime UI state
         contact.setOrderReady(true);
         contactRepo.save(contact);
         sseService.pushContactUpdateToTenant(tenantId, contact);
@@ -122,7 +132,8 @@ public class ProductTool {
     }
 
 
-    @Tool(description = "Flags the conversation for human intervention. Call this if the user asks to speak to a human or agent.")
+    //IZAZ'S WORKING VERSION
+    /*@Tool(description = "Flags the conversation for human intervention. Call this if the user asks to speak to a human or agent. Return a summarised context of the last 5 messages.")
     public String requestHuman(
             @ToolParam(description = "The PSID of the contact") String contactId,
             @ToolParam(description = "The tenant ID of the current shop") Long tenantId) {
@@ -135,5 +146,27 @@ public class ProductTool {
         sseService.pushContactUpdateToTenant(tenantId, contact);
 
         return "Human agent requested successfully. Inform the user someone will be with them shortly.";
+    }*/
+
+    @Tool(description = "Flags for human help. The AI will summarize the context for the agent.")
+    public String requestHuman(
+            @ToolParam(description = "The summarized context of the conversation so far") String aiSummary,
+            @ToolParam(description = "The PSID of the contact") String contactId,
+            @ToolParam(description = "The tenant ID") Long tenantId) {
+
+        Contact contact = contactRepo.findByIdAndTenantId(contactId, tenantId)
+                .orElseThrow(() -> new RuntimeException("Contact not found"));
+
+        // 1. Mark for human and save the AI-generated summary
+        contact.setRequiresHuman(true);
+        contact.setAdminBriefing(aiSummary); // This is the AI's helpful summary
+        contactRepo.save(contact);
+
+        // 2. Push to your teammate's SSE Dashboard
+        // The moderator sees: "User needs help. Context: [Briefing]"
+        sseService.pushContactUpdateToTenant(tenantId, contact);
+        System.out.println("DEBUG - AI Summary for Admin: " + aiSummary);
+
+        return "Summary sent to moderator. Let the user know help is on the way.";
     }
 }

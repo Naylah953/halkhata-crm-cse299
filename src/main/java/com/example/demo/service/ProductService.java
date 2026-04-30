@@ -6,6 +6,7 @@ import com.example.demo.domain.ProductSchema;
 import com.example.demo.domain.Tenant;
 import com.example.demo.dto.ProductCreateRequest;
 import com.example.demo.dto.ProductDto;
+import com.example.demo.dto.ProductUpdateRequest;
 import com.example.demo.repository.AppUserRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ProductSchemaRepository;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,6 +64,31 @@ public class ProductService {
                 .stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public ProductDto updateProduct(String username, Long productId, ProductUpdateRequest request) {
+        Tenant tenant = getTenantFromUsername(username);
+
+        Product product = productRepository.findByIdAndTenantId(productId, tenant.getId())
+                .orElseThrow(() -> new RuntimeException("Product not found or unauthorized access."));
+
+        if (request.getPrice() != null) {
+            if (request.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Price cannot be negative.");
+            }
+            product.setPrice(request.getPrice());
+        }
+
+        if (request.getQuantity() != null) {
+            if (request.getQuantity() < 0) {
+                throw new IllegalArgumentException("Quantity cannot be negative.");
+            }
+            product.setQuantity(request.getQuantity());
+        }
+
+        product = productRepository.save(product);
+        return mapToDto(product);
     }
 
     // ==========================================

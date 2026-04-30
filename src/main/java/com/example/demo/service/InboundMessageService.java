@@ -145,16 +145,24 @@ public class InboundMessageService {
 
             CompletableFuture.runAsync(() -> {
                 try {
+                    // THE DUMB GATEKEEPER
+                    // We only use the classifier to decide whether to spend money waking up Gemini.
                     String intent = intentClassifier.classify(content);
                     System.out.println("AI Intent Detected: " + intent);
 
-                    // --- THE FIX: ADD HUMAN_REQUEST TO THE ALLOWED INTENTS ---
                     if ("PRODUCT_QUERY".equals(intent) || "ORDER_REQUEST".equals(intent) || "HUMAN_REQUEST".equals(intent)) {
 
-                        // This calls CustomerAssistantService, which uses the ModeratorTools.requestHuman tool
+                        // WAKE UP THE AUTONOMOUS AGENT!
+                        // We DO NOT tell Gemini which tool to use. Because it has its full toolbox
+                        // and its intelligent system prompt, it will decide on its own if it needs
+                        // to search inventory, draft an order, or hand off to a human.
                         String aiReply = customerAssistantService.handleAiLogic(finalContact, content, finalContact.getTenant().getId());
 
+                        // Send the AI's final text response back to Facebook
                         outboundMessageService.sendAiReply(finalContact, aiReply);
+                    } else {
+                        // Intent is "OTHER" (e.g., "Thanks!", "Hi")
+                        System.out.println("Message ignored by AI (Intent: OTHER) to save API resources.");
                     }
                 } catch (Exception e) {
                     System.err.println("Async AI execution failed: " + e.getMessage());

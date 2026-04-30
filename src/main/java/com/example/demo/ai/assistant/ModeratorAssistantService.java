@@ -17,55 +17,82 @@ public class ModeratorAssistantService {
             OpenAiChatModel openRouterModel,
             ModeratorTools moderatorTools) {
 
-        // 1. Set OpenRouter as the Primary
         this.primaryClient = ChatClient.builder(openRouterModel)
                 .defaultTools(moderatorTools)
                 .build();
 
-        // 2. Set Gemini as the Fallback
         this.fallbackClient = ChatClient.builder(geminiModel)
                 .defaultTools(moderatorTools)
                 .build();
     }
 
-    public String useAssistant(String moderatorPrompt, String currentContactId, Long tenantId) {
+    public String useAssistant(String moderatorPrompt, String currentContactId, Long tenantId, String adminName) {
 
-        // Safely handle missing tenantId during testing (Fixed to prevent TypeMismatchException)
+        // Safely handle missing tenantId during testing
         String safeTenantId = (tenantId != null) ? String.valueOf(tenantId) : "-1";
+        String safeAdminName = (adminName != null) ? adminName : "Admin";
 
-        String systemInstruction = """
-            You are a CRM Admin Assistant for Halkhata. 
-            CONTEXT: You are currently acting on the profile of Contact ID: {contextContactId}.
-            The shop owner currently logged in has a Tenant ID of: {currentTenantId}.
-            
-            RULES:
-            1. When calling contact tools (createContact, updateContact, deleteContact), you MUST use "{contextContactId}" for the 'psid' parameter.
-            2. When calling EVERY tool (including contact tools AND runDatabaseAnalytics), you MUST use "{currentTenantId}" for the 'tenantId' parameter.
-            3. Do not ask the moderator for the PSID or Tenant ID; they are provided in this context.
-            """;
+        // CRITICAL FIX: Secure a unique memory bucket for Global Queries so different shops don't share memory
+        String memoryId = (currentContactId != null && !currentContactId.trim().isEmpty())
+                ? currentContactId
+                : "global_shop_" + safeTenantId;
+
+        String systemInstruction;
+
+        // Dynamic System Prompt based on SPA Context
+        if (currentContactId != null && !currentContactId.trim().isEmpty()) {
+            systemInstruction = """
+                You are a CRM Admin Assistant for Halkhata. You are assisting {adminName}.
+                CONTEXT: You are currently acting on the profile of Contact ID: {contextContactId}.
+                The shop owner currently logged in has a Tenant ID of: {currentTenantId}.
+                
+                RULES:
+                1. When calling contact tools (createContact, updateContact, deleteContact), you MUST use "{contextContactId}" for the 'psid' parameter.
+                2. When calling EVERY tool (including contact tools AND runDatabaseAnalytics), you MUST use "{currentTenantId}" for the 'tenantId' parameter.
+                3. Do not ask the moderator for the PSID or Tenant ID; they are provided in this context.
+                """;
+        } else {
+            systemInstruction = """
+                You are a CRM Admin Assistant for Halkhata. You are assisting {adminName}.
+                CONTEXT: You are assisting the admin globally. No specific customer is selected.
+                The shop owner currently logged in has a Tenant ID of: {currentTenantId}.
+                
+                RULES:
+                1. Do not use contact-specific tools like updateContact unless the admin provides a PSID in their message.
+                2. When calling EVERY tool (including contact tools AND runDatabaseAnalytics), you MUST use "{currentTenantId}" for the 'tenantId' parameter.
+                3. Do not ask the moderator for the Tenant ID; it is provided in this context.
+                4. Confidently use the runDatabaseAnalytics tool if the admin asks for shop performance, sales data, or general lists.
+                """;
+        }
 
         try {
             System.out.println("Manager AI: Attempting conversation with Primary Engine (OpenRouter)...");
             return primaryClient.prompt()
                     .system(s -> s.text(systemInstruction)
-                            .param("contextContactId", currentContactId)
-                            .param("currentTenantId", safeTenantId))
+                            .param("contextContactId", currentContactId != null ? currentContactId : "NONE")
+                            .param("currentTenantId", safeTenantId)
+                            .param("adminName", safeAdminName))
                     .user(moderatorPrompt)
-                    .advisors(a -> a.param("chat_memory_conversation_id", currentContactId).param("chat_client_max_tool_calls", 3))
+                    .advisors(a -> {
+                        // Apply the safe memoryId to prevent amnesia or cross-tenant hallucinations
+                        a.param("chat_memory_conversation_id", memoryId);
+                        a.param("chat_client_max_tool_calls", 3);
+                    })
                     .call()
                     .content();
 
         } catch (Exception openRouterException) {
 
-            System.out.println("Manager AI: OpenRouter failed (" + openRouterException.getMessage() + "). Pivoting to Fallback Engine (Gemini)...");
+            System.out.println("Manager AI: OpenRouter failed (" + openRouterException.getMessage() + "). Pivoting to Fallback Engine...");
 
             try {
                 return fallbackClient.prompt()
                         .system(s -> s.text(systemInstruction)
-                                .param("contextContactId", currentContactId)
-                                .param("currentTenantId", safeTenantId))
+                                .param("contextContactId", currentContactId != null ? currentContactId : "NONE")
+                                .param("currentTenantId", safeTenantId)
+                                .param("adminName", safeAdminName))
                         .user(moderatorPrompt)
-                        .advisors(a -> a.param("chat_memory_conversation_id", currentContactId))
+                        .advisors(a -> a.param("chat_memory_conversation_id", memoryId)) // Applied here as well
                         .call()
                         .content();
 

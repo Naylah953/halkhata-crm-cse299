@@ -5,11 +5,9 @@ import com.example.demo.domain.enums.OrderStatus;
 import com.example.demo.dto.OrderCreateRequest;
 import com.example.demo.dto.OrderDto;
 import com.example.demo.dto.OrderItemRequest;
-import com.example.demo.repository.AppUserRepository;
-import com.example.demo.repository.CustomerRepository;
-import com.example.demo.repository.OrderRepository;
-import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +23,11 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
     private final AppUserRepository userRepository;
+
+    @Autowired
+    OutboundMessageService outboundMessageService;
+
+    @Autowired private ContactRepo contactRepo;
 
     // Helper to get the logged-in staff member (and their Tenant)
     private AppUser getStaffFromUsername(String username) {
@@ -94,8 +97,15 @@ public class OrderService {
         // 6. Save the Order (Because of CascadeType.ALL, this automatically saves the OrderItems too!)
         order = orderRepository.save(order);
 
+        //FARIZA CHANGE - PDF
+        Contact correspondingContact = contactRepo.findByCustomer_IdAndTenantId(customer.getId(), tenant.getId());
+
+        outboundMessageService.sendPdfAsAttachment(correspondingContact.getId(), order.getId());
+
         return mapToDto(order);
     }
+
+
 
     public List<OrderDto> getOrders(String username) {
         Tenant tenant = getStaffFromUsername(username).getTenant();
@@ -114,6 +124,48 @@ public class OrderService {
                 .stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<OrderDto> getOrdersByProduct(String username, Long productId) {
+        Tenant tenant = getStaffFromUsername(username).getTenant();
+
+        return orderRepository.findByItems_ProductIdAndTenantIdOrderByCreatedAtDesc(productId, tenant.getId())
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public OrderDto cancelOrder(String username, Long orderId) {
+        AppUser staff = getStaffFromUsername(username);
+        Tenant tenant = staff.getTenant();
+
+        Order order = orderRepository.findByIdAndTenantId(orderId, tenant.getId())
+                .orElseThrow(() -> new RuntimeException("Order not found or unauthorized access."));
+
+        // 1. State Machine Enforcement
+        if (order.getStatus() == OrderStatus.CANCELLED || order.getStatus() == OrderStatus.DELIVERED) {
+            throw new IllegalStateException("Cannot cancel an order that is already " + order.getStatus().name());
+        }
+
+        // 2. Inventory Restoration
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProduct();
+            product.setQuantity(product.getQuantity() + item.getQuantity());
+            productRepository.save(product);
+        }
+
+        // 3. Customer Lifetime Stats Reversal
+        Customer customer = order.getCustomer();
+        customer.setTotalSpent(customer.getTotalSpent().subtract(order.getTotalAmount()));
+        customer.setOrderCount(customer.getOrderCount() - 1);
+        customerRepository.save(customer);
+
+        // 4. Finalize Cancellation
+        order.setStatus(OrderStatus.CANCELLED);
+        order = orderRepository.save(order);
+
+        return mapToDto(order);
     }
 
     private OrderDto mapToDto(Order order) {
@@ -143,4 +195,6 @@ public class OrderService {
 
         return dto;
     }
+
+
 }

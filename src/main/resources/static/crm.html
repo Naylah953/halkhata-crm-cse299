@@ -236,6 +236,12 @@
                     </svg>
                     <span class="ml-4 font-medium sidebar-text transition-opacity duration-200 opacity-100">Inbox</span>
                 </a>
+                <a onclick="navigateTo('view-business')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors nav-item" id="nav-business">
+                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    <span class="ml-4 font-medium sidebar-text transition-opacity duration-200 opacity-100">Business</span>
+                </a>
                 <a onclick="navigateTo('view-customers')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors nav-item" id="nav-customers">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -365,6 +371,26 @@
                         <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
                         </div>
 
+                        <!-- FARIZA'S ADDITION AI Briefing Card: Coherent with Matcha/Terracotta aesthetic -->
+                        <div id="ai-briefing-card" class="hidden flex-col mx-4 mb-2 p-4 bg-[#F5F5DC] border-l-4 border-[#CC7722] rounded-r-xl shadow-sm animate-pulse-subtle">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="flex h-2 w-2 rounded-full bg-[#CC7722]"></span>
+                                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-[#CC7722]">Moderator Briefing</h4>
+                                    </div>
+                                    <p id="briefing-text" class="text-[13px] text-gray-700 italic leading-snug">
+                                        <!-- AI Summary will be injected here -->
+                                    </p>
+                                </div>
+                                <button onclick="dismissBriefing()" class="ml-3 text-gray-400 hover:text-[#CC7722] transition-colors p-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="p-4 bg-white border-t border-gray-100 shrink-0">
                             <div class="flex items-center space-x-2">
 
@@ -480,6 +506,97 @@
 
             </div>
         </div>
+
+        <div id="view-business" class="dashboard-view hidden-screen h-full flex flex-col bg-gray-50">
+
+            <div class="sticky top-0 z-20 bg-white border-b border-gray-100 px-6 py-3.5 grid grid-cols-3 items-center">
+                <div></div>
+
+                <div class="text-center justify-self-center">
+                    <h1 class="text-[1.15rem] font-medium text-gray-900 tracking-tight">Business</h1>
+                    <p class="text-xs text-gray-500 mt-0.5">Manage schemas, inventory, and sales</p>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="toggleAiSidebar()" title="Open AI Assistant" class="animate-subtle-float p-2.5 bg-white border border-gray-100 text-gray-700 rounded-full hover:bg-gray-50 hover:text-blue-600 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_20px_-3px_rgba(0,0,0,0.08)] transition-all focus:outline-none focus:ring-2 focus:ring-gray-200 group">
+                        <svg class="w-[22px] h-[22px] transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 flex overflow-hidden">
+
+                <div id="business-column-1" class="w-80 border-r border-gray-100 bg-white flex flex-col" style="min-width: 280px; max-width: 500px;">
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+                        <h2 class="text-sm font-bold text-gray-800 tracking-tight">Product Types</h2>
+
+                        <button id="btn-add-schema" onclick="openAiSchemaModal()" title="Generate with AI"
+                                class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-600 hover:text-white hover:border-transparent hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 hover:shadow-[0_4px_15px_-3px_rgba(79,70,229,0.4)] hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div id="schema-list" class="flex-1 overflow-y-auto p-4 space-y-2">
+                        <div class="text-center py-8">
+                            <p class="text-xs text-gray-500 italic">Loading product schemas...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="resize-handle" id="resize-business-1"></div>
+
+                <div class="flex-1 flex flex-col bg-white relative">
+                    <div class="px-6 py-[18px] border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
+                        <h2 class="text-sm font-bold text-gray-800 tracking-tight">Inventory</h2>
+                        <div class="px-6 py-3 border-b shrink-0">
+                            <input type="text" id="inventory-search" onkeyup="handleInventorySearch()" placeholder="Search items..."
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all">
+                        </div>
+                        <button id="btn-add-product" onclick="openProductModal()" class="hidden px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs font-medium hover:bg-blue-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+                            + Add Product
+                        </button>
+                    </div>
+
+                    <div id="inventory-list" class="flex-1 overflow-y-auto bg-gray-50 p-6 relative">
+                        <div id="inventory-empty-state" class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
+                            <div class="w-16 h-16 mb-4 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium">Select a Product Type to view inventory</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="resize-handle" id="resize-business-2"></div>
+
+                <div id="business-column-3" class="w-80 border-l border-gray-100 bg-white flex flex-col h-full relative" style="min-width: 280px; max-width: 450px;">
+                    <div class="p-5 border-b border-gray-100 shrink-0">
+                        <h2 class="text-sm font-bold text-gray-800 tracking-tight">Sales History</h2>
+                    </div>
+
+                    <div id="business-sales-list" class="flex-1 overflow-y-auto bg-white p-4 relative">
+                        <div id="sales-empty-state" class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
+                            <div class="w-16 h-16 mb-4 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium text-center px-4">Select an inventory item to view its sales history</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
         <div id="view-customers" class="dashboard-view hidden-screen h-full flex flex-col bg-gray-50">
             <div class="sticky top-0 z-20 bg-white border-b border-gray-100 px-6 py-3.5 grid grid-cols-3 items-center">
                 <div></div>
@@ -929,17 +1046,96 @@
                     }
 
                     async function sendAiMessage(messageText) {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const currentView = urlParams.get('view') || 'view-inbox';
+                        if (!messageText || messageText.trim() === '') return;
 
-                        const payload = {
-                            message: messageText,
-                            pageContext: currentView
-                        };
+                        const chatHistory = document.getElementById('ai-chat-history');
+                        const inputField = document.getElementById('ai-input');
 
-                        // This is where the backend fetch call will go to send the payload
+                        // Clear the input field immediately
+                        inputField.value = '';
+
+                        // Step 1: Append the User's Message Bubble (Blue)
+                        const userBubble = `
+                            <div class="flex justify-end animate-fade-in-up">
+                                <div class="bg-blue-600 text-white text-sm rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[85%] shadow-sm">
+                                    ${messageText}
+                                </div>
+                            </div>
+                        `;
+                        chatHistory.insertAdjacentHTML('beforeend', userBubble);
+                        chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll to bottom
+
+                        // Step 2: Append a Temporary "Loading" Animation for the AI
+                        const loadingId = 'loading-' + Date.now();
+                        const loadingBubble = `
+                            <div id="${loadingId}" class="flex justify-start animate-fade-in-up">
+                                <div class="bg-white border border-gray-100 text-gray-800 text-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] shadow-sm flex items-center space-x-2">
+                                    <div class="flex space-x-1">
+                                        <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                                        <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+                                        <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        chatHistory.insertAdjacentHTML('beforeend', loadingBubble);
+                        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+                        try {
+                            // Grab authentication details (Tenant ID removed for backend extraction)
+                            const token = localStorage.getItem('crm_token');
+
+                            // Step 3: Send Payload to Secured Backend Endpoint
+                            const response = await fetch('http://localhost:8080/api/v1/admin/ai-assistant', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'Bearer ' + token
+                                    // X-Tenant-ID removed per new security protocol
+                                },
+                                body: JSON.stringify({
+                                    // Maps exactly to ModeratorChatRequest DTO
+                                    message: messageText,
+                                    selectedContactId: currentSelectedContactId
+                                })
+                            });
+
+                            if (!response.ok) throw new Error("Server response wasn't OK");
+
+                            // Step 4: Parse the raw string response from the controller
+                            const aiText = await response.text();
+
+                            // Step 5: Remove Loading Bubble and Append AI Response
+                            document.getElementById(loadingId).remove();
+
+                            const aiBubble = `
+                                <div class="flex justify-start animate-fade-in-up">
+                                    <div class="bg-white border border-gray-100 text-gray-800 text-sm rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%] shadow-sm whitespace-pre-wrap">
+                                        ${aiText}
+                                    </div>
+                                </div>
+                            `;
+                            chatHistory.insertAdjacentHTML('beforeend', aiBubble);
+                            chatHistory.scrollTop = chatHistory.scrollHeight;
+
+                        } catch (error) {
+                            console.error("AI Assistant Error:", error);
+
+                            // If it fails, remove the loading bubble and show an error bubble
+                            const loader = document.getElementById(loadingId);
+                            if (loader) loader.remove();
+
+                            const errorBubble = `
+                                <div class="flex justify-start animate-fade-in-up">
+                                    <div class="bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%] shadow-sm">
+                                        ⚠️ Sorry, I encountered an error connecting to the server. Please try again.
+                                    </div>
+                                </div>
+                            `;
+                            chatHistory.insertAdjacentHTML('beforeend', errorBubble);
+                            chatHistory.scrollTop = chatHistory.scrollHeight;
+                        }
                     }
-
                     function showErrorToast(message) {
                         // Create the white card toast container
                         const toast = document.createElement('div');
@@ -973,10 +1169,10 @@
                         const closeBtn = document.createElement('button');
                         closeBtn.className = "absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors p-1";
                         closeBtn.innerHTML = `
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        `;
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            `;
 
                         // Close button logic
                         closeBtn.onclick = () => {
@@ -1002,6 +1198,17 @@
                                 setTimeout(() => toast.remove(), 400);
                             }
                         }, 8000);
+                    }
+
+                    function handleInventorySearch() {
+                        // Get the typed value and convert to lowercase for case-insensitive matching
+                        const query = document.getElementById('inventory-search')?.value.toLowerCase() || '';
+
+                        // Filter the global array of currently loaded products
+                        const filtered = globalProducts.filter(p => p.baseName.toLowerCase().includes(query));
+
+                        // Re-render the inventory column with the filtered results
+                        renderInventory(filtered);
                     }
 
                     function showWarningToast(message) {
@@ -1555,7 +1762,7 @@
                     targetId = 'screen-auth';
                 }
 
-                // Hide main screens (updated to use the new screen-auth ID)
+                // Hide main screens
                 document.querySelectorAll('#screen-auth, #screen-dashboard').forEach(el => el.classList.add('hidden-screen'));
 
                 if (targetId.startsWith('view-')) {
@@ -1570,10 +1777,12 @@
                     const navEl = document.getElementById('nav-' + targetId.split('-')[1]);
                     if (navEl) navEl.classList.add('text-blue-600', 'bg-blue-50', 'font-medium', 'border-r-4', 'border-blue-600');
 
+                    // Route data fetching triggers
                     if(targetId === 'view-settings') fetchSettingsData();
                     if(targetId === 'view-inbox') fetchInboxData();
                     if(targetId === 'view-customers') fetchCustomersData();
                     if(targetId === 'view-analytics') fetchAnalyticsData();
+                    if(targetId === 'view-business') fetchBusinessData(); // <-- Added Trigger
 
                 } else {
                     document.getElementById(targetId).classList.remove('hidden-screen');
@@ -1604,7 +1813,6 @@
                     navigateTo('screen-auth', false);
                 }
             };
-
 
             // ----------------------------------------------------
             // 4B: UI HELPERS & AUTHENTICATION API CALLS
@@ -1714,6 +1922,114 @@
             function logout() {
                 localStorage.removeItem('crm_token');
                 navigateTo('screen-auth');
+            }
+
+            // --- AI Schema Global State ---
+            let cachedAiSchemaPayload = null;
+
+            function openAiSchemaModal() {
+                // Reset to default input state
+                document.getElementById('ai-prompt').value = '';
+                cachedAiSchemaPayload = null;
+
+                document.getElementById('ai-schema-input-state').classList.remove('hidden-screen');
+                document.getElementById('ai-schema-loading-state').classList.add('hidden-screen');
+                document.getElementById('ai-schema-preview-state').classList.add('hidden-screen');
+
+                document.getElementById('modal-ai-schema').classList.remove('hidden-screen');
+            }
+
+            function closeAiSchemaModal() {
+                document.getElementById('modal-ai-schema').classList.add('hidden-screen');
+            }
+
+            function discardGeneratedSchema() {
+                // Revert back to State 1 so they can edit their prompt
+                cachedAiSchemaPayload = null;
+                document.getElementById('ai-schema-preview-state').classList.add('hidden-screen');
+                document.getElementById('ai-schema-input-state').classList.remove('hidden-screen');
+            }
+
+            async function generateSchema(event) {
+                event.preventDefault();
+                const promptText = document.getElementById('ai-prompt').value.trim();
+                if (!promptText) return;
+
+                // Transition to State 2: Loading
+                document.getElementById('ai-schema-input-state').classList.add('hidden-screen');
+                document.getElementById('ai-schema-loading-state').classList.remove('hidden-screen');
+
+                try {
+                    const response = await fetch('/api/ai/generate-schema', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ prompt: promptText })
+                    });
+
+                    if (!response.ok) throw new Error('AI Generation Failed');
+
+                    // Cache the response exactly as it arrived (it perfectly matches the Create DTO)
+                    cachedAiSchemaPayload = await response.json();
+
+                    // Build the Mock Preview
+                    document.getElementById('mock-product-name').innerText = "Example " + cachedAiSchemaPayload.name;
+
+                    let attrHtml = '';
+                    Object.entries(cachedAiSchemaPayload.schemaDefinition).forEach(([key, rules]) => {
+                        const cleanName = key.replace(/_/g, ' ');
+                        let typeBadge = rules.type;
+                        if (rules.type === 'enum' && rules.options) {
+                            typeBadge = `enum (${rules.options.length} options)`;
+                        }
+
+                        attrHtml += `
+                            <div class="flex items-center text-[13px]">
+                                <div class="w-1.5 h-1.5 rounded-full ${rules.required ? 'bg-indigo-500' : 'bg-gray-300'} mr-2"></div>
+                                <span class="text-gray-600 capitalize mr-2">${cleanName}:</span>
+                                <span class="text-gray-400 italic">Expected format: ${typeBadge}</span>
+                            </div>
+                        `;
+                    });
+
+                    // Add a legend hint if there are required fields
+                    if (attrHtml) {
+                        attrHtml += `<div class="mt-3 text-[10px] text-gray-400 uppercase tracking-wider"><span class="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1"></span> = Required Field</div>`;
+                    }
+
+                    document.getElementById('mock-product-attributes').innerHTML = attrHtml || '<p class="text-sm text-gray-500 italic">No attributes required.</p>';
+
+                    // Transition to State 3: Preview
+                    document.getElementById('ai-schema-loading-state').classList.add('hidden-screen');
+                    document.getElementById('ai-schema-preview-state').classList.remove('hidden-screen');
+
+                } catch (error) {
+                    showErrorToast('Failed to connect to the AI service. Please try again.');
+                    discardGeneratedSchema(); // Revert to input state on failure
+                }
+            }
+
+            async function saveGeneratedSchema() {
+                if (!cachedAiSchemaPayload) return;
+
+                try {
+                    // We POST the exactly cached AI payload to the standard schema creation endpoint
+                    const response = await fetch('/api/schemas', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(cachedAiSchemaPayload)
+                    });
+
+                    if (!response.ok) throw new Error('Failed to save schema');
+
+                    showSuccessToast(`Successfully created ${cachedAiSchemaPayload.name} schema!`);
+                    closeAiSchemaModal();
+
+                    // Refresh the Left Column to show the newly created Schema
+                    fetchBusinessData();
+
+                } catch (error) {
+                    showErrorToast('Could not save the generated schema. Please try again.');
+                }
             }
 
             // ----------------------------------------------------
@@ -1865,86 +2181,9 @@
                 } catch(e) { console.log("Staff endpoint error."); }
             }
 
-            // ====================================================
-            // RESIZABLE COLUMNS
-            // ====================================================
-            function initResizableColumns() {
-                const col1 = document.getElementById('column-1');
-                const col3 = document.getElementById('column-3');
-                const handle1 = document.getElementById('resize-1');
-                const handle2 = document.getElementById('resize-2');
-
-                let isResizing = false;
-                let currentHandle = null;
-                let startX = 0;
-                let startWidth = 0;
-
-                function onMouseDown(e, handle, column) {
-                    isResizing = true;
-                    currentHandle = handle;
-                    startX = e.clientX;
-                    startWidth = column.offsetWidth;
-
-                    currentHandle.classList.add('active');
-                    document.body.style.cursor = 'col-resize';
-                    document.body.style.userSelect = 'none';
-
-                    e.preventDefault();
-                }
-
-                function onMouseMove(e) {
-                    if (!isResizing) return;
-
-                    const dx = e.clientX - startX;
-                    let newWidth = startWidth + dx;
-
-                    if (currentHandle === handle1) {
-                        const col = document.getElementById('column-1');
-                        const min = parseInt(col.style.minWidth) || 280;
-                        const max = parseInt(col.style.maxWidth) || 500;
-                        newWidth = Math.max(min, Math.min(max, newWidth));
-                        col.style.width = newWidth + 'px';
-                    } else if (currentHandle === handle2) {
-                        const col = document.getElementById('column-3');
-                        const min = parseInt(col.style.minWidth) || 280;
-                        const max = parseInt(col.style.maxWidth) || 450;
-                        // For right column, dragging left makes it wider
-                        newWidth = startWidth - dx;
-                        newWidth = Math.max(min, Math.min(max, newWidth));
-                        col.style.width = newWidth + 'px';
-                    }
-                }
-
-                function onMouseUp() {
-                    if (isResizing) {
-                        isResizing = false;
-                        if (currentHandle) {
-                            currentHandle.classList.remove('active');
-                        }
-                        document.body.style.cursor = '';
-                        document.body.style.userSelect = '';
-                    }
-                }
-
-                handle1.addEventListener('mousedown', (e) => onMouseDown(e, handle1, col1));
-                handle2.addEventListener('mousedown', (e) => onMouseDown(e, handle2, col3));
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            }
-
             // ----------------------------------------------------
             // 4D: POST & PUT LOGIC
             // ----------------------------------------------------
-            function loadFacebookInbox() {
-                // Show Facebook conversation list
-                document.getElementById('facebook-conversations').classList.remove('hidden');
-
-                // Show Facebook message thread
-                document.getElementById('facebook-thread').classList.remove('hidden');
-
-                // Show Facebook sidebar
-                document.getElementById('facebook-sidebar').classList.remove('hidden');
-            }
 
             // --- STATE MANAGEMENT ---
             let currentOrderCustomer = { id: null, name: '', phone: '', address: '' };
@@ -2263,16 +2502,6 @@
                 }
             }
 
-
-            // Helper Toast Function for Success Messages
-            function showToast(message) {
-                const toast = document.createElement('div');
-                toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                toast.innerHTML = message;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 4000);
-            }
-
             // Close modal when clicking outside
             document.addEventListener('click', function(e) {
                 const modal = document.getElementById('create-order-modal');
@@ -2280,48 +2509,6 @@
                     closeOrderModal();
                 }
             });
-
-            // ====================================================
-            // AI DRAFT FUNCTIONS
-            // ====================================================
-            async function generateAiDraft() {
-                if (!currentOrderCustomer.id) return; // Ensure we have a selected contact
-
-                const draftTextEl = document.getElementById('ai-draft-text');
-                const draftBanner = document.getElementById('ai-draft-banner');
-
-                // Show loading state
-                draftTextEl.innerText = "✨ AI is reading the chat history...";
-                draftBanner.classList.remove('hidden');
-
-                try {
-                    // Hit the endpoint we planned for Step 2
-                    const response = await apiCall(`/api/v1/admin/ai-assistant/draft/${currentOrderCustomer.id}`);
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        draftTextEl.innerText = data.suggestion; // Map the AI string to the banner
-                    } else {
-                        draftTextEl.innerText = "⚠️ Failed to generate a draft. Please try again.";
-                    }
-                } catch (error) {
-                    console.error("AI Draft Error:", error);
-                    draftTextEl.innerText = "⚠️ Network error while generating draft.";
-                }
-            }
-
-            function useAiDraft() {
-                const draftText = document.getElementById('ai-draft-text').innerText;
-                const textarea = document.querySelector('#facebook-thread textarea');
-                if (textarea) {
-                    textarea.value = draftText;
-                }
-                document.getElementById('ai-draft-banner').classList.add('hidden');
-            }
-
-            function dismissAiDraft() {
-                document.getElementById('ai-draft-banner').classList.add('hidden');
-            }
 
             // --- GLOBAL STATE ---
             let inboxConversations = {};
@@ -2344,6 +2531,443 @@
                     }
                 } catch (e) {
                     console.error("Error connecting to API:", e);
+                }
+            }
+
+
+            // ==========================================
+            // BUSINESS VIEW GLOBAL STATE & RBAC
+            // ==========================================
+            let currentBusinessSchemaId = null;
+            let currentBusinessProductId = null;
+            let globalSchemas = [];
+            let globalProducts = [];
+            let isBusinessAdmin = false;
+
+            const getAuthHeaders = () => ({
+                'Authorization': 'Bearer ' + localStorage.getItem('crm_token'),
+                'Content-Type': 'application/json'
+            });
+
+            // Run this once when navigating to Business View
+            function initBusinessRBAC() {
+                const token = localStorage.getItem('crm_token');
+                if (!token) return;
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    isBusinessAdmin = (payload.role === 'ADMIN' || payload.role === 'ROLE_ADMIN');
+                } catch(e) {
+                    isBusinessAdmin = false;
+                }
+
+                // Toggle the Master "Add Schema" button in Column 1
+                const btnAddSchema = document.getElementById('btn-add-schema');
+                if (btnAddSchema) btnAddSchema.style.display = isBusinessAdmin ? 'block' : 'none';
+            }
+
+            // ==========================================
+            // COLUMN 1: SCHEMAS & DYNAMIC FORM MODAL
+            // ==========================================
+            async function fetchBusinessData() {
+                initBusinessRBAC();
+                try {
+                    const response = await fetch('/api/schemas', { headers: getAuthHeaders() });
+                    if (!response.ok) throw new Error('Failed to load schemas.');
+
+                    globalSchemas = await response.json();
+                    renderSchemas(globalSchemas);
+                } catch (error) {
+                    showErrorToast('Could not load Product Types.');
+                }
+            }
+
+            function renderSchemas(schemas) {
+                const list = document.getElementById('schema-list');
+                if (schemas.length === 0) {
+                    list.innerHTML = `<div class="text-center py-8"><p class="text-xs text-gray-500 italic">No schemas found.</p></div>`;
+                    return;
+                }
+
+                let html = '';
+                schemas.forEach(schema => {
+                    const isSelected = schema.id === currentBusinessSchemaId;
+                    const bgClass = isSelected ? "bg-blue-50 border-l-4 border-blue-600" : "bg-white hover:bg-gray-50 border-l-4 border-transparent";
+
+                    // Only generate the "+ Add Item" button if the user is an Admin.
+                    // It uses 'opacity-0 group-hover:opacity-100' to appear beautifully on hover.
+                    const addBtn = isBusinessAdmin ? `
+                        <button onclick="event.stopPropagation(); openAddProductModal(${schema.id})"
+                                title="Add Item"
+                                class="opacity-0 group-hover:opacity-100 p-1.5 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                        </button>
+                    ` : '';
+
+                    html += `
+                        <div onclick="selectSchema(${schema.id})" class="group p-4 border border-gray-100 rounded-lg cursor-pointer transition-all duration-200 mb-2 flex justify-between items-center ${bgClass}">
+                            <h3 class="text-sm font-medium text-gray-900">${schema.name}</h3>
+                            ${addBtn}
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+            }
+
+            function openAddProductModal(schemaId) {
+                const schema = globalSchemas.find(s => s.id === schemaId);
+                if (!schema) return;
+
+                document.getElementById('add-schema-id').value = schemaId;
+                document.getElementById('add-product-title').innerText = `Add New ${schema.name}`;
+
+                // Clear standard inputs
+                document.getElementById('add-base-name').value = '';
+                document.getElementById('add-price').value = '';
+                document.getElementById('add-quantity').value = '';
+
+                // Generate Dynamic Form Inputs
+                const container = document.getElementById('dynamic-attributes-container');
+                let dynamicHtml = '';
+
+                Object.entries(schema.schemaDefinition).forEach(([key, rules]) => {
+                    const requiredAttr = rules.required ? 'required' : '';
+                    const labelText = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // e.g. "weight_kg" -> "Weight Kg"
+                    const label = `<label class="block text-sm font-medium text-gray-700 mb-1.5">${labelText}</label>`;
+                    const baseInputClass = "block w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600 transition-all sm:text-sm";
+
+                    if (rules.type === 'string') {
+                        dynamicHtml += `<div>${label}<input type="text" data-attr-key="${key}" data-attr-type="string" ${requiredAttr} class="${baseInputClass}"></div>`;
+                    } else if (rules.type === 'number') {
+                        dynamicHtml += `<div>${label}<input type="number" step="any" data-attr-key="${key}" data-attr-type="number" ${requiredAttr} class="${baseInputClass}"></div>`;
+                    } else if (rules.type === 'boolean') {
+                        dynamicHtml += `
+                            <div class="flex items-center pt-2">
+                                <input type="checkbox" data-attr-key="${key}" data-attr-type="boolean" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-700 font-medium">${labelText}</span>
+                            </div>`;
+                    } else if (rules.type === 'enum') {
+                        let optionsHtml = rules.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                        dynamicHtml += `<div>${label}<select data-attr-key="${key}" data-attr-type="enum" ${requiredAttr} class="${baseInputClass}"><option value="">Select an option...</option>${optionsHtml}</select></div>`;
+                    }
+                });
+
+                container.innerHTML = dynamicHtml;
+                document.getElementById('modal-add-product').classList.remove('hidden-screen');
+            }
+
+            function closeAddProductModal() {
+                document.getElementById('modal-add-product').classList.add('hidden-screen');
+            }
+
+            async function submitAddProduct(event) {
+                event.preventDefault();
+
+                const payload = {
+                    schemaId: parseInt(document.getElementById('add-schema-id').value),
+                    baseName: document.getElementById('add-base-name').value,
+                    price: parseFloat(document.getElementById('add-price').value),
+                    quantity: parseInt(document.getElementById('add-quantity').value),
+                    attributes: {}
+                };
+
+                // Harvest dynamic attributes
+                const dynamicInputs = document.querySelectorAll('#dynamic-attributes-container [data-attr-key]');
+                dynamicInputs.forEach(input => {
+                    const key = input.getAttribute('data-attr-key');
+                    const type = input.getAttribute('data-attr-type');
+
+                    if (type === 'boolean') {
+                        payload.attributes[key] = input.checked;
+                    } else if (type === 'number') {
+                        payload.attributes[key] = input.value ? parseFloat(input.value) : null;
+                    } else {
+                        payload.attributes[key] = input.value;
+                    }
+                });
+
+                try {
+                    const response = await fetch('/api/products', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error();
+
+                    showSuccessToast('Product added successfully!');
+                    closeAddProductModal();
+
+                    // Refresh inventory to show the new item
+                    if (currentBusinessSchemaId) selectSchema(currentBusinessSchemaId);
+                } catch (error) {
+                    showErrorToast('Failed to create product. Check attributes.');
+                }
+            }
+
+            // ==========================================
+            // COLUMN 2: INVENTORY & SEARCH
+            // ==========================================
+            // Add the search bar to your Column 2 HTML right below the header:
+            // <div class="px-6 py-3 border-b border-gray-100 bg-gray-50 shrink-0"><input type="text" id="inventory-search" onkeyup="handleInventorySearch()" placeholder="Search items..." class="w-full px-4 py-2 border border-gray-200 rounded-md text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"></div>
+
+            async function selectSchema(schemaId) {
+                currentBusinessSchemaId = schemaId;
+                renderSchemas(globalSchemas);
+
+                currentBusinessProductId = null;
+                document.getElementById('business-sales-list').innerHTML = `
+                    <div class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
+                        <p class="text-gray-500 text-sm font-medium text-center px-4">Select an inventory item to view details and history</p>
+                    </div>`;
+
+                try {
+                    const response = await fetch('/api/products', { headers: getAuthHeaders() });
+                    if (!response.ok) throw new Error();
+
+                    const allProducts = await response.json();
+                    globalProducts = allProducts.filter(p => p.schemaId === schemaId);
+
+                    renderInventory(globalProducts);
+                } catch (error) {
+                    showErrorToast('Failed to load inventory.');
+                }
+            }
+
+            function handleInventorySearch() {
+                const query = document.getElementById('inventory-search')?.value.toLowerCase() || '';
+                const filtered = globalProducts.filter(p => p.baseName.toLowerCase().includes(query));
+                renderInventory(filtered);
+            }
+
+            function renderInventory(products) {
+                const list = document.getElementById('inventory-list');
+
+                if (products.length === 0) {
+                    list.innerHTML = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10"><p class="text-gray-500 text-sm font-medium">No products found.</p></div>`;
+                    return;
+                }
+
+                let html = '<div class="space-y-3 relative z-20">';
+                products.forEach(product => {
+                    const isSelected = product.id === currentBusinessProductId;
+                    const borderClass = isSelected ? "border-blue-500 ring-1 ring-blue-500 bg-blue-50/30" : "border-gray-200 hover:border-blue-300 bg-white";
+
+                    // Stock visual enhancements
+                    const stockBadge = product.quantity <= 5
+                        ? `<span class="bg-red-50 text-red-600 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider">LOW STOCK: ${product.quantity}</span>`
+                        : `<span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider">STOCK: ${product.quantity}</span>`;
+
+                    const editBtn = isBusinessAdmin ? `
+                        <button onclick="event.stopPropagation(); openEditModal(${product.id}, ${product.price}, ${product.quantity})"
+                                class="text-[11px] font-bold uppercase tracking-wider text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors shrink-0">
+                            Edit
+                        </button>` : '';
+
+                    html += `
+                        <div class="border ${borderClass} rounded-xl p-4 shadow-sm flex flex-col cursor-pointer transition-all duration-200"
+                             onclick="selectProduct(${product.id})">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="text-[13px] font-semibold text-gray-900 leading-snug pr-2">${product.baseName}</h4>
+                                ${editBtn}
+                            </div>
+                            <div class="flex justify-between items-center mt-auto">
+                                ${stockBadge}
+                                <span class="text-sm font-bold text-gray-900">৳${product.price}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                list.innerHTML = html;
+            }
+
+            // ==========================================
+            // COLUMN 3: STATS CARD & SALES HISTORY
+            // ==========================================
+            async function selectProduct(productId) {
+                currentBusinessProductId = productId;
+                handleInventorySearch(); // Re-render visually
+
+                try {
+                    const response = await fetch(`/api/orders/product/${productId}`, { headers: getAuthHeaders() });
+                    if (!response.ok) throw new Error();
+
+                    const orders = await response.json();
+                    renderProductSales(orders);
+                } catch (error) {
+                    showErrorToast('Failed to load sales history.');
+                }
+            }
+
+            function renderProductSales(orders) {
+                const listContainer = document.getElementById('business-sales-list');
+                const product = globalProducts.find(p => p.id === currentBusinessProductId);
+                if (!product) return;
+
+                // 1. Calculate Frontend Stats
+                let totalRevenue = 0;
+                let unitsSold = 0;
+
+                orders.forEach(order => {
+                    if (order.status !== 'CANCELLED') {
+                        order.items.forEach(item => {
+                            if (item.productId === currentBusinessProductId) {
+                                totalRevenue += (item.price * item.quantity);
+                                unitsSold += item.quantity;
+                            }
+                        });
+                    }
+                });
+
+                // 2. Format JSON Attributes as Bullets
+                const attrHtml = Object.entries(product.attributes).map(([key, val]) => {
+                    const cleanKey = key.replace(/_/g, ' ');
+                    return `
+                        <div class="flex items-center text-[12px]">
+                            <div class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2 opacity-70"></div>
+                            <span class="text-gray-500 capitalize w-20 shrink-0">${cleanKey}:</span>
+                            <span class="text-gray-900 font-medium truncate">${val}</span>
+                        </div>`;
+                }).join('');
+
+                // 3. Render Profile Card Header
+                let html = `
+                        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6 relative z-20">
+                            <div class="p-5 border-b border-gray-100 bg-gray-50/50">
+                                <h3 class="text-[15px] font-bold text-gray-900 tracking-tight leading-snug">${product.baseName}</h3>
+                                <div class="mt-4 grid grid-cols-2 gap-4">
+                                    <div class="space-y-1.5 border-r border-gray-100 pr-2">
+                                        ${attrHtml || '<p class="text-xs text-gray-400 italic">No attributes</p>'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-5 flex bg-white divide-x divide-gray-100">
+                                <div class="flex-1 pr-4">
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Earned</span>
+                                    <span class="text-[16px] font-bold text-green-600 tracking-tight">৳${totalRevenue.toLocaleString()}</span>
+                                </div>
+                                <div class="flex-1 pl-4">
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Units Sold</span>
+                                    <span class="text-[16px] font-bold text-gray-900 tracking-tight">${unitsSold}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-4 px-2 relative z-20">Order History</h3>
+                        <div class="space-y-3 relative z-20">
+                    `;
+
+                // 4. Render "Pretty" Order List
+                if (orders.length === 0) {
+                    html += `<p class="text-sm text-gray-400 italic text-center py-6">No sales recorded yet.</p>`;
+                } else {
+                    const sortedOrders = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                    sortedOrders.forEach(order => {
+                        const date = new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                        // Clean badges
+                        let badge = `<span class="text-[10px] font-bold uppercase tracking-wider text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md">${order.status}</span>`;
+                        if (order.status === 'DELIVERED') badge = `<span class="text-[10px] font-bold uppercase tracking-wider text-green-700 bg-green-50 px-2 py-0.5 rounded-md">Delivered</span>`;
+                        if (order.status === 'PENDING') badge = `<span class="text-[10px] font-bold uppercase tracking-wider text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded-md">Pending</span>`;
+                        if (order.status === 'CANCELLED') badge = `<span class="text-[10px] font-bold uppercase tracking-wider text-red-700 bg-red-50 px-2 py-0.5 rounded-md">Cancelled</span>`;
+
+                        // Nested Items
+                        const itemsHtml = order.items.map(i => `
+                                <div class="flex justify-between items-center text-[12px] text-gray-600 mb-1">
+                                    <span class="truncate pr-2">${i.productName} <span class="text-gray-400 ml-1">x${i.quantity}</span></span>
+                                    <span class="font-medium">৳${i.price}</span>
+                                </div>
+                            `).join('');
+
+                        const canCancel = isBusinessAdmin && !['CANCELLED', 'DELIVERED'].includes(order.status);
+                        const cancelBtn = canCancel
+                            ? `<button onclick="handleCancelOrder(${order.id})" class="text-[11px] font-bold text-red-500 hover:text-red-700 transition-colors uppercase tracking-wider bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded">Cancel</button>`
+                            : '';
+
+                        html += `
+                                <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.02)]">
+                                    <div class="flex justify-between items-start mb-3 border-b border-gray-50 pb-3">
+                                        <div>
+                                            <span class="text-[13px] font-bold text-gray-900 block mb-1">Order #${order.id}</span>
+                                            <span class="text-[11px] text-gray-400">${date}</span>
+                                        </div>
+                                        <div class="flex flex-col items-end gap-2">
+                                            ${badge}
+                                            ${cancelBtn}
+                                        </div>
+                                    </div>
+                                    <div class="pl-1 border-l-2 border-gray-50">
+                                        ${itemsHtml}
+                                    </div>
+                                </div>
+                            `;
+                    });
+                }
+
+                html += '</div>';
+                listContainer.innerHTML = html;
+            }
+
+            // --- Inventory Mutation Logic ---
+            function openEditModal(id, currentPrice, currentQty) {
+                document.getElementById('edit-product-id').value = id;
+                document.getElementById('edit-product-price').value = currentPrice;
+                document.getElementById('edit-product-qty').value = currentQty;
+                document.getElementById('modal-edit-inventory').classList.remove('hidden-screen');
+            }
+
+            function closeEditModal() {
+                document.getElementById('modal-edit-inventory').classList.add('hidden-screen');
+            }
+
+            async function submitEditInventory(event) {
+                event.preventDefault();
+                const id = document.getElementById('edit-product-id').value;
+                const price = document.getElementById('edit-product-price').value;
+                const quantity = document.getElementById('edit-product-qty').value;
+
+                try {
+                    const response = await fetch(`/api/products/${id}`, {
+                        method: 'PUT',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ price: parseFloat(price), quantity: parseInt(quantity) })
+                    });
+
+                    if (!response.ok) throw new Error('Unauthorized or invalid data.');
+
+                    showSuccessToast('Inventory updated successfully.');
+                    closeEditModal();
+
+                    // Silently refresh the inventory column to show new numbers
+                    if (currentBusinessSchemaId) selectSchema(currentBusinessSchemaId);
+
+                } catch (error) {
+                    showErrorToast('Failed to update inventory. Admin access required.');
+                }
+            }
+
+            // --- Order Cancel Logic ---
+            async function handleCancelOrder(orderId) {
+                // We use a confirm dialogue here to prevent accidental destructive actions
+                if (!confirm(`Are you sure you want to cancel Order #${orderId}? This will restore the inventory.`)) return;
+
+                try {
+                    const response = await fetch(`/api/orders/${orderId}/cancel`, {
+                        method: 'PUT',
+                        headers: getAuthHeaders()
+                    });
+
+                    if (!response.ok) throw new Error('Unauthorized or order cannot be cancelled.');
+
+                    showSuccessToast(`Order #${orderId} has been cancelled.`);
+
+                    // Refresh both columns to instantly show the red badge AND the restored stock number
+                    if (currentBusinessProductId) selectProduct(currentBusinessProductId);
+                    if (currentBusinessSchemaId) selectSchema(currentBusinessSchemaId);
+
+                } catch (error) {
+                    showErrorToast('Failed to cancel order. Admin access required.');
                 }
             }
 
@@ -2379,7 +3003,21 @@
 
                         // If we already knew they needed a human or had a draft ready,
                         // re-apply those 'true' states even if the incoming message says 'false'
-                        if (currentRequiresHuman) inboxConversations[contactId].contact.requiresHuman = true;
+                        //FARIZA CHANGES
+                        //if (currentRequiresHuman) inboxConversations[contactId].contact.requiresHuman = true;
+                        if (currentRequiresHuman) {
+                            inboxConversations[contactId].contact.requiresHuman = true;
+
+                            // If we have a summary and this is the active chat, show the card
+                            if (newMessage.contact.aiSummary && currentSelectedContactId === contactId) {
+                                const briefingCard = document.getElementById('ai-briefing-card');
+                                const briefingText = document.getElementById('briefing-text');
+
+                                briefingText.innerText = newMessage.contact.aiSummary;
+                                briefingCard.classList.remove('hidden');
+                                briefingCard.classList.add('flex');
+                            }
+                        }
                         if (currentOrderReady) inboxConversations[contactId].contact.orderReady = true;
                         // -------------------------------------------------------------
 
@@ -2619,6 +3257,36 @@
                     console.error("Failed to load tenant settings", e);
                 }
             }
+
+            //FARIZA CHANGES
+
+            /**
+             * Hides the AI Briefing card and clears its text.
+             * Coherent with the 'Halkhata' Social CRM aesthetic.
+             */
+            function dismissBriefing() {
+                const briefingCard = document.getElementById('ai-briefing-card');
+                const briefingText = document.getElementById('briefing-text');
+
+                if (briefingCard) {
+                    // 1. Visual dismissal (Immediate UI feedback)
+                    briefingCard.classList.add('hidden');
+                    briefingCard.classList.remove('flex');
+
+                    // 2. Clear text to prevent stale content flash on next open
+                    if (briefingText) {
+                        briefingText.innerText = '';
+                    }
+
+                    // 3. Update local state so it doesn't reappear on every message
+                    // until the next 'requiresHuman' trigger.
+                    if (currentSelectedContactId && inboxConversations[currentSelectedContactId]) {
+                        inboxConversations[currentSelectedContactId].contact.requiresHuman = false;
+                    }
+                }
+            }
+
+
 
             // 2. Initialize everything when the DOM is ready
             document.addEventListener('DOMContentLoaded', () => {
@@ -3038,11 +3706,16 @@
                     });
                 }
 
-                // Initialize Left Sidebar Resizer
-                setupResizer('resize-1', 'column-1', false);
 
-                // Initialize Right Sidebar Resizer
+                // Initialize Left Sidebar Resizer (Inbox)
+                setupResizer('resize-1', 'column-1', false);
+                // Initialize Right Sidebar Resizer (Inbox)
                 setupResizer('resize-2', 'column-3', true);
+
+                // Initialize Left Sidebar Resizer (Business View)
+                setupResizer('resize-business-1', 'business-column-1', false);
+                // Initialize Right Sidebar Resizer (Business View)
+                setupResizer('resize-business-2', 'business-column-3', true);
             });
 
             // ====================================================
@@ -3076,108 +3749,6 @@
                     }
                 });
             });
-
-            // Note: Ensure that when you initially load the user's settings (e.g., fetching their Tenant profile on page load),
-            // you set document.getElementById('global-ai-toggle').checked = tenantData.enableAiReplies;
-
-            // 3. Complete Context-Aware AI Chat Logic
-            async function sendAiMessage(messageText) {
-                if (!messageText || messageText.trim() === '') return;
-
-                const chatHistory = document.getElementById('ai-chat-history');
-                const inputField = document.getElementById('ai-input');
-
-                // Clear the input field immediately
-                inputField.value = '';
-
-                // Step 1: Append the User's Message Bubble (Blue)
-                const userBubble = `
-                    <div class="flex justify-end">
-                        <div class="bg-blue-600 text-white rounded-2xl p-3 shadow-sm text-sm max-w-[85%]">
-                            ${messageText}
-                        </div>
-                    </div>
-                `;
-                chatHistory.insertAdjacentHTML('beforeend', userBubble);
-                chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll to bottom
-
-                // Step 2: Append a Temporary "Loading" Animation for the AI
-                const loadingId = 'loading-' + Date.now();
-                const loadingBubble = `
-                    <div id="${loadingId}" class="flex items-start">
-                        <div class="bg-white border border-gray-100 rounded-2xl p-3 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] flex space-x-1.5 items-center h-[46px]">
-                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
-                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.15s"></div>
-                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
-                        </div>
-                    </div>
-                `;
-                chatHistory.insertAdjacentHTML('beforeend', loadingBubble);
-                chatHistory.scrollTop = chatHistory.scrollHeight;
-
-                try {
-                    // Determine current view context from URL
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const currentView = urlParams.get('view') || 'view-inbox';
-
-                    // Grab authentication details
-                    const token = localStorage.getItem('crm_token');
-                    const tenantId = localStorage.getItem('tenant_id') || "1"; // Replace with however you store tenantId
-
-                    // Step 3: Send Payload to Backend
-                    const response = await fetch('http://localhost:8080/api/ai/analytics', { // Change to your actual AI endpoint
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + token,
-                            'X-Tenant-ID': tenantId
-                        },
-                        body: JSON.stringify({
-                            prompt: messageText,
-                            context: currentView
-                        })
-                    });
-
-
-                    if (!response.ok) throw new Error("Server response wasn't OK");
-
-                    // Assuming your controller returns a JSON object
-                    const responseData = await response.json();
-
-                    // Change '.response' to whatever field your backend uses to hold the AI's string response
-                    const aiText = responseData.response || responseData.answer || "I processed your request.";
-
-                    // Step 4: Remove Loading Bubble and Append AI Response
-                    document.getElementById(loadingId).remove();
-
-                    const aiBubble = `
-                        <div class="flex items-start">
-                            <div class="bg-white border border-gray-100 rounded-2xl p-3 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] text-sm text-gray-700 max-w-[90%] leading-relaxed">
-                                ${aiText}
-                            </div>
-                        </div>
-                    `;
-                    chatHistory.insertAdjacentHTML('beforeend', aiBubble);
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-
-                } catch (error) {
-                    console.error("AI Assistant Error:", error);
-
-                    // If it fails, remove the loading bubble and show an error bubble
-                    const loader = document.getElementById(loadingId);
-                    if (loader) loader.remove();
-
-                    const errorBubble = `
-                        <div class="flex items-start">
-                            <div class="bg-red-50 border border-red-100 rounded-2xl p-3 text-sm text-red-600 max-w-[90%]">
-                                Sorry, I encountered an error connecting to the server. Please try again.
-                            </div>
-                        </div>
-                    `;
-                    chatHistory.insertAdjacentHTML('beforeend', errorBubble);
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-                }
-            }
         </script>
 
         <div id="create-order-modal" class="hidden fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity">
@@ -3260,6 +3831,164 @@
                 </div>
 
             </div>
+        </div>
+    </div>
+
+    <!-- Edit Inventory Modal -->
+    <div id="modal-edit-inventory" class="hidden-screen fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900 tracking-tight">Edit Inventory</h3>
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form onsubmit="submitEditInventory(event)" class="p-6">
+                <input type="hidden" id="edit-product-id">
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="edit-product-price" class="block text-sm font-medium text-gray-700 mb-1.5">Price (BDT)</label>
+                        <input type="number" id="edit-product-price" step="0.01" min="0" required
+                               class="block w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-md shadow-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600 transition-all sm:text-sm">
+                    </div>
+
+                    <div>
+                        <label for="edit-product-qty" class="block text-sm font-medium text-gray-700 mb-1.5">Quantity in Stock</label>
+                        <input type="number" id="edit-product-qty" min="0" required
+                               class="block w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-md shadow-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600 transition-all sm:text-sm">
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end gap-3">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2.5 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-ai-schema" class="hidden-screen fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all flex flex-col">
+
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <h3 class="text-lg font-medium text-gray-900 tracking-tight">AI Schema Generator</h3>
+                </div>
+                <button onclick="closeAiSchemaModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <form id="ai-schema-input-state" onsubmit="generateSchema(event)">
+                    <label for="ai-prompt" class="block text-sm font-medium text-gray-700 mb-2">What are you selling?</label>
+                    <textarea id="ai-prompt" required rows="3" placeholder="e.g., I want to sell custom mechanical keyboards. They have switch types, keycap colors, and wire types."
+                              class="block w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-lg shadow-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all sm:text-sm resize-none"></textarea>
+
+                    <div class="mt-6 flex justify-end">
+                        <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-md shadow-[0_4px_10px_-3px_rgba(79,70,229,0.4)] text-sm font-medium text-white hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all hover:scale-[1.02]">
+                            Generate Blueprint
+                        </button>
+                    </div>
+                </form>
+
+                <div id="ai-schema-loading-state" class="hidden-screen py-8 flex flex-col items-center justify-center">
+                    <div class="relative w-12 h-12 mb-4">
+                        <div class="absolute inset-0 rounded-full border-t-2 border-indigo-500 animate-spin"></div>
+                        <div class="absolute inset-2 rounded-full border-r-2 border-blue-400 animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+                    </div>
+                    <p class="text-sm font-medium text-gray-600 animate-pulse">Gemini is designing your schema...</p>
+                </div>
+
+                <div id="ai-schema-preview-state" class="hidden-screen">
+                    <p class="text-[13px] text-gray-500 mb-3">Here is a preview of the generated product type. Does this look correct?</p>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-100 to-transparent rounded-bl-full opacity-50 pointer-events-none"></div>
+
+                        <div class="flex justify-between items-start mb-4">
+                            <h4 id="mock-product-name" class="text-sm font-bold text-gray-900 leading-snug">Example Item</h4>
+                            <span class="text-sm font-bold text-gray-900">৳1,500.00</span>
+                        </div>
+
+                        <div class="space-y-1.5" id="mock-product-attributes">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="discardGeneratedSchema()" class="px-4 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors">
+                            Discard & Try Again
+                        </button>
+                        <button type="button" onclick="saveGeneratedSchema()" class="px-4 py-2.5 bg-green-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/40 transition-colors">
+                            Accept & Save
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Product Modal (Dynamic) -->
+    <div id="modal-add-product" class="hidden-screen fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 tracking-tight" id="add-product-title">Add New Item</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Fill out the required attributes below.</p>
+                </div>
+                <button onclick="closeAddProductModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form onsubmit="submitAddProduct(event)" class="overflow-y-auto flex-1 p-6 space-y-5">
+                <input type="hidden" id="add-schema-id">
+
+                <!-- Universal Fields -->
+                <div>
+                    <label for="add-base-name" class="block text-sm font-medium text-gray-700 mb-1.5">Product Name</label>
+                    <input type="text" id="add-base-name" required placeholder="e.g. Classic Summer T-Shirt"
+                           class="block w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-md shadow-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600 transition-all sm:text-sm">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="add-price" class="block text-sm font-medium text-gray-700 mb-1.5">Price (BDT)</label>
+                        <input type="number" id="add-price" step="0.01" min="0" required
+                               class="block w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-md shadow-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600 transition-all sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="add-quantity" class="block text-sm font-medium text-gray-700 mb-1.5">Initial Stock</label>
+                        <input type="number" id="add-quantity" min="0" required
+                               class="block w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-md shadow-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600 transition-all sm:text-sm">
+                    </div>
+                </div>
+
+                <!-- Dynamic Schema Attributes Container -->
+                <div id="dynamic-attributes-container" class="space-y-4 pt-2 border-t border-gray-100">
+                    <!-- Dynamically injected fields go here -->
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="closeAddProductModal()" class="px-4 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2.5 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors">
+                        Save Product
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 

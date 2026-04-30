@@ -10,16 +10,13 @@ import java.util.List;
 @Repository
 public interface MessageRepo extends JpaRepository<Message, Long> {
 
-    // NEW MULTI-TENANT RULE: Only fetch messages where the linked Contact belongs to the given Tenant ID
+    // Existing methods...
     List<Message> findByContact_Tenant_IdOrderByCreatedAtDesc(Long tenantId);
-
-    // ==========================================
-    // NEW: Fetch recent chat history for the AI Context
-    // ==========================================
     List<Message> findTop10ByContactOrderByCreatedAtDesc(Contact contact);
+    boolean existsByMetaMid(String metaMid);
 
     // ==========================================
-    // NEW: Deduplication Check for Webhooks
+    // NEW FOR AI TOOL: getDetailedChatLogs
     // ==========================================
-    boolean existsByMetaMid(String metaMid);
+    List<Message> findTop10ByContact_IdAndContact_Tenant_IdOrderByCreatedAtDesc(String contactId, Long tenantId);
 }

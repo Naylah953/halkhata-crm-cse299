@@ -15,4 +15,6 @@ public interface ContactRepo extends JpaRepository<Contact, String> {
 
     // For the UI sidebar to securely fetch only this shop's contacts
     List<Contact> findByTenantId(Long tenantId);
+
+    Contact findByCustomer_IdAndTenantId(Long id, Long id1);
 }

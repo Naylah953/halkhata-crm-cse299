@@ -53,6 +53,12 @@ public class SecurityConfiguration {
 
                                 .requestMatchers("/api/ai/**").hasRole("ADMIN")
 
+                                // ONLY Admins can edit product inventory (PUT)
+                                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
+
+                                // ONLY Admins can cancel orders (PUT)
+                                .requestMatchers(HttpMethod.PUT, "/api/orders/*/cancel").hasRole("ADMIN")
+
                                 // For EVERYTHING else (like GET /api/users/staff and GET /api/tenant/me),
                                 // you just need to be a logged-in user!
                                 .anyRequest().authenticated()

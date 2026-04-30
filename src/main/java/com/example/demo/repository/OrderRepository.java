@@ -18,4 +18,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // Get all orders for a specific customer within a specific shop
     List<Order> findAllByCustomerIdAndTenantId(Long customerId, Long tenantId);
+
+    // Phase 1: Securely fetch all orders containing a specific product, sorted by newest first
+    List<Order> findByItems_ProductIdAndTenantIdOrderByCreatedAtDesc(Long productId, Long tenantId);
 }
