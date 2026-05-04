@@ -115,7 +115,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // --- NEW METHOD ADDED ---
     public List<OrderDto> getOrdersByCustomer(String username, Long customerId) {
         Tenant tenant = getStaffFromUsername(username).getTenant();
 
@@ -168,6 +167,37 @@ public class OrderService {
         return mapToDto(order);
     }
 
+    // --- NEW METHOD: Generic Status Update ---
+    @Transactional
+    public OrderDto updateOrderStatus(String username, Long orderId, String newStatus) {
+        AppUser staff = getStaffFromUsername(username);
+        Tenant tenant = staff.getTenant();
+
+        // 1. Fetch Order and enforce strict Tenant isolation
+        Order order = orderRepository.findByIdAndTenantId(orderId, tenant.getId())
+                .orElseThrow(() -> new RuntimeException("Order not found or unauthorized access."));
+
+        // 2. Validate the incoming status string against your Enum
+        OrderStatus parsedStatus;
+        try {
+            parsedStatus = OrderStatus.valueOf(newStatus.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid order status provided: " + newStatus);
+        }
+
+        // 3. If the user selects "CANCELLED" from the dropdown, run the full cancellation logic
+        if (parsedStatus == OrderStatus.CANCELLED) {
+            return cancelOrder(username, orderId);
+        }
+
+        // 4. Otherwise, simply apply the new status
+        order.setStatus(parsedStatus);
+        order = orderRepository.save(order);
+
+        // 5. Return mapped DTO to update the frontend instantly
+        return mapToDto(order);
+    }
+
     private OrderDto mapToDto(Order order) {
         OrderDto dto = new OrderDto();
         dto.setId(order.getId());
@@ -180,7 +210,7 @@ public class OrderService {
         dto.setPaymentMethod(order.getPaymentMethod());
         dto.setCreatedAt(order.getCreatedAt());
 
-        // NEW: Map the Order Items into the DTO safely
+        // Map the Order Items into the DTO safely
         if (order.getItems() != null) {
             List<OrderDto.OrderItemDto> itemDtos = order.getItems().stream().map(item -> {
                 OrderDto.OrderItemDto itemDto = new OrderDto.OrderItemDto();
@@ -195,6 +225,5 @@ public class OrderService {
 
         return dto;
     }
-
 
 }

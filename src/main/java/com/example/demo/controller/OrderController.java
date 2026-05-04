@@ -27,7 +27,6 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrders(principal.getName()));
     }
 
-    // --- NEW ENDPOINT ---
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<OrderDto>> getOrdersByCustomer(Principal principal, @PathVariable Long customerId) {
         return ResponseEntity.ok(orderService.getOrdersByCustomer(principal.getName(), customerId));
@@ -41,5 +40,14 @@ public class OrderController {
     @PutMapping("/{id}/cancel")
     public ResponseEntity<OrderDto> cancelOrder(Principal principal, @PathVariable Long id) {
         return ResponseEntity.ok(orderService.cancelOrder(principal.getName(), id));
+    }
+
+    // --- NEW ENDPOINT: Generic Status Update ---
+    @PutMapping("/{id}/status")
+    public ResponseEntity<OrderDto> updateOrderStatus(
+            Principal principal,
+            @PathVariable Long id,
+            @RequestParam String status) {
+        return ResponseEntity.ok(orderService.updateOrderStatus(principal.getName(), id, status));
     }
 }

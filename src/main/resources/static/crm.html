@@ -7,6 +7,10 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         // --- GLOBAL API HELPER ---
         const API_BASE_URL = 'http://localhost:8080';
@@ -64,6 +68,61 @@
             background: #3b82f6;
         }
 
+        /* Universal Small Transparent Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;  /* Thin vertical scrollbar */
+            height: 6px; /* Thin horizontal scrollbar */
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent; /* Makes the track invisible */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5); /* Semi-transparent gray */
+            border-radius: 10px; /* Rounded pill shape */
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(107, 114, 128, 0.8); /* Slightly darker gray on hover */
+        }
+
+        /* 1. Customer Profile Sidebar (Right): Minimum 1/6th of the screen */
+        #column-3 {
+            min-width: 17.7vw !important;
+            flex-shrink: 1 !important;
+        }
+
+        /* 2. Chat Thread Inbox (Middle): Minimum 1/4th of the screen */
+        #column-2 {
+            min-width: 27.5vw !important;
+            flex-shrink: 1 !important;
+        }
+
+        /* 3. Select Conversation Sidebar (Left): Absorbs the crowd to prevent clutter */
+        #column-1 {
+            min-width: 220px !important;
+            flex-shrink: 1 !important;
+        }
+
+        /* 1. Sales History / Stats Sidebar (Right): Minimum 1/6th of the screen */
+        #business-column-3 {
+            min-width: 19vw !important;
+            flex-shrink: 1 !important;
+        }
+
+        /* 2. Inventory Column (Middle): Minimum 1/4th of the screen */
+        #business-column-2 {
+            min-width: 25.5vw !important;
+            flex-shrink: 1 !important;
+        }
+
+        /* 3. Product Types Sidebar (Left): Absorbs the crowd */
+        #business-column-1 {
+            min-width: 220px !important;
+            flex-shrink: 1 !important;
+        }
+
         /* Create Order Modal - Compact Styling */
         #create-order-modal .max-w-lg {
             max-width: 450px !important;
@@ -111,7 +170,7 @@
 
 <body class="bg-gray-50 font-sans text-gray-800 h-screen w-screen overflow-hidden flex">
 
-<div id="screen-auth" class="flex w-full min-h-screen bg-white font-sans antialiased text-gray-900">
+<div id="screen-auth" class="hidden-screen flex w-full min-h-screen bg-white font-sans antialiased text-gray-900">
     <div class="hidden lg:flex flex-col justify-center items-center w-1/2 bg-[#f8f9fa] border-r border-gray-200 p-12">
         <div class="max-w-md">
             <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-8 shadow-md">
@@ -213,9 +272,8 @@
     </div>
 </div>
 
-<div id="screen-dashboard" class="hidden-screen flex w-full h-full bg-white">
-
-    <div id="left-sidebar" class="w-64 border-r border-gray-200 flex flex-col justify-between transition-all duration-300 overflow-hidden bg-white shrink-0 whitespace-nowrap z-20">
+<div id="screen-dashboard" class="hidden-screen flex w-full h-full bg-white font-sans antialiased text-gray-900">
+    <div id="left-sidebar" class="w-64 border-r border-gray-200 flex flex-col justify-between transition-all duration-300 bg-white shrink-0 whitespace-nowrap z-20">
         <div>
             <div class="h-20 px-6 flex items-center">
                 <button onclick="toggleLeftSidebar()" class="text-gray-500 hover:text-gray-900 focus:outline-none transition-colors shrink-0">
@@ -242,17 +300,11 @@
                     </svg>
                     <span class="ml-4 font-medium sidebar-text transition-opacity duration-200 opacity-100">Business</span>
                 </a>
-                <a onclick="navigateTo('view-customers')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors nav-item" id="nav-customers">
-                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                <a onclick="navigateTo('view-orders')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors nav-item" id="nav-orders">
+                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                     </svg>
-                    <span class="ml-4 font-medium sidebar-text transition-opacity duration-200 opacity-100">Customers</span>
-                </a>
-                <a onclick="navigateTo('view-analytics')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors nav-item" id="nav-analytics">
-                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                    <span class="ml-4 font-medium sidebar-text transition-opacity duration-200 opacity-100">Analytics</span>
+                    <span class="ml-4 font-medium sidebar-text transition-opacity duration-200 opacity-100">Orders</span>
                 </a>
                 <a onclick="navigateTo('view-settings')" class="cursor-pointer flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors nav-item" id="nav-settings">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,9 +317,24 @@
         </div>
 
         <div class="relative mt-auto">
-            <div id="profile-menu" class="hidden absolute bottom-full left-4 w-48 mb-2 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden z-50">
-                <button onclick="openEditProfileModal(event)" class="w-full text-left block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">Edit Profile</button>
-                <button onclick="logout()" class="w-full text-left block px-4 py-3 text-sm text-red-600 hover:bg-red-50 font-medium">Logout</button>
+            <div id="profile-menu" class="hidden absolute bottom-full left-4 w-48 mb-3 p-1.5 bg-white border border-gray-100 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] z-50">
+
+                <button onclick="openEditProfileModal(event)" class="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+                    <svg class="w-4 h-4 mr-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    Edit Profile
+                </button>
+
+                <div class="h-px bg-gray-100 my-1 mx-2"></div>
+
+                <button onclick="logout()" class="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/40">
+                    <svg class="w-4 h-4 mr-2.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Logout
+                </button>
+
             </div>
 
             <div class="p-4 border-t border-gray-200 flex items-center cursor-pointer hover:bg-gray-50 transition-colors" onclick="toggleProfileMenu(event)">
@@ -334,7 +401,7 @@
 
                 <div class="resize-handle" id="resize-1"></div>
 
-                <div class="flex-1 flex flex-col bg-white relative">
+                <div id="column-2" class="flex-1 flex flex-col bg-white relative">
 
                     <div id="facebook-thread" class="flex-1 flex flex-col hidden-screen absolute inset-0">
 
@@ -479,7 +546,7 @@
                             </div>
 
                             <div class="px-6 pb-6">
-                                <div class="grid grid-cols-2 gap-3">
+                                <div class="grid grid-cols-2 gap-3 mb-5">
                                     <div class="bg-gray-50 border border-gray-100 rounded-xl p-3">
                                         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Spent</span>
                                         <span id="profile-total-spent" class="text-[15px] font-bold text-gray-900 tracking-tight">0 BDT</span>
@@ -487,6 +554,58 @@
                                     <div class="bg-gray-50 border border-gray-100 rounded-xl p-3">
                                         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Orders</span>
                                         <span id="profile-order-count" class="text-[15px] font-bold text-gray-900 tracking-tight">0</span>
+                                    </div>
+                                </div>
+
+                                <!-- NEW: Tags Section -->
+                                <div class="mb-5">
+                                    <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Tags</h4>
+                                    <div id="profile-tags-container" class="flex flex-wrap gap-2">
+                                        <!-- Dynamically populated via JS -->
+                                    </div>
+                                </div>
+
+                                <!-- NEW: Complaints Section -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Complaints & Issues</h4>
+                                        <button onclick="openComplaintsModal()" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:outline-none" title="View Complaints">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                        </button>
+                                    </div>
+                                    <div id="profile-complaints-preview" class="text-sm text-gray-500 italic">
+                                        <!-- Dynamically populated via JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NEW: Complaints Modal (Hidden by default) -->
+                        <div id="complaints-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                            <div class="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm transition-opacity"></div>
+                            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                                    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                                        <!-- Header -->
+                                        <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                                            <h3 class="text-xl font-medium text-gray-900 tracking-tight" id="modal-title">
+                                                Active Complaints
+                                            </h3>
+
+                                            <button onclick="closeComplaintsModal()"
+                                                    class="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-1"
+                                                    aria-label="Close modal">
+                                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <!-- Body: List of Complaints -->
+                                        <div class="px-6 py-5">
+                                            <ul id="complaints-list" class="divide-y divide-gray-100 space-y-4">
+                                                <!-- Dynamically populated via JS -->
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -529,36 +648,54 @@
             <div class="flex-1 flex overflow-hidden">
 
                 <div id="business-column-1" class="w-80 border-r border-gray-100 bg-white flex flex-col" style="min-width: 280px; max-width: 500px;">
-                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
-                        <h2 class="text-sm font-bold text-gray-800 tracking-tight">Product Types</h2>
 
-                        <button id="btn-add-schema" onclick="openAiSchemaModal()" title="Generate with AI"
-                                class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-600 hover:text-white hover:border-transparent hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 hover:shadow-[0_4px_15px_-3px_rgba(79,70,229,0.4)] hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/40">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+                        <h2 class="text-base font-medium text-gray-900 tracking-tight">Product Types</h2>
+
+                        <button id="btn-add-schema" type="button" onclick="openAiSchemaModal()" title="Generate with AI"
+                                class="group relative inline-block w-8 h-8 p-0 shrink-0 rounded-full bg-white border border-gray-200 text-purple-600 shadow-sm transition-all duration-200 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:ring-offset-1 appearance-none">
+
+                            <svg class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 transition-transform duration-200 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
                             </svg>
+
                         </button>
                     </div>
 
-                    <div id="schema-list" class="flex-1 overflow-y-auto p-4 space-y-2">
-                        <div class="text-center py-8">
-                            <p class="text-xs text-gray-500 italic">Loading product schemas...</p>
+                    <div id="schema-list" class="flex-1 overflow-y-auto p-6 space-y-3">
+
+                        <div class="flex flex-col items-center justify-center py-12 text-center">
+                            <p class="text-sm font-medium text-gray-400">Loading product types...</p>
                         </div>
+
                     </div>
                 </div>
 
                 <div class="resize-handle" id="resize-business-1"></div>
 
-                <div class="flex-1 flex flex-col bg-white relative">
-                    <div class="px-6 py-[18px] border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
-                        <h2 class="text-sm font-bold text-gray-800 tracking-tight">Inventory</h2>
-                        <div class="px-6 py-3 border-b shrink-0">
+                <div id="business-column-2" class="flex-1 flex flex-col bg-white relative">
+                    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 gap-4">
+
+                        <h2 class="text-base font-medium text-gray-900 tracking-tight shrink-0">Inventory</h2>
+
+                        <div class="relative flex-1 max-w-sm ml-auto shrink-0">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                            </div>
                             <input type="text" id="inventory-search" onkeyup="handleInventorySearch()" placeholder="Search items..."
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all">
+                                   class="block w-full pl-10 pr-4 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600 focus:bg-white transition-all duration-200 shadow-sm">
                         </div>
-                        <button id="btn-add-product" onclick="openProductModal()" class="hidden px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs font-medium hover:bg-blue-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40">
-                            + Add Product
+
+                        <button id="btn-add-product" onclick="openProductModal()"
+                                class="hidden shrink-0 inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium shadow-sm transition-all duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-1">
+                            <svg class="w-4 h-4 mr-1.5 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Add Product
                         </button>
+
                     </div>
 
                     <div id="inventory-list" class="flex-1 overflow-y-auto bg-gray-50 p-6 relative">
@@ -577,8 +714,8 @@
                 <div class="resize-handle" id="resize-business-2"></div>
 
                 <div id="business-column-3" class="w-80 border-l border-gray-100 bg-white flex flex-col h-full relative" style="min-width: 280px; max-width: 450px;">
-                    <div class="p-5 border-b border-gray-100 shrink-0">
-                        <h2 class="text-sm font-bold text-gray-800 tracking-tight">Sales History</h2>
+                    <div class="px-6 py-5 border-b border-gray-100 bg-white shrink-0">
+                        <h2 class="text-base font-medium text-gray-900 tracking-tight">Sales History</h2>
                     </div>
 
                     <div id="business-sales-list" class="flex-1 overflow-y-auto bg-white p-4 relative">
@@ -597,797 +734,819 @@
             </div>
         </div>
 
-        <div id="view-customers" class="dashboard-view hidden-screen h-full flex flex-col bg-gray-50">
-            <div class="sticky top-0 z-20 bg-white border-b border-gray-100 px-6 py-3.5 grid grid-cols-3 items-center">
+        <div id="view-orders" class="dashboard-view hidden-screen h-full flex flex-col bg-gray-50">
+
+            <div class="sticky top-0 z-20 bg-white border-b border-gray-100 px-6 py-4 grid grid-cols-3 items-center shadow-sm">
                 <div></div>
 
                 <div class="text-center justify-self-center">
-                    <h1 class="text-[1.15rem] font-medium text-gray-900 tracking-tight">Customers</h1>
-                    <p class="text-xs text-gray-500 mt-0.5">Manage your customer database</p>
+                    <h1 class="text-xl font-medium text-gray-900 tracking-tight">Orders</h1>
+                    <p class="text-sm text-gray-500 mt-1.5">Manage and fulfill your shop's orders</p>
                 </div>
-
-                <style>
-                    @keyframes subtle-float {
-                        0%, 100% { transform: translateY(0); }
-                        50% { transform: translateY(-4px); }
-                    }
-                    .animate-subtle-float {
-                        animation: subtle-float 3s ease-in-out infinite;
-                    }
-                </style>
 
                 <div class="flex justify-end">
                     <button onclick="toggleAiSidebar()" title="Open AI Assistant" class="animate-subtle-float p-2.5 bg-white border border-gray-100 text-gray-700 rounded-full hover:bg-gray-50 hover:text-blue-600 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_20px_-3px_rgba(0,0,0,0.08)] transition-all focus:outline-none focus:ring-2 focus:ring-gray-200 group">
-                        <svg class="w-[22px] h-[22px] transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
                         </svg>
                     </button>
                 </div>
             </div>
 
-            <div class="bg-white border-b border-gray-200 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="relative flex-1 max-w-md">
-                        <input type="text" placeholder="Search by name or phone number..."
-                               class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
+            <div class="flex-1 overflow-hidden flex relative">
+
+                <div class="flex-1 flex flex-col h-full bg-gray-50">
+                    <div class="px-8 py-4 border-b border-gray-200 bg-white flex gap-4 items-center z-10 shadow-sm">
+                        <div class="w-48">
+                            <label class="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1.5">Sort By Time</label>
+                            <select id="filter-order-time" onchange="renderOrdersList()" class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600 transition-all sm:text-sm cursor-pointer">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                            </select>
+                        </div>
+                        <div class="w-48">
+                            <label class="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1.5">Filter Status</label>
+                            <select id="filter-order-status" onchange="renderOrdersList()" class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600 transition-all sm:text-sm cursor-pointer">
+                                <option value="ALL">All Statuses</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="CONFIRMED">Confirmed</option>
+                                <option value="SHIPPED">Shipped</option>
+                                <option value="DELIVERED">Delivered</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
+                        </div>
                     </div>
-                    <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-200">
-                        + Add Customer
-                    </button>
-                </div>
-            </div>
 
-            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Customer</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Platform</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Contact</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Location</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Orders</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Total Spent</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Last Contact</th>
-                        <th class="px-2 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-xs">FR</div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">Fatima Rahman</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center text-sm font-medium text-gray-700">
-                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M9.19795 21.5H13.198V13.4901H16.8021L17.1979 9.50977H13.198V7.5C13.198 6.94772 13.6457 6.5 14.198 6.5H17.1979V2.5H14.198C11.4365 2.5 9.19795 4.73858 9.19795 7.5V9.50977H7.19795L6.80206 13.4901H9.19795V21.5Z"/>
-                                    </svg>
-                                    Facebook
-                                </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01712345678</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Dhanmondi 15, Dhaka</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">2</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">2,050 BDT</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 18, 2026</td>
-                        <td class="w-px pl-0 pr-6 py-4 whitespace-nowrap text-sm">
-                            <button class="bg-white border border-gray-300 text-gray-900 px-1.5 py-1.5 rounded-md hover:bg-gray-100 font-medium">View Profile</button>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-xs">AH</div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">Arif Hossain</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center text-sm font-medium text-gray-700">
-                                    <svg class="w-5 h-5 mr-2 text-pink-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                                    </svg>
-                                    Instagram
-                                </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01823456789</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mirpur 10, Dhaka</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">1</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">2,500 BDT</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 18, 2026</td>
-                        <td class="w-px pl-0 pr-6 py-4 whitespace-nowrap text-sm">
-                            <button class="bg-white border border-gray-300 text-gray-900 px-1.5 py-1.5 rounded-md hover:bg-gray-100 font-medium">View Profile</button>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-xs">NT</div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">Nishat Tasnim</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center text-sm font-medium text-gray-700">
-                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M9.19795 21.5H13.198V13.4901H16.8021L17.1979 9.50977H13.198V7.5C13.198 6.94772 13.6457 6.5 14.198 6.5H17.1979V2.5H14.198C11.4365 2.5 9.19795 4.73858 9.19795 7.5V9.50977H7.19795L6.80206 13.4901H9.19795V21.5Z"/>
-                                    </svg>
-                                    Facebook
-                                </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01934567890</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Uttara Sector 7, Dhaka</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">0</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">0 BDT</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 18, 2026</td>
-                        <td class="w-px pl-0 pr-6 py-4 whitespace-nowrap text-sm">
-                            <button class="bg-white border border-gray-300 text-gray-900 px-1.5 py-1.5 rounded-md hover:bg-gray-100 font-medium">View Profile</button>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-xs">SA</div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">Shakib Ahmed</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center text-sm font-medium text-gray-700">
-                                    <svg class="w-5 h-5 mr-2 text-pink-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                                    </svg>
-                                    Instagram
-                                </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01645678901</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Chittagong, GEC Circle</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">2</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">4,450 BDT</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 17, 2026</td>
-                        <td class="w-px pl-0 pr-6 py-4 whitespace-nowrap text-sm">
-                            <button class="bg-white border border-gray-300 text-gray-900 px-1.5 py-1.5 rounded-md hover:bg-gray-100 font-medium">View Profile</button>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs">AS</div>
-                                <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">Ayesha Siddiqua</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center text-sm font-medium text-gray-700">
-                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M9.19795 21.5H13.198V13.4901H16.8021L17.1979 9.50977H13.198V7.5C13.198 6.94772 13.6457 6.5 14.198 6.5H17.1979V2.5H14.198C11.4365 2.5 9.19795 4.73858 9.19795 7.5V9.50977H7.19795L6.80206 13.4901H9.19795V21.5Z"/>
-                                    </svg>
-                                    Facebook
-                                </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">01756789012</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Gulshan 2, Dhaka</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-center">1</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">1,800 BDT</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mar 18, 2026</td>
-                        <td class="w-px pl-0 pr-6 py-4 whitespace-nowrap text-sm">
-                            <button class="bg-white border border-gray-300 text-gray-900 px-1.5 py-1.5 rounded-md hover:bg-gray-100 font-medium">View Profile</button>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div id="view-analytics" class="dashboard-view hidden-screen h-full flex flex-col bg-gray-50 overflow-y-auto">
-            <div class="sticky top-0 z-20 bg-white border-b border-gray-100 px-6 py-3.5 grid grid-cols-3 items-center">
-                <div></div>
-
-                <div class="text-center justify-self-center">
-                    <h1 class="text-[1.15rem] font-medium text-gray-900 tracking-tight">Analytics Dashboard</h1>
-                    <p class="text-xs text-gray-500 mt-0.5">Track performance and insights</p>
-                </div>
-
-                <style>
-                    @keyframes subtle-float {
-                        0%, 100% { transform: translateY(0); }
-                        50% { transform: translateY(-4px); }
-                    }
-                    .animate-subtle-float {
-                        animation: subtle-float 3s ease-in-out infinite;
-                    }
-                </style>
-
-                <div class="flex justify-end">
-                    <button onclick="toggleAiSidebar()" title="Open AI Assistant" class="animate-subtle-float p-2.5 bg-white border border-gray-100 text-gray-700 rounded-full hover:bg-gray-50 hover:text-blue-600 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_20px_-3px_rgba(0,0,0,0.08)] transition-all focus:outline-none focus:ring-2 focus:ring-gray-200 group">
-                        <svg class="w-[22px] h-[22px] transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <div class="p-2">
-                <div class="flex justify-end mb-2">
-                    <select class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white">
-                        <option>Last 7 Days</option>
-                        <option>Last 30 Days</option>
-                        <option>This Month</option>
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white rounded-lg border border-gray-200 p-5">
-                        <p class="text-sm text-gray-500 mb-1">Avg Response Time</p>
-                        <p class="text-3xl font-bold text-gray-900">2.4 <span class="text-sm font-normal text-gray-500">mins</span></p>
-                        <p class="text-xs text-green-600 mt-2">↑ 15% vs last week</p>
-                    </div>
-                    <div class="bg-white rounded-lg border border-gray-200 p-5">
-                        <p class="text-sm text-gray-500 mb-1">Total Conversations</p>
-                        <p class="text-3xl font-bold text-gray-900">225</p>
-                        <p class="text-xs text-gray-500 mt-2">Last 7 days</p>
-                    </div>
-                    <div class="bg-white rounded-lg border border-gray-200 p-5">
-                        <p class="text-sm text-gray-500 mb-1">AI Auto-Resolved</p>
-                        <p class="text-3xl font-bold text-gray-900">67%</p>
-                        <p class="text-xs text-green-600 mt-2">↑ 8% vs last week</p>
-                    </div>
-                    <div class="bg-white rounded-lg border border-gray-200 p-5">
-                        <p class="text-sm text-gray-500 mb-1">New Leads</p>
-                        <p class="text-3xl font-bold text-gray-900">42</p>
-                        <p class="text-xs text-green-600 mt-2">↑ 14% vs last week</p>
+                    <div id="orders-list-container" class="flex-1 overflow-y-auto p-8 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6 content-start">
                     </div>
                 </div>
 
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <div id="order-sidebar" class="w-[400px] bg-white border-l border-gray-200 shadow-[-4px_0_25px_-3px_rgba(0,0,0,0.05)] flex flex-col h-full absolute right-0 top-0 bottom-0 z-20 transition-transform duration-300 translate-x-full">
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="font-medium text-gray-900 mb-4">Daily Message Volume</h3>
-                        <div class="relative h-64 w-full">
-                            <canvas id="volumeChart"></canvas>
-                        </div>
+                    <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white">
+                        <h3 class="text-lg font-medium text-gray-900 tracking-tight">Order Details</h3>
+                        <button onclick="closeOrderSidebar()" class="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-1">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
 
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="font-medium text-gray-900 mb-4">Channel Distribution</h3>
-                        <div class="relative h-64 w-full">
-                            <canvas id="channelChart"></canvas>
-                        </div>
+                    <div id="order-sidebar-content" class="flex-1 overflow-y-auto p-6">
                     </div>
 
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="font-medium text-gray-900 mb-4">Intent Distribution</h3>
-                        <div class="relative h-64 w-full flex justify-center pb-4">
-                            <canvas id="intentPieChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center">
-                        <h3 class="font-medium text-gray-900 mb-8">AI Performance Breakdown</h3>
-
-                        <div class="space-y-8">
-                            <div>
-                                <div class="flex justify-between text-sm mb-2.5">
-                                    <span class="text-gray-700 font-medium">Auto-Resolved by AI</span>
-                                    <span class="font-bold text-purple-600">67%</span>
-                                </div>
-                                <div class="w-full bg-gray-100 rounded-full h-2.5">
-                                    <div class="bg-purple-500 h-2.5 rounded-full" style="width: 67%"></div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between text-sm mb-2.5">
-                                    <span class="text-gray-700 font-medium">Required Human Agent</span>
-                                    <span class="font-bold text-gray-600">33%</span>
-                                </div>
-                                <div class="w-full bg-gray-100 rounded-full h-2.5">
-                                    <div class="bg-gray-400 h-2.5 rounded-full" style="width: 33%"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <p class="text-sm text-gray-500 mt-10 p-4 bg-gray-50 rounded-xl border border-gray-100 leading-relaxed">
-                            The AI is successfully handling the majority of incoming queries, keeping your agents' workload manageable and reducing average response times.
-                        </p>
-                    </div>
-                </div>
-
-                <script>
-
-                    // Global Styling Defaults
-                    Chart.defaults.font.family = "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-                    Chart.defaults.color = '#6b7280';
-                    Chart.defaults.scale.grid.color = '#f3f4f6';
-                    Chart.defaults.plugins.tooltip.padding = 10;
-                    Chart.defaults.plugins.tooltip.cornerRadius = 8;
-
-                    // 1. Daily Message Volume (2 Lines)
-                    const ctxVolume = document.getElementById('volumeChart').getContext('2d');
-                    new Chart(ctxVolume, {
-                        type: 'line',
-                        data: {
-                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                            datasets: [
-                                {
-                                    label: ' Facebook               ',
-                                    data: [45, 60, 50, 90, 65, 115, 145],
-                                    borderColor: '#3b82f6', // Blue
-                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                    borderWidth: 2,
-                                    tension: 0.4,
-                                    fill: true,
-                                    pointBackgroundColor: '#fff',
-                                    pointBorderColor: '#3b82f6'
-                                },
-                                {
-                                    label: ' Instagram',
-                                    data: [20, 35, 40, 55, 45, 60, 80],
-                                    borderColor: '#ec4899', // Pink
-                                    backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                                    borderWidth: 2,
-                                    tension: 0.4,
-                                    fill: true,
-                                    pointBackgroundColor: '#fff',
-                                    pointBorderColor: '#ec4899'
-                                }
-                            ]
-                        },
-
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8} }
-                            },
-                            scales: {
-                                y: { beginAtZero: true, border: { display: false } },
-                                x: { grid: { display: false }, border: { display: false } }
-                            }
-                        }
-                    });
-
-                    // 2. Channel Distribution (Bar Chart)
-                    const ctxChannel = document.getElementById('channelChart').getContext('2d');
-                    new Chart(ctxChannel, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Facebook', 'Instagram'],
-                            datasets: [{
-                                label: 'Total Messages',
-                                data: [145, 80],
-                                backgroundColor: ['#3b82f6', '#ec4899'], // Blue and Pink
-                                borderRadius: 8,
-                                barThickness: 120
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { beginAtZero: true, border: { display: false } },
-                                x: { grid: { display: false }, border: { display: false } }
-                            }
-                        }
-                    });
-
-                    // 3. Intent Distribution (Pie Chart)
-                    const ctxIntent = document.getElementById('intentPieChart').getContext('2d');
-                    new Chart(ctxIntent, {
-                        type: 'pie',
-                        data: {
-                            labels: ['Lead', 'Support', 'General'],
-                            datasets: [{
-                                data: [65, 30, 5],
-                                backgroundColor: ['#10b981', '#3b82f6', '#9ca3af'], // Green, Blue, Gray
-                                borderWidth: 2,
-                                borderColor: '#ffffff'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'right',
-                                    labels: { usePointStyle: true, padding: 20 }
-                                }
-                            }
-                        }
-                    });
-
-                    function toggleLeftSidebar() {
-                        const sidebar = document.getElementById('left-sidebar');
-                        const textElements = document.querySelectorAll('.sidebar-text');
-
-                        if (sidebar.classList.contains('w-64')) {
-                            // Collapse to icon-only mode
-                            sidebar.classList.remove('w-64');
-                            sidebar.classList.add('w-20');
-
-                            textElements.forEach(el => {
-                                el.classList.remove('opacity-100');
-                                el.classList.add('opacity-0');
-                            });
-                        } else {
-                            // Expand back to full width
-                            sidebar.classList.remove('w-20');
-                            sidebar.classList.add('w-64');
-
-                            textElements.forEach(el => {
-                                el.classList.remove('opacity-0');
-                                el.classList.add('opacity-100');
-                            });
-                        }
-                    }
-
-                    function toggleAiSidebar() {
-                        const aiSidebar = document.getElementById('ai-sidebar');
-                        if (aiSidebar) {
-                            aiSidebar.classList.toggle('hidden');
-                        }
-                    }
-
-                    async function sendAiMessage(messageText) {
-                        if (!messageText || messageText.trim() === '') return;
-
-                        const chatHistory = document.getElementById('ai-chat-history');
-                        const inputField = document.getElementById('ai-input');
-
-                        // Clear the input field immediately
-                        inputField.value = '';
-
-                        // Step 1: Append the User's Message Bubble (Blue)
-                        const userBubble = `
-                            <div class="flex justify-end animate-fade-in-up">
-                                <div class="bg-blue-600 text-white text-sm rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[85%] shadow-sm">
-                                    ${messageText}
-                                </div>
-                            </div>
-                        `;
-                        chatHistory.insertAdjacentHTML('beforeend', userBubble);
-                        chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll to bottom
-
-                        // Step 2: Append a Temporary "Loading" Animation for the AI
-                        const loadingId = 'loading-' + Date.now();
-                        const loadingBubble = `
-                            <div id="${loadingId}" class="flex justify-start animate-fade-in-up">
-                                <div class="bg-white border border-gray-100 text-gray-800 text-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] shadow-sm flex items-center space-x-2">
-                                    <div class="flex space-x-1">
-                                        <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
-                                        <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
-                                        <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        chatHistory.insertAdjacentHTML('beforeend', loadingBubble);
-                        chatHistory.scrollTop = chatHistory.scrollHeight;
-
-                        try {
-                            // Grab authentication details (Tenant ID removed for backend extraction)
-                            const token = localStorage.getItem('crm_token');
-
-                            // Step 3: Send Payload to Secured Backend Endpoint
-                            const response = await fetch('http://localhost:8080/api/v1/admin/ai-assistant', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': 'Bearer ' + token
-                                    // X-Tenant-ID removed per new security protocol
-                                },
-                                body: JSON.stringify({
-                                    // Maps exactly to ModeratorChatRequest DTO
-                                    message: messageText,
-                                    selectedContactId: currentSelectedContactId
-                                })
-                            });
-
-                            if (!response.ok) throw new Error("Server response wasn't OK");
-
-                            // Step 4: Parse the raw string response from the controller
-                            const aiText = await response.text();
-
-                            // Step 5: Remove Loading Bubble and Append AI Response
-                            document.getElementById(loadingId).remove();
-
-                            const aiBubble = `
-                                <div class="flex justify-start animate-fade-in-up">
-                                    <div class="bg-white border border-gray-100 text-gray-800 text-sm rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%] shadow-sm whitespace-pre-wrap">
-                                        ${aiText}
-                                    </div>
-                                </div>
-                            `;
-                            chatHistory.insertAdjacentHTML('beforeend', aiBubble);
-                            chatHistory.scrollTop = chatHistory.scrollHeight;
-
-                        } catch (error) {
-                            console.error("AI Assistant Error:", error);
-
-                            // If it fails, remove the loading bubble and show an error bubble
-                            const loader = document.getElementById(loadingId);
-                            if (loader) loader.remove();
-
-                            const errorBubble = `
-                                <div class="flex justify-start animate-fade-in-up">
-                                    <div class="bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%] shadow-sm">
-                                        ⚠️ Sorry, I encountered an error connecting to the server. Please try again.
-                                    </div>
-                                </div>
-                            `;
-                            chatHistory.insertAdjacentHTML('beforeend', errorBubble);
-                            chatHistory.scrollTop = chatHistory.scrollHeight;
-                        }
-                    }
-                    function showErrorToast(message) {
-                        // Create the white card toast container
-                        const toast = document.createElement('div');
-                        toast.className = "fixed top-8 right-8 z-[100] flex w-max min-w-[340px] bg-white rounded-md shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-400 ease-out -translate-y-10 opacity-0";
-
-                        // Left red accent bar
-                        const accentBar = document.createElement('div');
-                        accentBar.className = "w-2.5 bg-[#EF4444] flex-shrink-0";
-
-                        // Main content wrapper
-                        const contentWrapper = document.createElement('div');
-                        contentWrapper.className = "flex items-start gap-3 py-4 pl-4 pr-10 w-full";
-
-                        // Text container (Title and Message)
-                        const textContainer = document.createElement('div');
-                        textContainer.className = "flex flex-col";
-
-                        const title = document.createElement('h3');
-                        title.className = "text-[#2D3339] font-bold text-[16px] leading-tight mb-1";
-                        title.textContent = "Error";
-
-                        const msgText = document.createElement('p');
-                        msgText.className = "text-gray-500 text-[14px] font-medium tracking-tight";
-                        msgText.textContent = message;
-
-                        textContainer.appendChild(title);
-                        textContainer.appendChild(msgText);
-                        contentWrapper.appendChild(textContainer);
-
-                        // Close 'X' button
-                        const closeBtn = document.createElement('button');
-                        closeBtn.className = "absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors p-1";
-                        closeBtn.innerHTML = `
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            `;
-
-                        // Close button logic
-                        closeBtn.onclick = () => {
-                            toast.classList.add('-translate-y-10', 'opacity-0');
-                            setTimeout(() => toast.remove(), 400);
-                        };
-
-                        // Assemble and add to the page
-                        toast.appendChild(accentBar);
-                        toast.appendChild(contentWrapper);
-                        toast.appendChild(closeBtn);
-                        document.body.appendChild(toast);
-
-                        // Trigger the slide-down animation
-                        requestAnimationFrame(() => {
-                            toast.classList.remove('-translate-y-10', 'opacity-0');
-                        });
-
-                        // Automatically slide up and remove after 4 seconds
-                        setTimeout(() => {
-                            if (document.body.contains(toast)) {
-                                toast.classList.add('-translate-y-10', 'opacity-0');
-                                setTimeout(() => toast.remove(), 400);
-                            }
-                        }, 8000);
-                    }
-
-                    function handleInventorySearch() {
-                        // Get the typed value and convert to lowercase for case-insensitive matching
-                        const query = document.getElementById('inventory-search')?.value.toLowerCase() || '';
-
-                        // Filter the global array of currently loaded products
-                        const filtered = globalProducts.filter(p => p.baseName.toLowerCase().includes(query));
-
-                        // Re-render the inventory column with the filtered results
-                        renderInventory(filtered);
-                    }
-
-                    function showWarningToast(message) {
-                        // Create the white card toast container
-                        const toast = document.createElement('div');
-                        toast.className = "fixed top-8 right-8 z-[100] flex w-max min-w-[340px] bg-white rounded-md shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-400 ease-out -translate-y-10 opacity-0";
-
-                        // Left yellow accent bar
-                        const accentBar = document.createElement('div');
-                        accentBar.className = "w-2.5 bg-[#F59E0B] flex-shrink-0";
-
-                        // Main content wrapper
-                        const contentWrapper = document.createElement('div');
-                        contentWrapper.className = "flex items-start gap-3 py-4 pl-4 pr-10 w-full";
-
-                        // Text container (Title and Message)
-                        const textContainer = document.createElement('div');
-                        textContainer.className = "flex flex-col";
-
-                        const title = document.createElement('h3');
-                        title.className = "text-[#2D3339] font-bold text-[16px] leading-tight mb-1";
-                        title.textContent = "Warning";
-
-                        const msgText = document.createElement('p');
-                        msgText.className = "text-gray-500 text-[14px] font-medium tracking-tight";
-                        msgText.textContent = message;
-
-                        textContainer.appendChild(title);
-                        textContainer.appendChild(msgText);
-                        contentWrapper.appendChild(textContainer);
-
-                        // Close 'X' button
-                        const closeBtn = document.createElement('button');
-                        closeBtn.className = "absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors p-1";
-                        closeBtn.innerHTML = `
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                `;
-
-                        // Close button logic
-                        closeBtn.onclick = () => {
-                            toast.classList.add('-translate-y-10', 'opacity-0');
-                            setTimeout(() => toast.remove(), 400);
-                        };
-
-                        // Assemble and add to the page
-                        toast.appendChild(accentBar);
-                        toast.appendChild(contentWrapper);
-                        toast.appendChild(closeBtn);
-                        document.body.appendChild(toast);
-
-                        // Trigger the slide-down animation
-                        requestAnimationFrame(() => {
-                            toast.classList.remove('-translate-y-10', 'opacity-0');
-                        });
-
-                        // Automatically slide up and remove after 4 seconds
-                        setTimeout(() => {
-                            if (document.body.contains(toast)) {
-                                toast.classList.add('-translate-y-10', 'opacity-0');
-                                setTimeout(() => toast.remove(), 400);
-                            }
-                        }, 8000);
-                    }
-
-                    function showSuccessToast(message) {
-                        // Create the white card toast container
-                        const toast = document.createElement('div');
-                        // CHANGED: bottom-8 to top-8, and translate-y-10 to -translate-y-10
-                        toast.className = "fixed top-8 right-8 z-[100] flex w-max min-w-[340px] bg-white rounded-md shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-400 ease-out -translate-y-10 opacity-0";
-
-                        // Left green accent bar
-                        const accentBar = document.createElement('div');
-                        accentBar.className = "w-2.5 bg-[#6DC476] flex-shrink-0";
-
-                        // Main content wrapper
-                        const contentWrapper = document.createElement('div');
-                        contentWrapper.className = "flex items-start gap-3 py-4 pl-4 pr-10 w-full";
-
-                        // Text container (Title and Message)
-                        const textContainer = document.createElement('div');
-                        textContainer.className = "flex flex-col";
-
-                        const title = document.createElement('h3');
-                        title.className = "text-[#2D3339] font-bold text-[16px] leading-tight mb-1";
-                        title.textContent = "Success";
-
-                        const msgText = document.createElement('p');
-                        msgText.className = "text-gray-500 text-[14px] font-medium tracking-tight";
-                        msgText.textContent = message;
-
-                        textContainer.appendChild(title);
-                        textContainer.appendChild(msgText);
-                        contentWrapper.appendChild(textContainer);
-
-                        // Close 'X' button
-                        const closeBtn = document.createElement('button');
-                        closeBtn.className = "absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors p-1";
-                        closeBtn.innerHTML = `
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                `;
-
-                        // Close button logic
-                        closeBtn.onclick = () => {
-                            // CHANGED: translate-y-10 to -translate-y-10
-                            toast.classList.add('-translate-y-10', 'opacity-0');
-                            setTimeout(() => toast.remove(), 400);
-                        };
-
-                        // Assemble and add to the page
-                        toast.appendChild(accentBar);
-                        toast.appendChild(contentWrapper);
-                        toast.appendChild(closeBtn);
-                        document.body.appendChild(toast);
-
-                        // Trigger the slide-down animation
-                        requestAnimationFrame(() => {
-                            // CHANGED: translate-y-10 to -translate-y-10
-                            toast.classList.remove('-translate-y-10', 'opacity-0');
-                        });
-
-                        // Automatically slide up and remove after 4 seconds
-                        setTimeout(() => {
-                            if (document.body.contains(toast)) {
-                                // CHANGED: translate-y-10 to -translate-y-10
-                                toast.classList.add('-translate-y-10', 'opacity-0');
-                                setTimeout(() => toast.remove(), 400);
-                            }
-                        }, 8000);
-                    }
-
-                    function resetCustomerProfileUI() {
-                        // Flushes all fields back to default if the contact is just a lead and not a customer yet
-                        document.getElementById('profile-phone').innerText = '--';
-                        document.getElementById('profile-email').innerText = '--';
-                        document.getElementById('profile-address').innerText = '--';
-
-                        // Reset Metrics
-                        document.getElementById('profile-total-spent').innerText = '0 BDT';
-                        document.getElementById('profile-order-count').innerText = '0';
-
-                        // Clear Order History
-                        document.getElementById('sidebar-order-history').innerHTML =
-                            '<p class="text-xs text-gray-400 italic text-center py-4">No orders found.</p>';
-                    }
-
-                </script>
-
-                <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-                    <h2 class="text-lg font-medium text-gray-900 mb-5">Performance Insights</h2>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        <div class="bg-green-50 border border-green-100 rounded-xl p-5">
-                            <h4 class="font-bold text-green-900 mb-2 flex items-center">
-                                <span class="mr-2 text-lg">✅</span> Strong Performance
-                            </h4>
-                            <p class="text-sm text-green-700 leading-relaxed">Response times are 15% faster than last week. Keep it up!</p>
-                        </div>
-
-                        <div class="bg-purple-50 border border-purple-100 rounded-xl p-5">
-                            <h4 class="font-bold text-purple-900 mb-2 flex items-center">
-                                <span class="mr-2 text-lg">🤖</span> AI Efficiency
-                            </h4>
-                            <p class="text-sm text-purple-700 leading-relaxed">AI is handling common queries about pricing and delivery times effectively.</p>
-                        </div>
-
-                        <div class="bg-amber-50 border border-amber-100 rounded-xl p-5">
-                            <h4 class="font-bold text-amber-900 mb-2 flex items-center">
-                                <span class="mr-2 text-lg">💡</span> Recommendation
-                            </h4>
-                            <p class="text-sm text-amber-700 leading-relaxed">Consider adding more team members during peak hours (2-6 PM).</p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
+
+        <script>
+            // --- Global State ---
+            let allOrders = [];
+            let selectedOrderId = null;
+
+            const STATUS_STYLES = {
+                'PENDING': 'bg-yellow-50 text-yellow-700 border-yellow-200',
+                'CONFIRMED': 'bg-blue-50 text-blue-700 border-blue-200',
+                'SHIPPED': 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                'DELIVERED': 'bg-green-50 text-green-700 border-green-200',
+                'CANCELLED': 'bg-red-50 text-red-700 border-red-200'
+            };
+
+            // --- Navigate To Fix ---
+            // Update your existing navigateTo logic block:
+            if(targetId === 'view-settings') fetchSettingsData();
+            if(targetId === 'view-inbox') fetchInboxData();
+            if(targetId === 'view-orders') fetchOrdersData(); // <-- Changed from view-customers
+            if(targetId === 'view-analytics') fetchAnalyticsData();
+            // ...
+
+            // --- Core Functions ---
+            async function fetchOrdersData() {
+                try {
+                    const response = await apiCall('/api/orders');
+                    if (response.ok) {
+                        allOrders = await response.json();
+                        renderOrdersList();
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch orders:", error);
+                }
+            }
+
+            function renderOrdersList() {
+                const container = document.getElementById('orders-list-container');
+                const timeFilter = document.getElementById('filter-order-time').value;
+                const statusFilter = document.getElementById('filter-order-status').value;
+
+                // Filter
+                let filteredOrders = allOrders.filter(o => statusFilter === 'ALL' || o.status === statusFilter);
+
+                // Sort
+                filteredOrders.sort((a, b) => {
+                    const dateA = new Date(a.createdAt).getTime();
+                    const dateB = new Date(b.createdAt).getTime();
+                    return timeFilter === 'newest' ? dateB - dateA : dateA - dateB;
+                });
+
+                if (filteredOrders.length === 0) {
+                    container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 text-sm font-medium">No orders found matching your criteria.</div>`;
+                    return;
+                }
+
+                container.innerHTML = filteredOrders.map(order => {
+                    const dateStr = new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                    const pillStyle = STATUS_STYLES[order.status] || 'bg-gray-50 text-gray-700 border-gray-200';
+                    const isSelected = order.id === selectedOrderId;
+                    const ringClass = isSelected ? 'ring-2 ring-blue-500 border-transparent' : 'border-gray-200 hover:bg-gray-50';
+
+                                    return `
+                    <div class="bg-white rounded-2xl p-6 border ${ringClass} shadow-sm transition-all duration-200 flex flex-col justify-between cursor-pointer group" onclick="selectOrder(${order.id})">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <p class="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">Order #${order.id}</p>
+                                    <h3 class="text-lg font-medium text-gray-900 tracking-tight">${order.customerName}</h3>
+                                </div>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${pillStyle}">
+                                    ${order.status}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-6 flex items-center">
+                                <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                ${dateStr}
+                            </p>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+                            <div class="text-lg font-medium text-gray-900">৳ ${order.totalAmount.toLocaleString()}</div>
+
+                            <div onclick="event.stopPropagation()">
+                                <select onchange="changeOrderStatus(${order.id}, this.value)" class="block w-full pl-3 pr-8 py-1.5 text-xs font-medium text-gray-700 border border-gray-300 rounded-lg shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-600 transition-all cursor-pointer">
+                                    <option value="PENDING" ${order.status === 'PENDING' ? 'selected' : ''}>Pending</option>
+                                    <option value="CONFIRMED" ${order.status === 'CONFIRMED' ? 'selected' : ''}>Confirmed</option>
+                                    <option value="SHIPPED" ${order.status === 'SHIPPED' ? 'selected' : ''}>Shipped</option>
+                                    <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>Delivered</option>
+                                    <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            }
+
+            function selectOrder(orderId) {
+                selectedOrderId = orderId;
+                renderOrdersList(); // Re-render to show the blue selection ring
+
+                const order = allOrders.find(o => o.id === orderId);
+                if (!order) return;
+
+                const sidebar = document.getElementById('order-sidebar');
+                const content = document.getElementById('order-sidebar-content');
+
+                let itemsHtml = order.items.map(item => `
+                    <div class="flex justify-between items-center py-3 border-b border-gray-100 last:border-0">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">${item.productName}</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Qty: ${item.quantity} x ৳${item.price.toLocaleString()}</p>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900">৳${(item.quantity * item.price).toLocaleString()}</p>
+                    </div>
+                `).join('');
+
+                content.innerHTML = `
+                    <div class="mb-8">
+                        <h4 class="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-3">Customer Details</h4>
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <p class="text-sm font-medium text-gray-900">${order.customerName}</p>
+                            <p class="text-sm text-gray-600 mt-1">Processed by: ${order.staffName}</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <h4 class="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-3">Logistics</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                <p class="text-xs text-gray-500 mb-1">Delivery</p>
+                                <p class="text-sm font-medium text-gray-900">${order.deliveryMethod.replace('_', ' ')}</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                <p class="text-xs text-gray-500 mb-1">Payment</p>
+                                <p class="text-sm font-medium text-gray-900">${order.paymentMethod.replace('_', ' ')}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <h4 class="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-3">Order Items</h4>
+                        <div class="bg-white rounded-xl border border-gray-200 px-4">
+                            ${itemsHtml}
+                        </div>
+                        <div class="flex justify-between items-center mt-4 px-2">
+                            <p class="text-sm text-gray-500">Total Amount</p>
+                            <p class="text-xl font-medium text-gray-900 tracking-tight">৳${order.totalAmount.toLocaleString()}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Unhide and slide in
+                sidebar.classList.remove('hidden');
+                // small timeout to allow display:block to register before translating
+                setTimeout(() => sidebar.classList.remove('translate-x-full'), 10);
+            }
+
+            function closeOrderSidebar() {
+                const sidebar = document.getElementById('order-sidebar');
+                sidebar.classList.add('translate-x-full');
+                selectedOrderId = null;
+                renderOrdersList(); // Remove selection ring
+                setTimeout(() => sidebar.classList.add('hidden'), 300); // Wait for transition
+            }
+
+            async function changeOrderStatus(orderId, newStatus) {
+                try {
+                    const response = await apiCall(`/api/orders/${orderId}/status?status=${newStatus}`, { method: 'PUT' });
+                    if (response.ok) {
+                        // Update local state without doing a full refresh, feels snappier
+                        const updatedOrder = await response.json();
+                        const index = allOrders.findIndex(o => o.id === orderId);
+                        if (index !== -1) {
+                            allOrders[index] = updatedOrder;
+                        }
+                        renderOrdersList();
+                    } else {
+                        showErrorToast('Failed to update order status.');
+                        fetchOrdersData(); // Rollback UI
+                    }
+                } catch (e) {
+                    console.error(e);
+                    fetchOrdersData(); // Rollback UI
+                }
+            }
+
+            // Global Styling Defaults
+            Chart.defaults.font.family = "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+            Chart.defaults.color = '#6b7280';
+            Chart.defaults.scale.grid.color = '#f3f4f6';
+            Chart.defaults.plugins.tooltip.padding = 10;
+            Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+            // 1. Daily Message Volume (2 Lines)
+            const ctxVolume = document.getElementById('volumeChart').getContext('2d');
+            new Chart(ctxVolume, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [
+                        {
+                            label: ' Facebook               ',
+                            data: [45, 60, 50, 90, 65, 115, 145],
+                            borderColor: '#3b82f6', // Blue
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#3b82f6'
+                        },
+                        {
+                            label: ' Instagram',
+                            data: [20, 35, 40, 55, 45, 60, 80],
+                            borderColor: '#ec4899', // Pink
+                            backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#ec4899'
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8} }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, border: { display: false } },
+                        x: { grid: { display: false }, border: { display: false } }
+                    }
+                }
+            });
+
+            // 2. Channel Distribution (Bar Chart)
+            const ctxChannel = document.getElementById('channelChart').getContext('2d');
+            new Chart(ctxChannel, {
+                type: 'bar',
+                data: {
+                    labels: ['Facebook', 'Instagram'],
+                    datasets: [{
+                        label: 'Total Messages',
+                        data: [145, 80],
+                        backgroundColor: ['#3b82f6', '#ec4899'], // Blue and Pink
+                        borderRadius: 8,
+                        barThickness: 120
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, border: { display: false } },
+                        x: { grid: { display: false }, border: { display: false } }
+                    }
+                }
+            });
+
+            // 3. Intent Distribution (Pie Chart)
+            const ctxIntent = document.getElementById('intentPieChart').getContext('2d');
+            new Chart(ctxIntent, {
+                type: 'pie',
+                data: {
+                    labels: ['Lead', 'Support', 'General'],
+                    datasets: [{
+                        data: [65, 30, 5],
+                        backgroundColor: ['#10b981', '#3b82f6', '#9ca3af'], // Green, Blue, Gray
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { usePointStyle: true, padding: 20 }
+                        }
+                    }
+                }
+            });
+
+            function toggleLeftSidebar() {
+                const sidebar = document.getElementById('left-sidebar');
+                const textElements = document.querySelectorAll('.sidebar-text');
+
+                if (sidebar.classList.contains('w-64')) {
+                    // Collapse to icon-only mode
+                    sidebar.classList.remove('w-64');
+                    sidebar.classList.add('w-20');
+
+                    textElements.forEach(el => {
+                        el.classList.remove('opacity-100');
+                        el.classList.add('opacity-0');
+                    });
+                } else {
+                    // Expand back to full width
+                    sidebar.classList.remove('w-20');
+                    sidebar.classList.add('w-64');
+
+                    textElements.forEach(el => {
+                        el.classList.remove('opacity-0');
+                        el.classList.add('opacity-100');
+                    });
+                }
+            }
+
+            function toggleAiSidebar() {
+                const aiSidebar = document.getElementById('ai-sidebar');
+                if (aiSidebar) {
+                    aiSidebar.classList.toggle('hidden');
+                }
+            }
+
+            async function sendAiMessage(messageText) {
+                if (!messageText || messageText.trim() === '') return;
+
+                const chatHistory = document.getElementById('ai-chat-history');
+                const inputField = document.getElementById('ai-input');
+
+                // Clear the input field immediately
+                inputField.value = '';
+
+                // Step 1: Append the User's Message Bubble (Blue)
+                const userBubble = `
+        <div class="flex justify-end animate-fade-in-up mt-2">
+            <div class="bg-blue-600 text-white text-sm rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[85%] shadow-sm">
+                ${messageText}
+            </div>
+        </div>
+    `;
+                chatHistory.insertAdjacentHTML('beforeend', userBubble);
+                chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+
+                // Step 2: Append a Temporary "Loading" Animation for the AI
+                const loadingId = 'loading-' + Date.now();
+                const loadingBubble = `
+        <div id="${loadingId}" class="flex justify-start animate-fade-in-up mt-2">
+            <div class="bg-white border border-gray-100 text-gray-800 text-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%] shadow-sm flex items-center space-x-2">
+                <div class="flex space-x-1">
+                    <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                    <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+                    <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+                </div>
+            </div>
+        </div>
+    `;
+                chatHistory.insertAdjacentHTML('beforeend', loadingBubble);
+                chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+
+                try {
+                    const token = localStorage.getItem('crm_token');
+                    const response = await fetch('http://localhost:8080/api/v1/admin/ai-assistant', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token
+                        },
+                        body: JSON.stringify({
+                            message: messageText,
+                            selectedContactId: currentSelectedContactId
+                        })
+                    });
+
+                    if (!response.ok) throw new Error("Server response wasn't OK");
+
+                    // Parse JSON instead of raw text
+                    const aiResponse = await response.json();
+
+                    // Remove Loading Bubble
+                    const loader = document.getElementById(loadingId);
+                    if (loader) loader.remove();
+
+                    // Parse the markdown text into HTML
+                    const parsedMarkdown = marked.parse(aiResponse.text);
+
+                    // Build the standard text bubble
+                    let aiBubbleHtml = `
+            <div class="flex justify-start animate-fade-in-up mt-2">
+                <div class="bg-white border border-gray-100 text-gray-800 text-sm rounded-2xl rounded-tl-sm px-5 py-3.5 max-w-[95%] shadow-sm overflow-hidden prose prose-sm leading-relaxed">
+                    ${parsedMarkdown}
+                </div>
+            </div>
+        `;
+
+                    chatHistory.insertAdjacentHTML('beforeend', aiBubbleHtml);
+
+                    // If tabular data is attached, build a Tailwind table right below the text bubble
+                    if (aiResponse.table && aiResponse.tableData) {
+                        const columns = aiResponse.tableData.columns;
+                        const rows = aiResponse.tableData.rows;
+
+                        let tableHeaders = columns.map(col => `<th class="px-3 py-2 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">${col}</th>`).join('');
+
+                        let tableRows = rows.map(row => {
+                            let cells = columns.map(col => `<td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${row[col] ?? '-'}</td>`).join('');
+                            return `<tr class="hover:bg-gray-50 transition-colors">${cells}</tr>`;
+                        }).join('');
+
+                        let tableHtml = `
+                            <div class="flex justify-start animate-fade-in-up mt-2 w-full">
+                                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-x-auto w-[95%] max-w-[95%]">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>${tableHeaders}</tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-100">
+                                            ${tableRows}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                        chatHistory.insertAdjacentHTML('beforeend', tableHtml);
+                    }
+
+                    chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+
+                    // --- NEW: SILENT UI REFRESH ---
+                    // Instantly re-fetch and render the sidebar (tags, complaints, order badges)
+                    // so the UI stays perfectly in sync with the database actions the AI just took.
+                    if (currentSelectedContactId) {
+                        selectConversation(currentSelectedContactId);
+                    }
+
+                } catch (error) {
+                    console.error("AI Assistant Error:", error);
+
+                    // If it fails, remove the loading bubble and show an error bubble
+                    const loader = document.getElementById(loadingId);
+                    if (loader) loader.remove();
+
+                    const errorBubble = `
+                        <div class="flex justify-start animate-fade-in-up mt-2">
+                            <div class="bg-red-50 border border-red-100 text-red-700 text-sm rounded-2xl rounded-tl-sm px-5 py-3.5 max-w-[85%] shadow-sm">
+                                Sorry, I encountered an error connecting to the server. Please try again.
+                            </div>
+                        </div>
+                    `;
+                    chatHistory.insertAdjacentHTML('beforeend', errorBubble);
+                    chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+                }
+            }
+
+            async function clearAiChat() {
+                // Optional: Add a simple confirm dialog so admins don't accidentally wipe data
+                const confirmed = await showConfirmDialog(
+                    "Clear Chat History",
+                    "Are you sure you want to delete all AI conversations? This action cannot be undone.",
+                    "Clear History"
+                );
+                if (!confirmed) return;
+
+                try {
+                    const token = localStorage.getItem('crm_token');
+                    const response = await fetch('http://localhost:8080/api/v1/admin/ai-history', {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+
+                    if (!response.ok) throw new Error("Failed to clear chat history.");
+
+                    const chatHistoryContainer = document.getElementById('ai-chat-history');
+
+                    // Wipe the DOM
+                    chatHistoryContainer.innerHTML = '';
+
+                    // Re-inject a fresh greeting bubble
+                    const defaultGreeting = `
+                        <div class="flex justify-start">
+                            <div class="bg-white border border-gray-100 text-gray-800 text-sm rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%] shadow-sm">
+                                Chat history cleared. How can I help you today?
+                            </div>
+                        </div>
+                    `;
+                    chatHistoryContainer.insertAdjacentHTML('beforeend', defaultGreeting);
+
+                } catch (error) {
+                    console.error("Failed to clear chat:", error);
+                    showErrorToast("Failed to clear chat history. Please try again.");
+                }
+            }
+
+            // --- Custom Confirmation Dialog ---
+            function showConfirmDialog(title, message, confirmText = "Confirm") {
+                return new Promise((resolve) => {
+                    const modal = document.getElementById('modal-confirm');
+                    const titleEl = document.getElementById('confirm-title');
+                    const messageEl = document.getElementById('confirm-message');
+                    const btnCancel = document.getElementById('btn-confirm-cancel');
+                    const btnConfirm = document.getElementById('btn-confirm-action');
+
+                    // Populate dynamic content
+                    titleEl.textContent = title;
+                    messageEl.textContent = message;
+                    btnConfirm.textContent = confirmText;
+
+                    // Show the modal
+                    modal.classList.remove('hidden-screen');
+
+                    // Cleanup listener function
+                    const cleanup = () => {
+                        modal.classList.add('hidden-screen');
+                        btnCancel.removeEventListener('click', onCancel);
+                        btnConfirm.removeEventListener('click', onConfirm);
+                    };
+
+                    // Resolution handlers
+                    const onCancel = () => { cleanup(); resolve(false); };
+                    const onConfirm = () => { cleanup(); resolve(true); };
+
+                    btnCancel.addEventListener('click', onCancel);
+                    btnConfirm.addEventListener('click', onConfirm);
+                });
+            }
+
+            function showErrorToast(message) {
+                // Create the white card toast container
+                const toast = document.createElement('div');
+                toast.className = "fixed top-8 right-8 z-[100] flex w-max min-w-[340px] bg-white rounded-md shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-400 ease-out -translate-y-10 opacity-0";
+
+                // Left red accent bar
+                const accentBar = document.createElement('div');
+                accentBar.className = "w-2.5 bg-[#EF4444] flex-shrink-0";
+
+                // Main content wrapper
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = "flex items-start gap-3 py-4 pl-4 pr-10 w-full";
+
+                // Text container (Title and Message)
+                const textContainer = document.createElement('div');
+                textContainer.className = "flex flex-col";
+
+                const title = document.createElement('h3');
+                title.className = "text-[#2D3339] font-bold text-[16px] leading-tight mb-1";
+                title.textContent = "Error";
+
+                const msgText = document.createElement('p');
+                msgText.className = "text-gray-500 text-[14px] font-medium tracking-tight";
+                msgText.textContent = message;
+
+                textContainer.appendChild(title);
+                textContainer.appendChild(msgText);
+                contentWrapper.appendChild(textContainer);
+
+                // Close 'X' button
+                const closeBtn = document.createElement('button');
+                closeBtn.className = "absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors p-1";
+                closeBtn.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    `;
+
+                // Close button logic
+                closeBtn.onclick = () => {
+                    toast.classList.add('-translate-y-10', 'opacity-0');
+                    setTimeout(() => toast.remove(), 400);
+                };
+
+                // Assemble and add to the page
+                toast.appendChild(accentBar);
+                toast.appendChild(contentWrapper);
+                toast.appendChild(closeBtn);
+                document.body.appendChild(toast);
+
+                // Trigger the slide-down animation
+                requestAnimationFrame(() => {
+                    toast.classList.remove('-translate-y-10', 'opacity-0');
+                });
+
+                // Automatically slide up and remove after 4 seconds
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        toast.classList.add('-translate-y-10', 'opacity-0');
+                        setTimeout(() => toast.remove(), 400);
+                    }
+                }, 8000);
+            }
+
+            function handleInventorySearch() {
+                // Get the typed value and convert to lowercase for case-insensitive matching
+                const query = document.getElementById('inventory-search')?.value.toLowerCase() || '';
+
+                // Filter the global array of currently loaded products
+                const filtered = globalProducts.filter(p => p.baseName.toLowerCase().includes(query));
+
+                // Re-render the inventory column with the filtered results
+                renderInventory(filtered);
+            }
+
+            function showWarningToast(message) {
+                // Create the white card toast container
+                const toast = document.createElement('div');
+                toast.className = "fixed top-8 right-8 z-[100] flex w-max min-w-[340px] bg-white rounded-md shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-400 ease-out -translate-y-10 opacity-0";
+
+                // Left yellow accent bar
+                const accentBar = document.createElement('div');
+                accentBar.className = "w-2.5 bg-[#F59E0B] flex-shrink-0";
+
+                // Main content wrapper
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = "flex items-start gap-3 py-4 pl-4 pr-10 w-full";
+
+                // Text container (Title and Message)
+                const textContainer = document.createElement('div');
+                textContainer.className = "flex flex-col";
+
+                const title = document.createElement('h3');
+                title.className = "text-[#2D3339] font-bold text-[16px] leading-tight mb-1";
+                title.textContent = "Warning";
+
+                const msgText = document.createElement('p');
+                msgText.className = "text-gray-500 text-[14px] font-medium tracking-tight";
+                msgText.textContent = message;
+
+                textContainer.appendChild(title);
+                textContainer.appendChild(msgText);
+                contentWrapper.appendChild(textContainer);
+
+                // Close 'X' button
+                const closeBtn = document.createElement('button');
+                closeBtn.className = "absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors p-1";
+                closeBtn.innerHTML = `
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        `;
+
+                // Close button logic
+                closeBtn.onclick = () => {
+                    toast.classList.add('-translate-y-10', 'opacity-0');
+                    setTimeout(() => toast.remove(), 400);
+                };
+
+                // Assemble and add to the page
+                toast.appendChild(accentBar);
+                toast.appendChild(contentWrapper);
+                toast.appendChild(closeBtn);
+                document.body.appendChild(toast);
+
+                // Trigger the slide-down animation
+                requestAnimationFrame(() => {
+                    toast.classList.remove('-translate-y-10', 'opacity-0');
+                });
+
+                // Automatically slide up and remove after 4 seconds
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        toast.classList.add('-translate-y-10', 'opacity-0');
+                        setTimeout(() => toast.remove(), 400);
+                    }
+                }, 8000);
+            }
+
+            function showSuccessToast(message) {
+                // Create the white card toast container
+                const toast = document.createElement('div');
+                // CHANGED: bottom-8 to top-8, and translate-y-10 to -translate-y-10
+                toast.className = "fixed top-8 right-8 z-[100] flex w-max min-w-[340px] bg-white rounded-md shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-400 ease-out -translate-y-10 opacity-0";
+
+                // Left green accent bar
+                const accentBar = document.createElement('div');
+                accentBar.className = "w-2.5 bg-[#6DC476] flex-shrink-0";
+
+                // Main content wrapper
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = "flex items-start gap-3 py-4 pl-4 pr-10 w-full";
+
+                // Text container (Title and Message)
+                const textContainer = document.createElement('div');
+                textContainer.className = "flex flex-col";
+
+                const title = document.createElement('h3');
+                title.className = "text-[#2D3339] font-bold text-[16px] leading-tight mb-1";
+                title.textContent = "Success";
+
+                const msgText = document.createElement('p');
+                msgText.className = "text-gray-500 text-[14px] font-medium tracking-tight";
+                msgText.textContent = message;
+
+                textContainer.appendChild(title);
+                textContainer.appendChild(msgText);
+                contentWrapper.appendChild(textContainer);
+
+                // Close 'X' button
+                const closeBtn = document.createElement('button');
+                closeBtn.className = "absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors p-1";
+                closeBtn.innerHTML = `
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        `;
+
+                // Close button logic
+                closeBtn.onclick = () => {
+                    // CHANGED: translate-y-10 to -translate-y-10
+                    toast.classList.add('-translate-y-10', 'opacity-0');
+                    setTimeout(() => toast.remove(), 400);
+                };
+
+                // Assemble and add to the page
+                toast.appendChild(accentBar);
+                toast.appendChild(contentWrapper);
+                toast.appendChild(closeBtn);
+                document.body.appendChild(toast);
+
+                // Trigger the slide-down animation
+                requestAnimationFrame(() => {
+                    // CHANGED: translate-y-10 to -translate-y-10
+                    toast.classList.remove('-translate-y-10', 'opacity-0');
+                });
+
+                // Automatically slide up and remove after 4 seconds
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        // CHANGED: translate-y-10 to -translate-y-10
+                        toast.classList.add('-translate-y-10', 'opacity-0');
+                        setTimeout(() => toast.remove(), 400);
+                    }
+                }, 8000);
+            }
+
+            function resetCustomerProfileUI() {
+                // Flushes all fields back to default if the contact is just a lead and not a customer yet
+                document.getElementById('profile-phone').innerText = '--';
+                document.getElementById('profile-email').innerText = '--';
+                document.getElementById('profile-address').innerText = '--';
+
+                // Reset Metrics
+                document.getElementById('profile-total-spent').innerText = '0 BDT';
+                document.getElementById('profile-order-count').innerText = '0';
+
+                // Clear Order History
+                document.getElementById('sidebar-order-history').innerHTML =
+                    '<p class="text-xs text-gray-400 italic text-center py-4">No orders found.</p>';
+            }
+
+        </script>
+
         <div id="view-settings" class="dashboard-view hidden-screen h-full flex flex-col bg-gray-50 overflow-y-auto">
             <div class="sticky top-0 z-20 bg-white border-b border-gray-100 px-6 py-3.5 grid grid-cols-3 items-center">
                 <div></div>
@@ -1518,10 +1677,12 @@
                         }
                     </style>
 
-                    <button type="button" class="w-full relative p-[1.5px] rounded-full overflow-hidden mb-8 focus:outline-none focus:ring-2 focus:ring-blue-500/40 animate-subtle-float hover:scale-[1.02] hover:shadow-md transition-all duration-300">
+                    <button type="button" onclick="setupBusinessWithAi()" class="w-full relative p-[1.5px] rounded-full overflow-hidden mb-8 focus:outline-none focus:ring-2 focus:ring-blue-500/40 animate-subtle-float hover:scale-[1.02] hover:shadow-md transition-all duration-300">
                         <span class="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 animate-gradient-flow"></span>
                         <span class="absolute inset-[1.5px] rounded-full bg-white"></span>
-                        <span class="relative flex items-center justify-center py-3.5 w-full text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 animate-gradient-flow tracking-wide">Set up your business using AI</span>
+                        <span class="relative flex items-center justify-center py-3.5 w-full text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 animate-gradient-flow tracking-wide">
+                            Set up your business using AI
+                        </span>
                     </button>
 
                     <div class="space-y-4">
@@ -1715,9 +1876,50 @@
                 } catch(err) { showErrorToast("Server error!"); }
             }
 
+            /**
+             * Navigates to the business view, opens the AI sidebar,
+             * and injects a helpful onboarding prompt.
+             */
+            function setupBusinessWithAi() {
+                // 1. Navigate to the Business Settings view
+                navigateTo('view-business');
+
+                // 2. Ensure the AI Sidebar is visible
+                const aiSidebar = document.getElementById('ai-sidebar');
+                if (aiSidebar && aiSidebar.classList.contains('w-0')) {
+                    toggleAiSidebar();
+                }
+
+                // 3. Inject the helpful onboarding message
+                const chatHistory = document.getElementById('ai-chat-history');
+                if (chatHistory) {
+                    const aiBubbleHtml = `
+                        <div class="flex justify-start animate-fade-in-up mt-4">
+                            <div class="bg-blue-50 border border-blue-100 text-blue-800 text-sm rounded-2xl rounded-tl-sm px-5 py-3.5 max-w-[90%] shadow-sm leading-relaxed">
+                                Worried about setting up your business? Let AI handle it! Just click the <strong class="text-blue-900">+</strong> button beside <em class="text-blue-900 font-medium">Product Types</em> and I will generate your entire catalog structure.
+                            </div>
+                        </div>
+                    `;
+
+                    // Append the message to the chat
+                    chatHistory.insertAdjacentHTML('beforeend', aiBubbleHtml);
+
+                    // Smoothly auto-scroll to the bottom so the user sees the message
+                    chatHistory.scrollTo({
+                        top: chatHistory.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+
             // DISCONNECT: Wipe the Meta credentials
             async function disconnectFacebook() {
-                if (!confirm("Are you sure you want to disconnect your Facebook Page? The bot will stop working.")) return;
+                const confirmed = await showConfirmDialog(
+                    "Disconnect Facebook Page",
+                    "Are you sure you want to disconnect your Facebook Page? The bot will stop working.",
+                    "Disconnect"
+                );
+                if (!confirmed) return;
 
                 const token = localStorage.getItem('crm_token');
 
@@ -1780,9 +1982,15 @@
                     // Route data fetching triggers
                     if(targetId === 'view-settings') fetchSettingsData();
                     if(targetId === 'view-inbox') fetchInboxData();
-                    if(targetId === 'view-customers') fetchCustomersData();
+                    if(targetId === 'view-orders') fetchOrdersData(); // <-- UPDATED FROM 'view-customers'
                     if(targetId === 'view-analytics') fetchAnalyticsData();
-                    if(targetId === 'view-business') fetchBusinessData(); // <-- Added Trigger
+                    if(targetId === 'view-business') fetchBusinessData();
+
+                    // --- Fetch AI History once per session when entering the dashboard ---
+                    if (typeof aiHistoryLoaded !== 'undefined' && !aiHistoryLoaded) {
+                        fetchAiHistoryData();
+                        aiHistoryLoaded = true; // Set flag to true so it doesn't refetch on every tab click
+                    }
 
                 } else {
                     document.getElementById(targetId).classList.remove('hidden-screen');
@@ -1791,29 +1999,126 @@
                 if (pushToHistory) window.history.pushState({ screen: targetId }, "", "?view=" + targetId);
             }
 
+            // --- NEW: Global flag to prevent fetching history multiple times in one session ---
+            let aiHistoryLoaded = false;
+
+            // --- NEW: Fetch and render AI chat history ---
+            async function fetchAiHistoryData() {
+                try {
+                    const token = localStorage.getItem('crm_token');
+                    if (!token) return;
+
+                    const response = await fetch('http://localhost:8080/api/v1/admin/ai-history', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+
+                    if (!response.ok) throw new Error("Failed to fetch AI chat history.");
+
+                    const history = await response.json();
+                    const chatHistoryContainer = document.getElementById('ai-chat-history');
+
+                    // Clear existing contents to prevent duplication
+                    chatHistoryContainer.innerHTML = '';
+
+                    // Loop through the returned array and reconstruct the chat bubbles
+                    history.forEach(msg => {
+                        if (msg.sender === 'ADMIN') {
+                            const userBubble = `
+                    <div class="flex justify-end animate-fade-in-up mt-2">
+                        <div class="bg-blue-600 text-white text-sm rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[85%] shadow-sm">
+                            ${msg.content}
+                        </div>
+                    </div>
+                `;
+                            chatHistoryContainer.insertAdjacentHTML('beforeend', userBubble);
+                        } else if (msg.sender === 'AI') {
+
+                            // 1. Parse markdown for historical AI text
+                            const parsedMarkdown = marked.parse(msg.content);
+
+                            // 2. Build the standard text bubble with updated Markdown/Prose classes
+                            const aiBubble = `
+                    <div class="flex justify-start animate-fade-in-up mt-2">
+                        <div class="bg-white border border-gray-100 text-gray-800 text-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-[95%] shadow-sm overflow-hidden prose prose-sm leading-relaxed">
+                            ${parsedMarkdown}
+                        </div>
+                    </div>
+                `;
+                            chatHistoryContainer.insertAdjacentHTML('beforeend', aiBubble);
+
+                            // 3. If persisted tabular data exists, rebuild the Tailwind HTML table
+                            if (msg.tableData && msg.tableData.columns && msg.tableData.rows) {
+                                const columns = msg.tableData.columns;
+                                const rows = msg.tableData.rows;
+
+                                let tableHeaders = columns.map(col =>
+                                    `<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${col}</th>`
+                                ).join('');
+
+                                let tableRows = rows.map(row => {
+                                    let cells = columns.map(col =>
+                                        `<td class="px-3 py-2 whitespace-nowrap text-sm text-gray-700">${row[col] ?? '-'}</td>`
+                                    ).join('');
+                                    return `<tr class="hover:bg-gray-50">${cells}</tr>`;
+                                }).join('');
+
+                                let tableHtml = `
+                                    <div class="flex justify-start animate-fade-in-up mt-1 w-full">
+                                        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-x-auto w-[95%] max-w-[95%]">
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>${tableHeaders}</tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200">
+                                                    ${tableRows}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                `;
+                                chatHistoryContainer.insertAdjacentHTML('beforeend', tableHtml);
+                            }
+                        }
+                    });
+
+                    // Auto-scroll to the bottom after all messages are rendered
+                    chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
+
+                } catch (error) {
+                    console.error("AI History Fetch Error:", error);
+                }
+            }
+
             window.addEventListener('popstate', (event) => {
                 if (event.state && event.state.screen) navigateTo(event.state.screen, false);
                 else navigateTo('screen-landing', false);
             });
 
-            window.onload = () => {
+            // Remove window.onload and replace it with this:
+            document.addEventListener('DOMContentLoaded', () => {
                 const view = new URLSearchParams(window.location.search).get('view');
                 const token = localStorage.getItem('crm_token');
 
-                // 👉 ADD THIS: If the user is already logged in on page load, start the chat!
+                // 👉 If the user is already logged in on page load, start the chat and fetch profile!
                 if (token) {
-                    initializeRealTimeChat();
+                    if (typeof initializeRealTimeChat === 'function') {
+                        initializeRealTimeChat();
+                    }
+                    setSidebarUser(token); // <-- ADDED: Fetch the user profile on reload
                 }
 
-                if (token && (!view || view === 'screen-login')) {
+                // Intercept default routing: send logged-in users to the inbox if they hit the root URL or auth screens
+                if (token && (!view || ['screen-login', 'screen-register', 'screen-auth'].includes(view))) {
                     navigateTo('view-inbox', false);
                 } else if (view) {
                     navigateTo(view, false);
                 } else {
                     navigateTo('screen-auth', false);
                 }
-            };
-
+            });
             // ----------------------------------------------------
             // 4B: UI HELPERS & AUTHENTICATION API CALLS
             // ----------------------------------------------------
@@ -1836,7 +2141,7 @@
             function openEditProfileModal(e) {
                 e.stopPropagation();
                 document.getElementById('profile-menu').classList.add('hidden');
-                alert("The Edit Profile feature is coming next!");
+                showWarningToast("The Edit Profile feature is coming next!");
             }
 
             // UPDATED: Fetch real name from backend
@@ -1921,6 +2226,16 @@
 
             function logout() {
                 localStorage.removeItem('crm_token');
+
+                // --- NEW: Wipe the AI Chat History from the DOM immediately ---
+                const chatHistoryContainer = document.getElementById('ai-chat-history');
+                if (chatHistoryContainer) {
+                    chatHistoryContainer.innerHTML = '';
+                }
+
+                // --- NEW: Reset the fetch flag so the next login triggers a new fetch ---
+                aiHistoryLoaded = false;
+
                 navigateTo('screen-auth');
             }
 
@@ -2750,30 +3065,52 @@
                 let html = '<div class="space-y-3 relative z-20">';
                 products.forEach(product => {
                     const isSelected = product.id === currentBusinessProductId;
-                    const borderClass = isSelected ? "border-blue-500 ring-1 ring-blue-500 bg-blue-50/30" : "border-gray-200 hover:border-blue-300 bg-white";
 
-                    // Stock visual enhancements
-                    const stockBadge = product.quantity <= 5
-                        ? `<span class="bg-red-50 text-red-600 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider">LOW STOCK: ${product.quantity}</span>`
-                        : `<span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider">STOCK: ${product.quantity}</span>`;
+                    // Polished selection states
+                    const cardStyle = isSelected
+                        ? "border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/10"
+                        : "border-gray-200 hover:border-gray-300 hover:shadow-md bg-white";
 
+                    // Dynamic Stock Visuals
+                    const isLowStock = product.quantity <= 5;
+                    const qtyColorClass = isLowStock ? "text-red-600" : "text-gray-900";
+                    const stockWarning = isLowStock
+                        ? `<span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-50 text-red-600 tracking-wider">LOW</span>`
+                        : "";
+
+                    // Sleek Icon Edit Button
                     const editBtn = isBusinessAdmin ? `
                         <button onclick="event.stopPropagation(); openEditModal(${product.id}, ${product.price}, ${product.quantity})"
-                                class="text-[11px] font-bold uppercase tracking-wider text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors shrink-0">
-                            Edit
+                                class="shrink-0 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                                title="Edit Product">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
                         </button>` : '';
 
                     html += `
-                        <div class="border ${borderClass} rounded-xl p-4 shadow-sm flex flex-col cursor-pointer transition-all duration-200"
+                        <div class="rounded-2xl p-5 border ${cardStyle} shadow-sm flex flex-col cursor-pointer transition-all duration-200"
                              onclick="selectProduct(${product.id})">
-                            <div class="flex justify-between items-start mb-2">
-                                <h4 class="text-[13px] font-semibold text-gray-900 leading-snug pr-2">${product.baseName}</h4>
+
+                            <div class="flex justify-between items-start mb-6">
+                                <h4 class="text-base font-semibold text-gray-900 leading-snug pr-2">${product.baseName}</h4>
                                 ${editBtn}
                             </div>
-                            <div class="flex justify-between items-center mt-auto">
-                                ${stockBadge}
-                                <span class="text-sm font-bold text-gray-900">৳${product.price}</span>
+
+                            <div class="flex justify-between items-end mt-auto pt-4 border-t border-gray-100">
+                                <div>
+                                    <p class="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Stock</p>
+                                    <div class="flex items-center">
+                                        <span class="${qtyColorClass} text-lg font-bold leading-none">${product.quantity}</span>
+                                        ${stockWarning}
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Price</p>
+                                    <span class="text-lg font-medium text-gray-900 tracking-tight leading-none">৳${product.price}</span>
+                                </div>
                             </div>
+
                         </div>
                     `;
                 });
@@ -2819,43 +3156,44 @@
                     }
                 });
 
-                // 2. Format JSON Attributes as Bullets
+                // 2. Format JSON Attributes for Narrow Spaces
                 const attrHtml = Object.entries(product.attributes).map(([key, val]) => {
                     const cleanKey = key.replace(/_/g, ' ');
                     return `
-                        <div class="flex items-center text-[12px]">
-                            <div class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2 opacity-70"></div>
-                            <span class="text-gray-500 capitalize w-20 shrink-0">${cleanKey}:</span>
-                            <span class="text-gray-900 font-medium truncate">${val}</span>
-                        </div>`;
+        <div class="flex justify-between items-start py-2 border-b border-gray-50 last:border-0 text-sm">
+            <span class="text-gray-500 capitalize pr-4 shrink-0">${cleanKey}</span>
+            <span class="text-gray-900 font-medium text-right break-words">${val}</span>
+        </div>`;
                 }).join('');
 
-                // 3. Render Profile Card Header
+// 3. Render Profile Card Header
                 let html = `
-                        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6 relative z-20">
-                            <div class="p-5 border-b border-gray-100 bg-gray-50/50">
-                                <h3 class="text-[15px] font-bold text-gray-900 tracking-tight leading-snug">${product.baseName}</h3>
-                                <div class="mt-4 grid grid-cols-2 gap-4">
-                                    <div class="space-y-1.5 border-r border-gray-100 pr-2">
-                                        ${attrHtml || '<p class="text-xs text-gray-400 italic">No attributes</p>'}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-5 flex bg-white divide-x divide-gray-100">
-                                <div class="flex-1 pr-4">
-                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Earned</span>
-                                    <span class="text-[16px] font-bold text-green-600 tracking-tight">৳${totalRevenue.toLocaleString()}</span>
-                                </div>
-                                <div class="flex-1 pl-4">
-                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Units Sold</span>
-                                    <span class="text-[16px] font-bold text-gray-900 tracking-tight">${unitsSold}</span>
-                                </div>
-                            </div>
-                        </div>
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6 relative z-20">
 
-                        <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-4 px-2 relative z-20">Order History</h3>
-                        <div class="space-y-3 relative z-20">
-                    `;
+            <div class="p-5 border-b border-gray-100 bg-white">
+                <h3 class="text-lg font-semibold text-gray-900 tracking-tight leading-snug mb-4">${product.baseName}</h3>
+
+                <div class="flex flex-col">
+                    ${attrHtml || '<p class="text-sm font-medium text-gray-400">No attributes specified</p>'}
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-5 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">Total Earned</p>
+                    <p class="text-lg font-semibold text-green-600 tracking-tight leading-none">৳${totalRevenue.toLocaleString()}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">Units Sold</p>
+                    <p class="text-lg font-semibold text-gray-900 tracking-tight leading-none">${unitsSold}</p>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-4 px-2 relative z-20">Order History</h3>
+
+        <div class="space-y-3 relative z-20">
+    `;
 
                 // 4. Render "Pretty" Order List
                 if (orders.length === 0) {
@@ -2950,7 +3288,12 @@
             // --- Order Cancel Logic ---
             async function handleCancelOrder(orderId) {
                 // We use a confirm dialogue here to prevent accidental destructive actions
-                if (!confirm(`Are you sure you want to cancel Order #${orderId}? This will restore the inventory.`)) return;
+                const confirmed = await showConfirmDialog(
+                    "Cancel Order",
+                    `Are you sure you want to cancel Order #${orderId}? This will restore the inventory.`,
+                    "Cancel Order"
+                );
+                if (!confirmed) return;
 
                 try {
                     const response = await fetch(`/api/orders/${orderId}/cancel`, {
@@ -3310,7 +3653,7 @@
                                 console.log(`Global AI Auto-Reply successfully set to ${isEnabled ? 'ON' : 'OFF'} in Database.`);
                             } else {
                                 e.target.checked = !isEnabled; // Revert if server fails
-                                alert("Failed to update AI settings. Make sure you are logged in as an ADMIN.");
+                                showWarningToast("Failed to update AI settings. Make sure you are logged in as an ADMIN.");
                             }
                         } catch (error) {
                             e.target.checked = !isEnabled; // Revert if network fails
@@ -3382,7 +3725,72 @@
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
 
-            // --- CLICK HANDLER ---
+            // --- NEW: Modal Functions ---
+            function openComplaintsModal() {
+                document.getElementById('complaints-modal').classList.remove('hidden');
+            }
+
+            function closeComplaintsModal() {
+                document.getElementById('complaints-modal').classList.add('hidden');
+            }
+
+            // --- NEW: Backend Wiring for Tag Removal ---
+            function removeTag(contactId, tag, btnElement) {
+                apiCall(`/api/contacts/${contactId}/tags/${encodeURIComponent(tag)}`, { method: 'DELETE' })
+                    .then(res => {
+                        if (res.ok) {
+                            // 1. Remove the HTML element instantly
+                            btnElement.closest('span').remove();
+
+                            // 2. Update local state so it doesn't reappear if we toggle customers without refreshing
+                            if (inboxConversations[contactId] && inboxConversations[contactId].contact.tags) {
+                                let tagsArray = inboxConversations[contactId].contact.tags.split(',').map(t => t.trim());
+                                tagsArray = tagsArray.filter(t => t.toLowerCase() !== tag.toLowerCase());
+                                inboxConversations[contactId].contact.tags = tagsArray.join(', ');
+                            }
+
+                            // 3. Check if empty and show fallback
+                            const tagsContainer = document.getElementById('profile-tags-container');
+                            if (tagsContainer.children.length === 0) {
+                                tagsContainer.innerHTML = '<span class="text-sm text-gray-500 italic">No active tags.</span>';
+                            }
+                        } else {
+                            console.error("Failed to remove tag.");
+                        }
+                    })
+                    .catch(console.error);
+            }
+
+            // Placeholder for future backend integration
+            function resolveComplaint(complaintId) {
+                apiCall(`/api/contacts/complaints/${complaintId}/resolve`, { method: 'PUT' })
+                    .then(res => {
+                        if(res.ok) {
+                            const li = document.getElementById(`complaint-${complaintId}`);
+                            if (li) {
+                                li.remove(); // Remove from modal
+
+                                // Update preview counts dynamically
+                                const complaintsPreview = document.getElementById('profile-complaints-preview');
+                                const list = document.getElementById('complaints-list');
+                                const activeCount = list.querySelectorAll('li[id^="complaint-"]').length;
+
+                                if (activeCount > 0) {
+                                    complaintsPreview.innerHTML = `<span class="text-red-600 font-medium">${activeCount} active issue(s)</span>`;
+                                } else {
+                                    // Switch to all clear if the last one was resolved
+                                    complaintsPreview.innerHTML = `<span class="text-green-600 flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> All clear</span>`;
+                                    list.innerHTML = `<li class="text-sm text-gray-500 italic text-center py-4">All complaints resolved.</li>`;
+                                }
+                            }
+                        } else {
+                            console.error("Failed to resolve complaint.");
+                        }
+                    })
+                    .catch(console.error);
+            }
+
+            // --- UPDATED: selectConversation Function ---
             function selectConversation(contactId) {
                 currentSelectedContactId = contactId;
 
@@ -3406,27 +3814,130 @@
                     document.getElementById('profile-name').innerText = contactName;
                     document.getElementById('profile-avatar').innerText = initials;
 
-                    // --- NEW: DYNAMICALLY WIRE THE CREATE ORDER BUTTON ---
+                    // --- NEW: AI BRIEFING CARD CONTEXT SWITCHING ---
+                    const briefingCard = document.getElementById('ai-briefing-card');
+                    const briefingText = document.getElementById('briefing-text');
+
+                    if (convo.contact.requiresHuman && convo.contact.aiSummary) {
+                        // Show the AI briefing if this customer needs help
+                        briefingText.innerText = convo.contact.aiSummary;
+                        briefingCard.classList.remove('hidden');
+                        briefingCard.classList.add('flex');
+                    } else {
+                        // Hide it securely so it doesn't bleed over from a previous chat
+                        briefingCard.classList.add('hidden');
+                        briefingCard.classList.remove('flex');
+                        if (briefingText) briefingText.innerText = '';
+                    }
+
+                    // --- NEW: POPULATE TAGS ---
+                    const tagsContainer = document.getElementById('profile-tags-container');
+                    tagsContainer.innerHTML = ''; // Clear previous tags
+
+                    if (convo.contact.tags && convo.contact.tags.trim() !== '') {
+                        const tagsArray = convo.contact.tags.split(',').map(t => t.trim()).filter(t => t);
+                        tagsArray.forEach(tag => {
+                            // Added a close button (x) to the pill
+                            const pill = `
+                                <span class="relative inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 tracking-wide group transition-all duration-200">
+                                    ${tag}
+
+                                    <button onclick="removeTag('${contactId}', '${tag}', this)"
+                                            class="absolute -top-1.5 -right-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 hover:text-white hover:bg-red-500 hover:border-red-500 shadow-sm transition-all duration-200 focus:outline-none z-10"
+                                            title="Remove tag">
+                                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </span>`;
+                                            tagsContainer.insertAdjacentHTML('beforeend', pill);
+                        });
+                    } else {
+                        tagsContainer.innerHTML = '<span class="text-sm text-gray-500 italic">No active tags.</span>';
+                    }
+
+                    // --- NEW: POPULATE COMPLAINTS / NOTES VIA NATIVE DB RECORDS ---
+                    const complaintsPreview = document.getElementById('profile-complaints-preview');
+                    const complaintsList = document.getElementById('complaints-list');
+
+                    // Show loading state while fetching from the database
+                    complaintsList.innerHTML = `<li class="text-sm text-gray-500 italic text-center py-4">Loading complaints...</li>`;
+                    complaintsPreview.innerHTML = `<span class="text-gray-400 text-[11px] uppercase tracking-wider">Checking records...</span>`;
+
+                    // Fetch the real complaints from the new backend endpoint
+                    apiCall(`/api/contacts/${contactId}/complaints`)
+                        .then(res => res.json())
+                        .then(complaints => {
+                            complaintsList.innerHTML = ''; // Clear loading text
+
+                            // Filter for actively open issues
+                            const activeComplaints = complaints.filter(c => c.status === 'OPEN');
+
+                            if (activeComplaints.length > 0) {
+                                complaintsPreview.innerHTML = `<span class="text-red-600 font-medium">${activeComplaints.length} active issue(s)</span>`;
+
+                                activeComplaints.forEach(complaint => {
+                                    // Color code the priority badge
+                                    let priorityColor = "text-yellow-600 bg-yellow-100";
+                                    if (complaint.priority === 'HIGH') priorityColor = "text-red-600 bg-red-100";
+                                    if (complaint.priority === 'LOW') priorityColor = "text-gray-600 bg-gray-100";
+
+                                    const li = `
+                                        <li id="complaint-${complaint.id}" class="flex items-start justify-between gap-4 pt-4 first:pt-0">
+                                            <div class="flex items-start gap-3">
+                                                <div class="mt-0.5 ${priorityColor} rounded-full p-1.5">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm text-gray-800 font-medium">${complaint.description}</p>
+                                                    <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold">Priority: ${complaint.priority}</p>
+                                                </div>
+                                            </div>
+                                            <button onclick="resolveComplaint(${complaint.id})" class="shrink-0 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm">
+                                                Resolve
+                                            </button>
+                                        </li>
+                                    `;
+                                    complaintsList.insertAdjacentHTML('beforeend', li);
+                                });
+                            } else {
+                                complaintsPreview.innerHTML = `<span class="text-green-600 flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> All clear</span>`;
+                                complaintsList.innerHTML = `<li class="text-sm text-gray-500 italic text-center py-4">No active complaints.</li>`;
+                            }
+                        })
+                        .catch(err => {
+                            console.error("Failed to load complaints:", err);
+                            complaintsPreview.innerHTML = `<span class="text-red-500 text-[11px]">Error loading data</span>`;
+                            complaintsList.innerHTML = `<li class="text-sm text-red-500 italic text-center py-4">Could not load complaints.</li>`;
+                        });
+
+                    // --- DYNAMICALLY WIRE THE CREATE ORDER BUTTON & BADGE ---
                     const createOrderBtn = document.getElementById('create-order-btn');
+                    const orderReadyBadge = document.getElementById('order-ready-badge');
+
                     if (createOrderBtn) {
                         createOrderBtn.onclick = () => {
-                            // Read from the profile UI elements (replace these IDs with your actual HTML IDs)
-                            // If they are empty (e.g., a new lead), it safely passes empty strings!
                             const phoneEl = document.getElementById('profile-phone');
                             const addressEl = document.getElementById('profile-address');
-
                             const currentPhone = phoneEl ? phoneEl.innerText : '';
                             const currentAddress = addressEl ? addressEl.innerText : '';
-
                             openOrderModal(contactId, contactName, currentPhone, currentAddress);
                         };
+                    }
+
+                    // Check if there is an active draft and toggle the green notification badge
+                    if (orderReadyBadge) {
+                        if (convo.contact.orderReady) {
+                            orderReadyBadge.classList.remove('hidden');
+                        } else {
+                            orderReadyBadge.classList.add('hidden');
+                        }
                     }
 
                     // 3. FETCH CUSTOMER DATA
                     if (convo.contact.customerId) {
                         loadCustomerData(convo.contact.customerId);
                     } else {
-                        // They are just a lead, not a customer yet. Show empty defaults.
                         resetCustomerProfileUI();
                     }
                 }
@@ -3434,6 +3945,7 @@
                 renderConversationSidebar();
                 openChatThread(contactId);
             }
+
             async function loadCustomerData(customerId) {
                 console.log(`--- DEBUG: loadCustomerData Triggered for ID: ${customerId} ---`);
                 try {
@@ -3514,7 +4026,7 @@
                         openChatThread(currentSelectedContactId);
                     } else {
                         console.error("Failed to send message. Status:", res.status);
-                        alert("Failed to send message. Please check your connection.");
+                        showErrorToast("Failed to send message. Please check your connection.");
                     }
                 } catch (e) {
                     console.error("Error connecting to send API:", e);
@@ -3569,7 +4081,12 @@
             // NEW DELETE REQUEST: Remove Staff (Admins Only)
             async function deleteStaff(staffId) {
                 // A built-in browser popup to confirm they didn't misclick
-                if (!confirm("Are you sure you want to remove this team member?")) return;
+                const confirmed = await showConfirmDialog(
+                    "Remove Team Member",
+                    "Are you sure you want to remove this team member? This action cannot be undone.",
+                    "Remove"
+                );
+                if (!confirmed) return;
 
                 const token = localStorage.getItem('crm_token');
 
@@ -3582,7 +4099,7 @@
                     if(res.ok) {
                         fetchSettingsData(); // Refresh the list instantly to prove they are gone
                     } else {
-                        alert("Could not remove staff member. Make sure you are an Admin.");
+                        showWarningToast("Could not remove staff member. Make sure you are an Admin.");
                     }
                 } catch(e) { alert("Server error."); }
             }
@@ -3741,7 +4258,7 @@
                         } else {
                             // If the server fails, revert the toggle visually
                             e.target.checked = !isEnabled;
-                            alert("Failed to update AI settings. Please try again.");
+                            showWarningToast("Failed to update AI settings.");
                         }
                     } catch (error) {
                         e.target.checked = !isEnabled;
@@ -3875,59 +4392,70 @@
     </div>
 
     <div id="modal-ai-schema" class="hidden-screen fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all flex flex-col">
+        <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 w-full max-w-lg overflow-hidden transform transition-all flex flex-col">
 
-            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    <h3 class="text-lg font-medium text-gray-900 tracking-tight">AI Schema Generator</h3>
-                </div>
-                <button onclick="closeAiSchemaModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+                <h3 class="text-base font-medium text-gray-900 tracking-tight">AI Schema Generator</h3>
+                <button type="button" onclick="closeAiSchemaModal()" class="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-1">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
 
-            <div class="p-6">
+            <div class="p-8">
+
                 <form id="ai-schema-input-state" onsubmit="generateSchema(event)">
-                    <label for="ai-prompt" class="block text-sm font-medium text-gray-700 mb-2">What are you selling?</label>
-                    <textarea id="ai-prompt" required rows="3" placeholder="e.g., I want to sell custom mechanical keyboards. They have switch types, keycap colors, and wire types."
-                              class="block w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-lg shadow-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all sm:text-sm resize-none"></textarea>
+                    <label for="ai-prompt" class="block text-sm font-medium text-gray-700 mb-1.5">What are you selling?</label>
+                    <textarea id="ai-prompt" required rows="4" placeholder="e.g., Custom mechanical keyboards with switch types, keycap colors, and wire types."
+                              class="block w-full px-4 py-3 text-gray-900 border border-gray-200 rounded-lg bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-600 focus:bg-white transition-all duration-200 sm:text-sm resize-none shadow-sm"></textarea>
 
                     <div class="mt-6 flex justify-end">
-                        <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-md shadow-[0_4px_10px_-3px_rgba(79,70,229,0.4)] text-sm font-medium text-white hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all hover:scale-[1.02]">
+                        <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium shadow-sm transition-all duration-200 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:ring-offset-1">
                             Generate Blueprint
                         </button>
                     </div>
                 </form>
 
-                <div id="ai-schema-loading-state" class="hidden-screen py-8 flex flex-col items-center justify-center">
-                    <div class="relative w-12 h-12 mb-4">
-                        <div class="absolute inset-0 rounded-full border-t-2 border-indigo-500 animate-spin"></div>
-                        <div class="absolute inset-2 rounded-full border-r-2 border-blue-400 animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+                <div id="ai-schema-loading-state" class="hidden-screen py-12 flex flex-col items-center justify-center">
+                    <div class="relative w-12 h-12 mb-5">
+                        <div class="absolute inset-0 rounded-full border-2 border-gray-100"></div>
+                        <div class="absolute inset-0 rounded-full border-t-2 border-purple-600 animate-spin"></div>
                     </div>
-                    <p class="text-sm font-medium text-gray-600 animate-pulse">Gemini is designing your schema...</p>
+                    <p class="text-sm font-medium text-gray-500 animate-pulse">Designing your schema...</p>
                 </div>
 
                 <div id="ai-schema-preview-state" class="hidden-screen">
-                    <p class="text-[13px] text-gray-500 mb-3">Here is a preview of the generated product type. Does this look correct?</p>
 
-                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-100 to-transparent rounded-bl-full opacity-50 pointer-events-none"></div>
+                    <div class="flex items-center justify-center mb-6">
+        <span class="bg-purple-50 text-purple-700 border border-purple-100/50 px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase shadow-sm">
+            Preview Generated
+        </span>
+                    </div>
 
-                        <div class="flex justify-between items-start mb-4">
-                            <h4 id="mock-product-name" class="text-sm font-bold text-gray-900 leading-snug">Example Item</h4>
-                            <span class="text-sm font-bold text-gray-900">৳1,500.00</span>
-                        </div>
+                    <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-8 relative overflow-hidden ring-1 ring-gray-900/5">
+                        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
 
-                        <div class="space-y-1.5" id="mock-product-attributes">
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-5 border-b border-gray-50 pb-5">
+                                <div>
+                                    <p class="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-1.5">Product Name</p>
+                                    <h4 id="mock-product-name" class="text-lg font-semibold text-gray-900 leading-snug">Example Item</h4>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-1.5">Base Price</p>
+                                    <span class="text-lg font-medium text-gray-900 tracking-tight">৳____</span>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-y-1" id="mock-product-attributes">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-3">
-                        <button type="button" onclick="discardGeneratedSchema()" class="px-4 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors">
-                            Discard & Try Again
+                    <div class="flex justify-end items-center gap-2 pt-2">
+                        <button type="button" onclick="discardGeneratedSchema()" class="px-5 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
+                            Discard
                         </button>
-                        <button type="button" onclick="saveGeneratedSchema()" class="px-4 py-2.5 bg-green-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/40 transition-colors">
+                        <button type="button" onclick="saveGeneratedSchema()" class="px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium shadow-sm transition-all duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-1">
                             Accept & Save
                         </button>
                     </div>
@@ -3992,17 +4520,48 @@
         </div>
     </div>
 
+    <div id="modal-confirm" class="hidden-screen fixed inset-0 z-50 flex items-center justify-center bg-gray-900/30 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] w-full max-w-sm overflow-hidden transform transition-all p-8 text-center">
+
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-50/70 mb-5 shrink-0">
+                <svg class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+
+            <h3 id="confirm-title" class="text-lg font-medium text-gray-900 tracking-tight mb-1.5">Are you sure?</h3>
+            <p id="confirm-message" class="text-sm text-gray-500 mb-8 leading-relaxed">This action cannot be undone.</p>
+
+            <div class="flex flex-col-reverse sm:flex-row justify-center gap-3">
+                <button id="btn-confirm-cancel" type="button" class="w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200">
+                    Cancel
+                </button>
+
+                <button id="btn-confirm-action" type="button" class="w-full sm:w-auto px-5 py-2.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 hover:text-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/30">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="ai-sidebar" class="w-0 border-l-0 border-transparent overflow-hidden flex flex-col h-screen shrink-0 transition-all duration-300 ease-in-out z-30 bg-white">
 
         <div class="w-[400px] flex flex-col h-full">
 
             <div class="px-6 py-[22px] border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
                 <h2 class="text-[1.15rem] font-medium tracking-tight text-gray-900">Halkhata AI</h2>
-                <button onclick="toggleAiSidebar()" class="p-2 -ml-2 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-full focus:outline-none transition-colors" title="Close AI Assistant">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
-                    </svg>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button onclick="clearAiChat()" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full focus:outline-none transition-colors" title="Clear Chat History">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                    <button onclick="toggleAiSidebar()" class="p-2 -ml-2 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-full focus:outline-none transition-colors" title="Close AI Assistant">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div id="ai-chat-history" class="flex-1 overflow-y-auto p-6 bg-white space-y-6">

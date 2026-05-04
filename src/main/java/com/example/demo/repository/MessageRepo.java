@@ -18,5 +18,5 @@ public interface MessageRepo extends JpaRepository<Message, Long> {
     // ==========================================
     // NEW FOR AI TOOL: getDetailedChatLogs
     // ==========================================
-    List<Message> findTop10ByContact_IdAndContact_Tenant_IdOrderByCreatedAtDesc(String contactId, Long tenantId);
+    List<Message> findTop20ByContact_IdAndContact_Tenant_IdOrderByCreatedAtDesc(String contactId, Long tenantId);
 }

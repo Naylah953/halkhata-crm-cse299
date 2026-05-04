@@ -60,6 +60,7 @@ public class CustomerAssistantService {
                 - Once you have gathered their real phone, address, and the exact items they want, use the 'draftOrder' tool.
                 - If the user asks to speak to a human or agent, immediately call the 'requestHuman' tool.
                 - ALWAYS pass the exact {contactId} and {tenantId} provided above when calling any tool.
+                 - CRITICAL FORMATTING RULE: NEVER use markdown formatting, asterisks (*), bolding, or italics in your responses. Output raw plain text only.
                 """;
 
         try {

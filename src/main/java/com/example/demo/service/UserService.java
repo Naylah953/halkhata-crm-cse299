@@ -84,7 +84,7 @@ public class UserService {
     }
 
     // ==========================================
-    // 4. UPDATE BUSINESS INFO (Fixed for Partial Updates)
+    // 4. UPDATE BUSINESS INFO (Fixed for Partial Updates & Null Handling)
     // ==========================================
     @Transactional
     public TenantResponse updateTenantDetails(String currentUsername, TenantUpdateRequest request) {
@@ -109,11 +109,24 @@ public class UserService {
         if (request.getContactEmail() != null) {
             tenant.setContactEmail(request.getContactEmail());
         }
+
+        // --- SAFE NULL CONVERSION FOR FACEBOOK CREDENTIALS ---
         if (request.getFacebookPageId() != null) {
-            tenant.setFacebookPageId(request.getFacebookPageId());
+            // Convert empty strings to proper NULLs to bypass the unique constraint
+            if (request.getFacebookPageId().trim().isEmpty() || request.getFacebookPageId().equals("<null>")) {
+                tenant.setFacebookPageId(null);
+            } else {
+                tenant.setFacebookPageId(request.getFacebookPageId().trim());
+            }
         }
+
         if (request.getPageAccessToken() != null) {
-            tenant.setPageAccessToken(request.getPageAccessToken());
+            // Also clean up the access token
+            if (request.getPageAccessToken().trim().isEmpty() || request.getPageAccessToken().equals("<null>")) {
+                tenant.setPageAccessToken(null);
+            } else {
+                tenant.setPageAccessToken(request.getPageAccessToken().trim());
+            }
         }
 
         // The AI Toggle

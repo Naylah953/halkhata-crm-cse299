@@ -19,6 +19,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Get all orders for a specific customer within a specific shop
     List<Order> findAllByCustomerIdAndTenantId(Long customerId, Long tenantId);
 
-    // Phase 1: Securely fetch all orders containing a specific product, sorted by newest first
+    // Phase 1: Securely fetch all orders containing a specific product by ID
     List<Order> findByItems_ProductIdAndTenantIdOrderByCreatedAtDesc(Long productId, Long tenantId);
+
+    // Phase 2: Relational Bulk Fetch - Finds all distinct orders containing a product name
+    List<Order> findDistinctByItems_Product_BaseNameContainingIgnoreCaseAndTenantId(String productName, Long tenantId);
 }

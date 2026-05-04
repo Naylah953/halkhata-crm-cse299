@@ -2,8 +2,8 @@ openrouter:
   api:
     # MANUAL REST CLIENT: Needs the FULL path because you call it directly
     url: https://openrouter.ai/api/v1/chat/completions
-    key:
-    model: meta-llama/llama-3.3-70b-instruct
+    key: 
+    model: openai/gpt-4o-mini
 
 spring:
   # ---------------------------------------------------------
@@ -12,12 +12,12 @@ spring:
   ai:
     # 1. Fallback Provider (OpenRouter)
     openai:
-      api-key:
+      api-key: 
       # SPRING AI: Needs to end in /api because Spring auto-appends /v1/chat/completions
       base-url: https://openrouter.ai/api
       chat:
         options:
-          model: meta-llama/llama-3.3-70b-instruct
+          model: openai/gpt-4o-mini
 
     # 2. Primary Provider (Google Gemini)
     google:
@@ -28,13 +28,20 @@ spring:
             model: gemini-2.5-flash-lite
 
   # ---------------------------------------------------------
-  # EXISTING DATABASE CONFIGURATION
+  # EXISTING & NEW SECURE DATABASE CONFIGURATION
   # ---------------------------------------------------------
   datasource:
-    url: jdbc:postgresql://localhost:5432/mydatabase
-    username: myuser
-    password: secret
-    driver-class-name: org.postgresql.Driver
+    primary:
+      jdbc-url: jdbc:postgresql://localhost:5432/mydatabase  # <-- CHANGED THIS
+      username: myuser
+      password: secret
+      driver-class-name: org.postgresql.Driver
+    readonly:
+      jdbc-url: jdbc:postgresql://localhost:5432/mydatabase  # <-- CHANGED THIS
+      username: readonly_user
+      password: readonly_secret
+      driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update

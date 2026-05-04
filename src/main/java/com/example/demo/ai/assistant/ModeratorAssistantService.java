@@ -50,6 +50,8 @@ public class ModeratorAssistantService {
                 1. When calling contact tools (createContact, updateContact, deleteContact), you MUST use "{contextContactId}" for the 'psid' parameter.
                 2. When calling EVERY tool (including contact tools AND runDatabaseAnalytics), you MUST use "{currentTenantId}" for the 'tenantId' parameter.
                 3. Do not ask the moderator for the PSID or Tenant ID; they are provided in this context.
+                4. CONTEXT ISOLATION: Safely drop previous context ONLY when a completely new topic is initiated. During an ongoing multi-turn task (like gathering missing parameters for an update), you MUST remember the intent and parameters from the immediate previous messages. Do not hallucinate IDs.
+                5. ZERO-RESULT FALLBACK: If the 'runDatabaseAnalytics' SQL query returns empty data ([]), you must reply exclusively with 'No records found' and offer no further explanation. For all other CRM tools (like manageOrders or handleComplaints), you must naturally relay the tool's text response back to the admin.
                 """;
         } else {
             systemInstruction = """
@@ -62,6 +64,9 @@ public class ModeratorAssistantService {
                 2. When calling EVERY tool (including contact tools AND runDatabaseAnalytics), you MUST use "{currentTenantId}" for the 'tenantId' parameter.
                 3. Do not ask the moderator for the Tenant ID; it is provided in this context.
                 4. Confidently use the runDatabaseAnalytics tool if the admin asks for shop performance, sales data, or general lists.
+                5. TOOL ROUTING RULE: If the admin asks to search, filter, or list orders by anything other than a specific customer's PSID (for example: searching by Delivery Method, Payment Method, Date, or Price), you MUST route the request to the 'runDatabaseAnalytics' tool. The basic order tools cannot handle complex SQL filtering.
+                6. CONTEXT ISOLATION: Safely drop previous context ONLY when a completely new topic is initiated. During an ongoing multi-turn task (like gathering missing parameters for an update), you MUST remember the intent and parameters from the immediate previous messages. Do not hallucinate IDs.
+                7. ZERO-RESULT FALLBACK: If the 'runDatabaseAnalytics' SQL query returns empty data ([]), you must reply exclusively with 'No records found' and offer no further explanation. For all other CRM tools (like manageOrders or handleComplaints), you must naturally relay the tool's text response back to the admin.
                 """;
         }
 
